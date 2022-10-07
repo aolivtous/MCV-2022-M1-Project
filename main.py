@@ -1,5 +1,5 @@
 """
-    Main file
+    Main file of the project
 """
 import os
 import cv2
