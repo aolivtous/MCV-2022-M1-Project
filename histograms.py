@@ -7,12 +7,20 @@ class histograms:
         self.hist_ch3 = hist_ch3
 
 def get_histograms(directory, colorSpace, notQuery):
+    """
+    It takes a directory, a color space, and a boolean as input and returns a dictionary of histograms
+    
+    :param directory: The directory where the images are stored
+    :param colorSpace: The color space to use for the histogram
+    :param notQuery: If the image is a query image or not
+    :return: A dictionary of histograms.
+    """
     hist_dict = {}
     for filename in os.scandir(directory):
         f = os.path.join(directory, filename)
         # checking if it is a file
         if f.endswith('.jpg'):
-            #print(f)
+            # Splitting the file name and getting the file name without the extension.
             split_f = f.split('/')
             f_name = split_f[len(split_f) - 1]
             f_name = f_name.split('.')[0]
@@ -32,7 +40,7 @@ def get_histograms(directory, colorSpace, notQuery):
                 image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
             hist_ch1 = cv2.calcHist([image], [0], None, [256], [0, 255])
-            #cv2.normalize(hist_ch1, hist_ch1, alpha=0, beta=1, norm_type=cv2.NORM_MINMAX)
+            #cv2.normalize(hist_ch1, hist_ch1, alpha=0, beta=1, norm_type=cv2.NORM_MINMAX).flatten()
             hist_ch1 /= hist_ch1.sum()
             hist_ch2 = cv2.calcHist([image], [1], None, [256], [0, 255])
             #cv2.normalize(hist_ch2, hist_ch2, alpha=0, beta=1, norm_type=cv2.NORM_MINMAX)

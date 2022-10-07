@@ -30,6 +30,10 @@ argument_relations = {
 # Global variable
 base_dir = "../"
 
+query1_solutions = {}
+with open( base_dir + 'qsd1_w1/gt_corresps.pkl', "rb" ) as f:
+	query1_solutions = pickle.load(f)
+
 def main():
     print('Main execution')
     # Assign directory
