@@ -12,20 +12,38 @@ import pickle
 
 # Internal modules
 import histograms
+import distances
 
+# Code argument
+name_bbdd = 'BBDD'
+name_query = 'qsd1_w1'
+color_code = "LAB" # ["RGB", "HSV", "LAB", "YCrCb"]
+distance_type = 'eucli' # Possible arguments of distance_type at argument_relations
+argument_relations = { 
+    'corr': cv2.HISTCMP_CORREL,
+    'chisq': cv2.HISTCMP_CHISQR,
+    'intersect': cv2.HISTCMP_INTERSECT,
+    'hellin': cv2.HISTCMP_BHATTACHARYYA,
+    'eucli': False
+}
+
+# Global variable
 base_dir = "../"
 
 def main():
     print('Main execution')
-    # # read image 
-    # # imageLab = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
-    # image = cv2.imread(base_dir + 'BBDD/bbdd_00000.jpg')
-    # # show the image, provide window name first
-    # cv2.imshow('image', image)
-    # # add wait key. window waits until user presses a key
-    # cv2.waitKey(0)
-    # # and finally destroy/close all open windows
-    # cv2.destroyAllWindows()
+    # Assign directory
+    directory_bbdd = base_dir + name_bbdd
+    directory_query = base_dir + name_query
+
+    # Generating DB and query dictionary of histograms
+    hist_query = histograms.get_histograms(directory_query, color_code, False)
+    hist_bbdd = histograms.get_histograms(directory_bbdd, color_code, True)
+
+    # Calculating distances between the histograms
+    dists = distances.query_measures_colour(hist_query, hist_bbdd, distance_type)
+
+
 
 if __name__ == "__main__":
     main()

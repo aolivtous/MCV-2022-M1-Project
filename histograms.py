@@ -1,2 +1,44 @@
-import main
+from main import *
 
+class histograms: 
+    def __init__(self, hist_ch1, hist_ch2, hist_ch3): 
+        self.hist_ch1 = hist_ch1
+        self.hist_ch2 = hist_ch2
+        self.hist_ch3 = hist_ch3
+
+def get_histograms(directory, colorSpace, notQuery):
+    hist_dict = {}
+    for filename in os.scandir(directory):
+        f = os.path.join(directory, filename)
+        # checking if it is a file
+        if f.endswith('.jpg'):
+            #print(f)
+            split_f = f.split('/')
+            f_name = split_f[len(split_f) - 1]
+            f_name = f_name.split('.')[0]
+
+            if notQuery:
+                f_name = f_name.split('_')[1]
+
+            image = cv2.imread(f)
+
+            if colorSpace == "HSV":
+                image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)           
+            elif colorSpace == "LAB":
+                image = cv2.cvtColor(image, cv2.COLOR_BGR2Lab)          
+            elif colorSpace == "YCrCb":
+                image = cv2.cvtColor(image, cv2.COLOR_BGR2YCrCb)
+            elif colorSpace == "RGB":
+                image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
+            hist_ch1 = cv2.calcHist([image], [0], None, [256], [0, 255])
+            #cv2.normalize(hist_ch1, hist_ch1, alpha=0, beta=1, norm_type=cv2.NORM_MINMAX)
+            hist_ch1 /= hist_ch1.sum()
+            hist_ch2 = cv2.calcHist([image], [1], None, [256], [0, 255])
+            #cv2.normalize(hist_ch2, hist_ch2, alpha=0, beta=1, norm_type=cv2.NORM_MINMAX)
+            hist_ch2 /= hist_ch2.sum()
+            hist_ch3 = cv2.calcHist([image], [2], None, [256], [0, 255])
+            #cv2.normalize(hist_ch3, hist_ch3, alpha=0, beta=1, norm_type=cv2.NORM_MINMAX)
+            hist_ch3 /= hist_ch3.sum()
+            hist_dict[f_name] = (histograms(hist_ch1, hist_ch2, hist_ch3))
+    return hist_dict
