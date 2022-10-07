@@ -21,12 +21,14 @@ def get_histograms(directory, colorSpace, notQuery):
         # checking if it is a file
         if f.endswith('.jpg'):
             # Splitting the file name and getting the file name without the extension.
-            split_f = f.split('/')
-            f_name = split_f[len(split_f) - 1]
-            f_name = f_name.split('.')[0]
+            split_f = f.split('/')[-1]
+            f_name = split_f.split('.')[0]
 
             if notQuery:
                 f_name = f_name.split('_')[1]
+            else:
+                f_name = f_name[-5:]
+
 
             image = cv2.imread(f)
 
