@@ -6,7 +6,7 @@ class histograms:
         self.hist_ch2 = hist_ch2
         self.hist_ch3 = hist_ch3
 
-def get_histograms(directory, colorSpace, notQuery):
+def get_histograms(directory, colorSpace, notQuery, withMask):
     """
     It takes a directory, a color space, and a boolean as input and returns a dictionary of histograms
     
@@ -18,6 +18,7 @@ def get_histograms(directory, colorSpace, notQuery):
     hist_dict = {}
     for filename in os.scandir(directory):
         f = os.path.join(directory, filename)
+        
         # checking if it is a file
         if f.endswith('.jpg'):
             # Splitting the file name and getting the file name without the extension.
@@ -41,14 +42,23 @@ def get_histograms(directory, colorSpace, notQuery):
             elif colorSpace == "RGB":
                 image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-            hist_ch1 = cv2.calcHist([image], [0], None, [256], [0, 255])
-            #cv2.normalize(hist_ch1, hist_ch1, alpha=0, beta=1, norm_type=cv2.NORM_MINMAX).flatten()
+            if withMask:    
+                mask_name = os.path.join(directory, "predicted_masks/" + f_name + ".png")
+                mask = cv2.imread(mask_name,cv2.IMREAD_GRAYSCALE)                
+                hist_ch1 = cv2.calcHist([image], [0], mask, [256], [0, 255])
+                hist_ch2 = cv2.calcHist([image], [1], mask, [256], [0, 255])
+                hist_ch3 = cv2.calcHist([image], [2], mask, [256], [0, 255])
+
+            
+            else:
+
+                hist_ch1 = cv2.calcHist([image], [0], None, [256], [0, 255])
+                hist_ch2 = cv2.calcHist([image], [1], None, [256], [0, 255])
+                hist_ch3 = cv2.calcHist([image], [2], None, [256], [0, 255])
+
             hist_ch1 /= hist_ch1.sum()
-            hist_ch2 = cv2.calcHist([image], [1], None, [256], [0, 255])
-            #cv2.normalize(hist_ch2, hist_ch2, alpha=0, beta=1, norm_type=cv2.NORM_MINMAX)
             hist_ch2 /= hist_ch2.sum()
-            hist_ch3 = cv2.calcHist([image], [2], None, [256], [0, 255])
-            #cv2.normalize(hist_ch3, hist_ch3, alpha=0, beta=1, norm_type=cv2.NORM_MINMAX)
             hist_ch3 /= hist_ch3.sum()
+            
             hist_dict[f_name] = (histograms(hist_ch1, hist_ch2, hist_ch3))
     return hist_dict

@@ -27,8 +27,6 @@ def generate_masks(dir_query2, dir_output, threshold_value=100):
             # cv2.normalize(hist_gray, hist_gray, alpha=0, beta=1, norm_type=cv2.NORM_MINMAX).flatten()
             hist_gray /= hist_gray.sum()
 
-
-
             plt.plot(hist_gray)
             # plt.xlim([0,256])
             # plt.show()
