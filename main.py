@@ -33,6 +33,7 @@ mode = 'mask' # ['comp', 'mask', 'all']
 
 # Global variable
 base_dir = "../"
+output_path = "/predicted_masks"
 
 query1_solutions = {}
 with open( base_dir + 'qsd1_w1/gt_corresps.pkl', "rb" ) as f:
@@ -43,7 +44,13 @@ def main():
     # Assign directory
     directory_bbdd = base_dir + name_bbdd
     directory_query = base_dir + name_query
-    directory_output = base_dir + 'output_masks'
+    directory_output = directory_query + output_path
+
+    try:
+        os.makedirs(directory_output)
+    except FileExistsError:
+        # Directory already exists
+        pass
 
     if mode == 'comp': 
         # Generating DB and query dictionary of histograms
