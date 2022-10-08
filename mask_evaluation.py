@@ -1,12 +1,6 @@
 from main import *
-import main
 
-import os
-
-dir_masks_solution='/Users/guillemcapellerafont/Desktop/Master/M1/Projecte/Setmana 1/qsd2_w1'
-dir_masks_predicted='/Users/guillemcapellerafont/Desktop/Master/M1/Projecte/Setmana 1/qsd2_w1'
-
-def mask_eval_avg(dir_masks_predicted,dir_masks_solution):
+def mask_eval_avg(dir_masks_predicted,dir_masks_solution, print_each = True, print_avg = True):
     """
     The function takes in two directories, one with the predicted masks and the other with the solution
     masks. It then iterates through the solution masks and for each mask, it finds the corresponding
@@ -27,24 +21,26 @@ def mask_eval_avg(dir_masks_predicted,dir_masks_solution):
         # checking if it is a file
         if f_solution.endswith('.png'):
             # Splitting the file name and getting the file name without the extension.
-            split_f = f_solution.split('/')[-1]
+            split_f = f_solution.split('\\')[-1]
             f_name_solution = split_f.split('.')[0]
             f_name_solution = f_name_solution[-5:]
 
-            f_predicted = dir_masks_predicted + '/'+ split_f
-            print("Mask #{}  Precision: {:.2f}, Recall: {:.2f}, F1-score: {:.2f}",f_name_solution, precision, recall, f1)
+            f_predicted = dir_masks_predicted + '/' + split_f
 
-            precision, recall, f1 = mask_eval(f_predicted,f_solution)
+            precision, recall, f1 = mask_eval(f_predicted, f_solution)
             count=count+1
 
             avg_precision +=precision
             avg_recall +=recall
             avg_f1 +=f1
+            if(print_each):
+                print(f"Mask #{f_name_solution}  Precision: {round(precision, 2)}, Recall: {round(recall, 2)}, F1-score: {round(f1, 2)}")
     
     avg_precision = avg_precision / count
     avg_recall = avg_recall / count
     avg_f1 = avg_f1 / count
-    
+    if(print_avg):
+        print(f"Average Precision: {round(avg_precision, 2)}, Avg. Recall: {round(avg_recall, 2)}, Avg. F1-score: {round(avg_f1, 2)}")
     return avg_precision, avg_recall, avg_f1
 
 
