@@ -90,17 +90,19 @@ def main():
         exit(1)
 
     query_solutions = {}
-    try:
-        with open( directory_query + '/gt_corresps.pkl', "rb" ) as f:
-            query_solutions = pickle.load(f)
-    except:
-        pass
-
-    try:
-        os.makedirs(directory_output)
-    except FileExistsError:
-        # Directory already exists
-        pass
+    if(solutions):
+        try:
+            with open( directory_query + '/gt_corresps.pkl', "rb" ) as f:
+                query_solutions = pickle.load(f)
+        except:
+            pass
+    
+    if(backgrounds):
+        try:
+            os.makedirs(directory_output)
+        except FileExistsError:
+            # Directory already exists
+            pass
     
     # Masks generation
     if(backgrounds):

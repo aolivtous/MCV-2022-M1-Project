@@ -21,11 +21,10 @@ def mask_eval_avg(dir_masks_predicted,dir_masks_solution, print_each = True, pri
         # checking if it is a file
         if f_solution.endswith('.png'):
             # Splitting the file name and getting the file name without the extension.
-            split_f = f_solution.split('\\')[-1]
-            f_name_solution = split_f.split('.')[0]
+            f_name_solution = filename.name.split('.')[0]
             f_name_solution = f_name_solution[-5:]
 
-            f_predicted = dir_masks_predicted + '/' + split_f
+            f_predicted = dir_masks_predicted + '/' + filename.name
 
             precision, recall, f1 = mask_eval(f_predicted, f_solution)
             count=count+1
