@@ -17,6 +17,8 @@ Top level directory layout\
 ├── qsd1_w1&nbsp;&nbsp;&nbsp;&nbsp;&rarr; Folder with the query1 images\
 ├── qsd2_w2&nbsp;&nbsp;&nbsp;&nbsp;&rarr; Folder with the query2 images and masks
 
+### Root file
+0. **main.py** &rarr; *python main.py (args)* to execute it
 ### Arguments:
 1. **First:** Query name &rarr; (qsd1_w1, qsd2_w1, qst1_w1, qst2_w1)
 2. **Second:** Method to search most similar painting &rarr; (1, 2)
@@ -29,9 +31,9 @@ Boolean values can be defined in several ways:
 - **False** &rarr; else
 
 #### Examples:
- - *qsd2_w1 1 2 True True*:
+ - *python main.py qsd2_w1 1 2 True True*:
    - Query 1 with method 1 to search the painting, method 2 to generate the masks, images with background and solutions available to calculate score.
- - *qst1_w2 1 1 no no*:
+ - *python main.py qst1_w2 1 1 no no*:
    - Test query 2 with method 1 to search the painting, method 1 to generate the masks, images without background and no solutions available to calculate score.
 
 **Important:** It's mandatory to define all the arguments even when they are not needed. (i.e when searching for coincidences with images without background it's necessary to include a mask method even though it's not used)
