@@ -42,8 +42,8 @@ def generate_masks(dir_query2, dir_output, plot_histograms = False):
             ret,imgt = cv2.threshold(image_gray,gray_avg,255,cv2.THRESH_BINARY_INV)
 
             # Apply close morphology operator in order denoise
-            dilation = 5
-            element = cv2.getStructuringElement(cv2.MORPH_RECT, (2*dilation+1, 2*dilation+1),(int(dilation/2), int(dilation/2)))
+            size = 5
+            element = cv2.getStructuringElement(cv2.MORPH_RECT, (2*size+1, 2*size+1))
             mask_close = cv2.morphologyEx(imgt, cv2.MORPH_CLOSE, element, iterations=10)
 
             # Save the image in dir_output

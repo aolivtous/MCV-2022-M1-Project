@@ -60,14 +60,15 @@ def get_sorted_list_of_lists(dists, distance_type):
     :return: A list of lists, where each list is the sorted list of image index results for a query.
     """
     list_of_lists = []
-    if distance_type == "eucli" or "hellin" or "chisq":
+    if distance_type == "eucli" or distance_type ==  "hellin" or distance_type == "chisq":
         reverse = False
     else:
         reverse = True
     
-    for key_query, img_query in dists.items():
-        #sort_by_value = dict(sorted(dists[key_query].items(), key=lambda item: item[1].dist)[:5])
-        sorted_list = [int(key) for key,value in sorted(dists[key_query].items(), key=lambda item: item[1].dist, reverse=reverse)]
+    # Sort dict to assure the order
+    dists = dict(sorted(dists.items(),key=lambda x:x[0]))
+    for key_query, _ in dists.items():
+        sorted_list = [int(key) for key, _ in sorted(dists[key_query].items(), key=lambda item: item[1].dist, reverse=reverse)]
         list_of_lists.append(sorted_list)
 
     return list_of_lists

@@ -6,7 +6,7 @@ class histograms:
         self.hist_ch2 = hist_ch2
         self.hist_ch3 = hist_ch3
 
-def get_histograms(directory, colorSpace, query, with_mask):
+def get_histograms(directory, output_name, colorSpace, query, with_mask):
     """
     It takes a directory, a color space, and a boolean as input and returns a dictionary of histograms
     
@@ -36,7 +36,7 @@ def get_histograms(directory, colorSpace, query, with_mask):
                 image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
             if with_mask:    
-                mask_name = os.path.join(directory, "predicted_masks/" + f_name + ".png")
+                mask_name = os.path.join(directory, output_name + "/" + f_name + ".png")
                 mask = cv2.imread(mask_name,cv2.IMREAD_GRAYSCALE)
                 if colorSpace == "HSV":
                     hist_ch1 = cv2.calcHist([image], [0], mask, [180], [0, 179])

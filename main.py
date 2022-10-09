@@ -35,8 +35,8 @@ methods_search = {
         'distance_type': 'hellin'
     },
     2: {
-        'color_code': 'RGB',
-        'distance_type': 'eucli'
+        'color_code': 'LAB',
+        'distance_type': 'intersect'
     }
 }
 
@@ -56,25 +56,27 @@ def main():
     backgrounds = True
     solutions = True
     plot_histograms = False
+    default_threshold = 95
 
     # Global variable
     base_dir = "../"
-    output_path = "/predicted_masks"
+    output_name = "predictions"
 
     # If there are not enough arguments, exit the program.
     try:
         name_query = sys.argv[1]
-        method_mask = int(sys.argv[2])
-        method_search = int(sys.argv[3])
+        method_search = int(sys.argv[2])
+        method_mask = int(sys.argv[3])
         backgrounds = bool(utils.str_to_bool(sys.argv[4]))
         solutions = bool(utils.str_to_bool(sys.argv[5]))
     except:
-        print(f'Exiting. Not enough arguments, ({len(sys.argv) - 1} of 5)')
+        print(f'Exiting. Not enough arguments ({len(sys.argv) - 1} of 5)')
         exit(1)
 
     # Directories assignment
     directory_bbdd = base_dir + name_bbdd
     directory_query = base_dir + name_query
+    output_path = "/" + output_name
     directory_output = directory_query + output_path
 
     # Arguments bound checking
@@ -89,7 +91,7 @@ def main():
         print('Exiting. Method mask must be 1 or 2')
         exit(1)
 
-    query_solutions = {}
+    query_solutions = None
     if(solutions):
         try:
             with open( directory_query + '/gt_corresps.pkl', "rb" ) as f:
@@ -97,23 +99,22 @@ def main():
         except:
             pass
     
-    if(backgrounds):
-        try:
-            os.makedirs(directory_output)
-        except FileExistsError:
-            # Directory already exists
-            pass
+    try:
+        os.makedirs(directory_output)
+    except FileExistsError:
+        # Directory already exists
+        pass
     
     # Masks generation
     if(backgrounds):
         if(method_mask == 1):
-            mask_v1.generate_masks(directory_query, directory_output, threshold_value = 95, plot_histograms = plot_histograms)
+            mask_v1.generate_masks(directory_query, directory_output, threshold_value = default_threshold, plot_histograms = plot_histograms)
         elif(method_mask == 2):
             mask_v2.generate_masks(directory_query, directory_output, plot_histograms = plot_histograms)
 
     # Generating DB and query dictionary of histograms
-    hist_query = histograms.get_histograms(directory_query, color_code, query = True , with_mask = True and backgrounds)
-    hist_bbdd = histograms.get_histograms(directory_bbdd, color_code, query = False , with_mask = False)
+    hist_query = histograms.get_histograms(directory_query, output_name, color_code, query = True , with_mask = True and backgrounds)
+    hist_bbdd = histograms.get_histograms(directory_bbdd, output_name, color_code, query = False , with_mask = False)
 
     # Calculating distances between the histograms
     dists = distances.query_measures_colour(hist_query, hist_bbdd, distance_type)
@@ -124,13 +125,20 @@ def main():
     if(solutions):
         # Algorithm evaluation
         mapk1 = scores.mapk(query_solutions, results_sorted, k = 1)
-        print(f'The map-1 score is: {mapk1}')
+        print(f'The map-1 score is: {round(mapk1, 2)}')
         mapk5 = scores.mapk(query_solutions, results_sorted, k = 5)
-        print(f'The map-5 score is: {mapk5}')
+        print(f'The map-5 score is: {round(mapk5, 2)}')
         if(backgrounds):
             mask_evaluation.mask_eval_avg(directory_output, directory_query, print_each = False, print_avg = True)
     else:
         print('No solutions given --> evaluation not avaliable.')
+    
+    # Shorten of the results lists to k=10
+    results_sorted_top = [l[:10] for l in results_sorted]
+    for idx, l in enumerate(results_sorted_top):
+        print(f'Result for image {idx}:', l)
+    with open(directory_output + '/result.pkl', 'wb') as handle:
+        pickle.dump(results_sorted_top, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 if __name__ == "__main__":
     main()
