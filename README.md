@@ -10,8 +10,8 @@
 - Use Python 3.9.13
 - Install dependencies with: *pip install -r requirements.txt*
 
-###Needed folders organization
-Top level directory layout 
+### Needed folders organization
+Top level directory layout\ 
 ├── Team5&nbsp;&nbsp;&nbsp;&nbsp;&rarr; Our repository with the code\
 ├── BBDD&nbsp;&nbsp;&nbsp;&nbsp;&rarr; Folder with the database\
 ├── qsd1_w1&nbsp;&nbsp;&nbsp;&nbsp;&rarr; Folder with the query1 images\
