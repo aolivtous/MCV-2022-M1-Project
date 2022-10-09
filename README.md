@@ -28,7 +28,7 @@ Boolean values can be defined in several ways:
 - **True** &rarr; {1, 't', 'true', 'yes'}
 - **False** &rarr; else
 
-####Examples:
+#### Examples:
  - *qsd2_w1 1 2 True True*:
    - Query 1 with method 1 to search the painting, method 2 to generate the masks, images with background and solutions available to calculate score.
  - *qst1_w2 1 1 no no*:
