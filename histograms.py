@@ -16,20 +16,13 @@ def get_histograms(directory, colorSpace, query, with_mask):
     :return: A dictionary of histograms.
     """
     hist_dict = {}
-    for filename in os.scandir(directory):
+    for filename in os.listdir(directory):
         f = os.path.join(directory, filename)
-        
         # checking if it is a file
         if f.endswith('.jpg'):
-            # Splitting the file name and getting the file name without the extension.
-            split_f = f.split('/')[-1]
-            f_name = split_f.split('.')[0]
-
-            if query:
-                f_name = f_name[-5:]
-            else:
+            f_name = filename.split('.')[0]
+            if not query:
                 f_name = f_name.split('_')[1]
-
 
             image = cv2.imread(f)
 

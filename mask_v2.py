@@ -35,7 +35,7 @@ def generate_masks(dir_query2, dir_output, plot_histograms = False):
             gray_avg = np.mean(image_gray)
             #count += 1
 
-            print(np.mean(image_gray))
+            #print(np.mean(image_gray))
 
             if plot_histograms:
                 plt.plot(hist_gray)

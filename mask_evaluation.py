@@ -54,10 +54,10 @@ def mask_eval(path_mask_predicted,path_mask_solution):
     :param path_mask_solution: the path to the ground truth mask
     :return: precision, recall, f1
     """
-    mask_predicted = cv2.imread(path_mask_predicted,0) /255
+    mask_predicted = cv2.imread(path_mask_predicted,0) / 255
     mask_predicted = mask_predicted.reshape(-1)
     
-    mask_solution = cv2.imread(path_mask_solution,0) /255
+    mask_solution = cv2.imread(path_mask_solution,0) / 255
     mask_solution = mask_solution.reshape(-1)
     
     tp = np.dot(mask_solution, mask_predicted) 
