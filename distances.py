@@ -19,6 +19,16 @@ class distances:
 # }
 
 def query_measures_colour(hist_query, hist_bbdd, distance_type):
+    """
+    It calculates the distance between the histograms of the query images and the database images
+    
+    :param hist_query: a dictionary of histograms of the query images
+    :param hist_bbdd: a dictionary of histograms of the database images
+    :param distance_type: the type of distance to use
+    :return: A dictionary of dictionaries. The first level has the keys of the query images. The
+    second level has the keys of the database images. The values of the second dictionary are the
+    distances between the query and database images.
+    """
     dists = {}
     for key_query, img_query in hist_query.items():
         dists[key_query]={}
@@ -35,20 +45,29 @@ def query_measures_colour(hist_query, hist_bbdd, distance_type):
                 dist = np.mean(np.array([dist_ch1, dist_ch2, dist_ch3]))
             dists[key_query][key_bbdd] = distances(dist)
 
-    
     return dists
 
-
-
-def get_sorted_dict(dists,distance_type):
+def get_sorted_list_of_lists(dists, distance_type):
+    """
+    It takes a dictionary of dictionaries and returns a list of lists, where each list is a sorted list
+    of the keys of the inner dictionaries
+    
+    :param dists: a dictionary of dictionaries, where the key of the outer dictionary is the query
+    image, and the key of the inner dictionary is the database image. The value of the inner dictionary
+    is an object of type Distance, which contains the distance between the query image and the database
+    image
+    :param distance_type: the type of distance metric to use.
+    :return: A list of lists, where each list is the sorted list of image index results for a query.
+    """
+    list_of_lists = []
+    if distance_type == "eucli" or "hellin" or "chisq":
+        reverse = False
+    else:
+        reverse = True
+    
     for key_query, img_query in dists.items():
         #sort_by_value = dict(sorted(dists[key_query].items(), key=lambda item: item[1].dist)[:5])
-        if distance_type == "eucli" or "hellin" or "chisq":
-            sorted_list = sorted(dists[key_query].items(), key=lambda item: item[1].dist, reverse =False)
-        else:
-            sorted_list = sorted(dists[key_query].items(), key=lambda item: item[1].dist, reverse =True)
-        for i in range(len(sorted_list)):
-            sorted_list[i] = sorted_list[i][0]
-        dists[key_query] = sorted_list
+        sorted_list = [int(key) for key,value in sorted(dists[key_query].items(), key=lambda item: item[1].dist, reverse=reverse)]
+        list_of_lists.append(sorted_list)
 
-    return dists
+    return list_of_lists

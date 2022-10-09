@@ -32,6 +32,8 @@ def apk(actual, predicted, k):
     if not actual:
         return 0.0
 
+    score = score / min(len(actual), k)
+
     return score / min(len(actual), k)
 
 def mapk(actual, predicted, k):

@@ -6,7 +6,7 @@ class histograms:
         self.hist_ch2 = hist_ch2
         self.hist_ch3 = hist_ch3
 
-def get_histograms(directory, colorSpace, notQuery, withMask):
+def get_histograms(directory, colorSpace, query, with_mask):
     """
     It takes a directory, a color space, and a boolean as input and returns a dictionary of histograms
     
@@ -25,10 +25,10 @@ def get_histograms(directory, colorSpace, notQuery, withMask):
             split_f = f.split('/')[-1]
             f_name = split_f.split('.')[0]
 
-            if notQuery:
-                f_name = f_name.split('_')[1]
-            else:
+            if query:
                 f_name = f_name[-5:]
+            else:
+                f_name = f_name.split('_')[1]
 
 
             image = cv2.imread(f)
@@ -42,17 +42,21 @@ def get_histograms(directory, colorSpace, notQuery, withMask):
             elif colorSpace == "RGB":
                 image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-            if withMask:    
+            if with_mask:    
                 mask_name = os.path.join(directory, "predicted_masks/" + f_name + ".png")
-                mask = cv2.imread(mask_name,cv2.IMREAD_GRAYSCALE)                
-                hist_ch1 = cv2.calcHist([image], [0], mask, [256], [0, 255])
+                mask = cv2.imread(mask_name,cv2.IMREAD_GRAYSCALE)
+                if colorSpace == "HSV":
+                    hist_ch1 = cv2.calcHist([image], [0], mask, [180], [0, 179])
+                else:                
+                    hist_ch1 = cv2.calcHist([image], [0], mask, [256], [0, 255])
                 hist_ch2 = cv2.calcHist([image], [1], mask, [256], [0, 255])
                 hist_ch3 = cv2.calcHist([image], [2], mask, [256], [0, 255])
-
             
             else:
-
-                hist_ch1 = cv2.calcHist([image], [0], None, [256], [0, 255])
+                if colorSpace == "HSV":
+                    hist_ch1 = cv2.calcHist([image], [0], None, [180], [0, 179])
+                else:                
+                    hist_ch1 = cv2.calcHist([image], [0], None, [256], [0, 255])
                 hist_ch2 = cv2.calcHist([image], [1], None, [256], [0, 255])
                 hist_ch3 = cv2.calcHist([image], [2], None, [256], [0, 255])
 
