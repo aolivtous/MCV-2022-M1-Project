@@ -1,27 +1,39 @@
 # Team5
-- Create a new environment
+- Anna Oliveras
+- Guillem Capellera
+- Marcos Frías
+- Àngel Herrero
+
+
+### Instalation
+- Create a new environment (Highly recommended)
 - Use Python 3.9.13
-- Install dependencies with: pip install -r requirements.txt
+- Install dependencies with: *pip install -r requirements.txt*
 
+###Needed folders organization
 Top level directory layout 
-├── Team5                   # Repository with the code
-├── BBDD                    # Folder with the database
-├── qsd1_w1                 # Folder with the query1 images
-├── qsd2_w2                 # Folder with the query2 images and masks
+├── Team5&nbsp;&nbsp;&nbsp;&nbsp;&rarr; Our repository with the code\
+├── BBDD&nbsp;&nbsp;&nbsp;&nbsp;&rarr; Folder with the database\
+├── qsd1_w1&nbsp;&nbsp;&nbsp;&nbsp;&rarr; Folder with the query1 images\
+├── qsd2_w2&nbsp;&nbsp;&nbsp;&nbsp;&rarr; Folder with the query2 images and masks
 
-True = 1, 't', 'true', 'yes'
-False = else
+### Arguments:
+1. **First:** Query name &rarr; (qsd1_w1, qsd2_w1, qst1_w1, qst2_w1)
+2. **Second:** Method to search most similar painting &rarr; (1, 2)
+3. **Third:** Method to generate the masks &rarr; (1, 2)
+4. **Four:** Images have backgrounds &rarr; (True, False)
+5. **Five:** Solutions are available (to compute scores) &rarr; (True, False)
 
-ARGUMENTS:
- First  : name query = (qsd1_w1, qsd2_w1, qst1_w1, qst2_w1)
- Second : Method to search most similar painting = (1, 2)
- Third  : Method to generate mask = (1, 2)
- Four   : Images have backgrounds = (True, False)
- Five   : Solutions are available = (True, False)
+Boolean values can be defined in several ways:
+- **True** &rarr; {1, 't', 'true', 'yes'}
+- **False** &rarr; else
 
- Examples:
- - qsd1_w1 1 1 False True --> query 1 with method 1 to generate the masks, method 1 to search the painting, with images       without background and with solutions available
- - qsd2_w1 1 1 True True
- - qst1_w1 1 1 False False
- - qst2_w2 1 1 True False
+####Examples:
+ - *qsd2_w1 1 2 True True*:
+   - Query 1 with method 1 to search the painting, method 2 to generate the masks, images with background and solutions available to calculate score.
+ - *qst1_w2 1 1 no no*:
+   - Test query 2 with method 1 to search the painting, method 1 to generate the masks, images without background and no solutions available to calculate score.
+
+**Important:** It's mandatory to define all the arguments even when they are not needed. (i.e when searching for coincidences with images without background it's necessary to include a mask method even though it's not used)
+
    
