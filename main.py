@@ -120,8 +120,8 @@ def main():
     #hist_bbdd = histograms.get_histograms(directory_bbdd, output_name, color_code, query = False , with_mask = False)
     
     #si es vol amb backgrounds, s'hauria de passar la imatge ja filtrada amb la part rectangular que volem
-    hist_query = histograms.get_block_histograms(directory_query, output_name,3, 256, query = True )
-    hist_bbdd = histograms.get_block_histograms(directory_bbdd, output_name, 3, 256, query = False )
+    hist_query = histograms.get_block_histograms(directory_query, output_name,7, 64, query = True )
+    hist_bbdd = histograms.get_block_histograms(directory_bbdd, output_name, 7, 64, query = False )
 
     # Calculating distances between the histograms
     dists = distances.query_measures_colour(hist_query, hist_bbdd, distance_type)

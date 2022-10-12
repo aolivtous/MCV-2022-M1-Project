@@ -79,12 +79,12 @@ class histograms:
 
     return hist_dict"""
 
-def get_block_histograms(directory, output_name, blockLevel, bins, query):
+def get_block_histograms(directory, output_name, n_patches, bins, query):
     
     """Calculate and concatenate histograms made from parts of the image of a particular block level
 
     :param directory: The directory where the images are stored
-    :param block level: [int] level 1: 1 histogram, level 2: 4 blocks --> 4 histograms concatenated, level 3: 16 blocks --> 16 histograms concatenated
+    :param n_patches: size of the division grid --> n*n  
     :param bins: number of bins of the histograms
     :param notQuery: If the image is a query image or not
     :return: A dictionary of histograms."""
@@ -103,7 +103,8 @@ def get_block_histograms(directory, output_name, blockLevel, bins, query):
 
             
             #spliting the image into blocks
-            n_patches = int((2**blockLevel)/2)
+            #n_patches = int((2**blockLevel)/2)
+            n_patches = int(n_patches)
             
             M = image.shape[0]//n_patches
             N = image.shape[1]//n_patches
@@ -145,7 +146,7 @@ def get_block_histograms_multiLevel(directory, output_name, blockIniLevel,blockE
     :param directory: The directory where the images are stored
     :param blockIniLevel: [int] 
     :param blockEndLevel: [int] 
-                                level 1: 1 histogram, level 2: 4 blocks --> 4 histograms concatenated, level 3: 16 blocks --> 16 histograms concatenated
+                              
     :param bins: number of bins of the histograms
     :param notQuery: If the image is a query image or not
     :return: A dictionary of histograms.
