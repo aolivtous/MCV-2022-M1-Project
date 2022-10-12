@@ -79,7 +79,7 @@ class histograms:
 
     return hist_dict"""
 
-def get_block_histograms(directory, output_name, blockLevel, bins, query):
+def get_block_histograms(directory, output_name, blockLevel, bins, query,  with_mask):
     
     """Calculate and concatenate histograms made from parts of the image of a particular block level
 
@@ -116,7 +116,6 @@ def get_block_histograms(directory, output_name, blockLevel, bins, query):
             concat_hist_ch1 = np.float32(concat_hist_ch1)
             concat_hist_ch2 = np.float32(concat_hist_ch2)
             concat_hist_ch3 = np.float32(concat_hist_ch3)
-
 
             for tile in tiles:
 
