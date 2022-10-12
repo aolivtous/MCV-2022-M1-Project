@@ -123,7 +123,6 @@ def get_block_histograms(directory, output_name, blockLevel, bins, query):
                 hist_ch1 = cv2.calcHist([tile], [0], None, [bins], [0, 255])
                 hist_ch2 = cv2.calcHist([tile], [1], None, [bins], [0, 255])
                 hist_ch3 = cv2.calcHist([tile], [2], None, [bins], [0, 255])
-
                 hist_ch1 /= hist_ch1.sum()
                 hist_ch2 /= hist_ch2.sum()
                 hist_ch3 /= hist_ch3.sum()  

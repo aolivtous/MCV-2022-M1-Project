@@ -20,6 +20,7 @@ import scores
 import mask_v1
 import mask_v2
 import mask_evaluation
+import split_images
 
 argument_relations = { 
     'corr': cv2.HISTCMP_CORREL,
@@ -107,18 +108,20 @@ def main():
     
     # Masks generation
     if(backgrounds):
+        split_images.split_images(directory_query, directory_output)
+        '''
         if(method_mask == 1):
             mask_v1.generate_masks(directory_query, directory_output, threshold_value = default_threshold, plot_histograms = plot_histograms)
         elif(method_mask == 2):
-            mask_v2.generate_masks(directory_query, directory_output, plot_histograms = plot_histograms)
+            mask_v2.generate_masks(directory_query, directory_output, plot_histograms = plot_histograms)'''
 
     # Generating DB and query dictionary of histograms
     #hist_query = histograms.get_histograms(directory_query, output_name, color_code, query = True , with_mask = True and backgrounds)
     #hist_bbdd = histograms.get_histograms(directory_bbdd, output_name, color_code, query = False , with_mask = False)
     
     #si es vol amb backgrounds, s'hauria de passar la imatge ja filtrada amb la part rectangular que volem
-    hist_query = histograms.get_block_histograms_multiLevel(directory_query, output_name,2,2, 256, query = True )
-    hist_bbdd = histograms.get_block_histograms_multiLevel(directory_bbdd, output_name, 2,2, 256, query = False )
+    hist_query = histograms.get_block_histograms(directory_query, output_name,3, 256, query = True )
+    hist_bbdd = histograms.get_block_histograms(directory_bbdd, output_name, 3, 256, query = False )
 
     # Calculating distances between the histograms
     dists = distances.query_measures_colour(hist_query, hist_bbdd, distance_type)
