@@ -120,13 +120,28 @@ def main():
     #hist_bbdd = histograms.get_histograms(directory_bbdd, output_name, color_code, query = False , with_mask = False)
     
     #si es vol amb backgrounds, s'hauria de passar la imatge ja filtrada amb la part rectangular que volem
-    hist_query = histograms.get_block_histograms(directory_query, output_name,3, 256, query = True )
-    hist_bbdd = histograms.get_block_histograms(directory_bbdd, output_name, 3, 256, query = False )
 
-    # Calculating distances between the histograms
-    dists = distances.query_measures_colour(hist_query, hist_bbdd, distance_type)
+    #Block histograms 1 level
+    #hist_query = histograms.get_block_histograms(directory_query, output_name,6, 40, query = True )
+    #hist_bbdd = histograms.get_block_histograms(directory_bbdd, output_name, 6, 40, query = False )
+
+    #Block histograms Multilevel
+    #hist_query = histograms.get_block_histograms_multiLevel(directory_query, output_name,5,7, 40, query = True )
+    #hist_bbdd = histograms.get_block_histograms_multiLevel(directory_bbdd, output_name, 5,7, 40, query = False )
+
+    #3D histograms 
+    hist_query = histograms.get_histograms3D(directory_query, output_name, 30, query = True , with_mask = True and backgrounds)
+    hist_bbdd = histograms.get_histograms3D(directory_bbdd, output_name, 30, query = False , with_mask = False)
+  
+
+    # Calculating distances between the histograms 
+    #dists = distances.query_measures_colour(hist_query, hist_bbdd, distance_type)
+
+    # Calculating distances between 3D histograms 
+    dists = distances.query_measures_colour_3D(hist_query, hist_bbdd, distance_type)
 
     # Results sorting
+
     results_sorted = distances.get_sorted_list_of_lists(dists, distance_type)
 
     if(solutions):
