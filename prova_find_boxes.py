@@ -1,7 +1,7 @@
 from main import *
 
 base_dir = '../'
-name_query='qsd1_w2/'
+name_query='qsd2_w1/'
 directory_query = base_dir + name_query
 directory_output = base_dir + 'boxes/'
 from scipy.signal import find_peaks
@@ -16,13 +16,15 @@ for filename in os.scandir(directory_query):
         f_name = filename.name.split('.')[0]
         image = cv2.imread(f,0)
         '''
+        #prova per mirar si partint la imatge en dos es mes facil. Problema: Com sabem en  quina meitat esta la box
         image_up = image[:int(len(image[:][0])/2),:]
         image_down = image[int(len(image[:][0])/2):,:]
 
         cv2.imshow('',image_down)
         cv2.waitKey(0)
 
-
+        #et diu quines son les tres intensitats mes presents, ja que usualment la box te la mateixa intensitat de fons, i t'ho segmenta en funcio d'aquestes intensitat
+        #problema: Si el quadre té una intensitat molt present, serà aquesta la predominant i no la de la boxa, pero sino funciona prou bé
         histr = cv2.calcHist([image],[0],None,[256],[0,256])
         plt.plot(histr)
         plt.show()
@@ -36,7 +38,7 @@ for filename in os.scandir(directory_query):
         for i in range(len(sorted_hist)):
             indexes.append(histr_list.index(int(sorted_hist[i])))'''
 
-
+        #ara mateix hi ha una approach que consisteix en aprofitar que la box tindra alguna linea (part sense lletres) on hi haura el mateix pixel repetit moltes vegades, pero no acaba de funcionar
         M,N = image.shape
 
  
@@ -48,7 +50,8 @@ for filename in os.scandir(directory_query):
                     image_th[i][j] = 255
                 else:
                     image_th[i][j]=0
-                '''if image[i][j] in indexes:
+                ''' #fer això si es vol l'approach de la intensitat maxima
+                if image[i][j] in indexes:
                     image_th[i][j] = 255
                 else: 
                     image_th[i][j] = 0'''

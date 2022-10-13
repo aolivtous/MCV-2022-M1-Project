@@ -14,7 +14,7 @@ def split_images(directory_query, directory_output):
             f_name = filename.name.split('.')[0]
 
             image = cv2.imread(f,0)
-            kernel = np.ones((3,3),np.uint8)
+            kernel = np.ones((2,2),np.uint8)
             image_e= cv2.erode(image,kernel,iterations = 2)
             ret,imgt = cv2.threshold(image_e,90,255,cv2.THRESH_BINARY_INV)
 
