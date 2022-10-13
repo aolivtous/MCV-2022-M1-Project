@@ -33,7 +33,11 @@ def split_images(directory_query, directory_output):
                             row_indexes.append(j)
                     if len(row_indexes) == 2:
                         one_image+=1
-                    if len(row_indexes)>2 and len(row_indexes)<6:
+                    elif len(row_indexes) == 4:
+                        two_images+=1
+                        middle = (row_indexes[1] + row_indexes[2])/2
+                        list_middles.append(middle)
+                    elif len(row_indexes)>2 and len(row_indexes)<6:
                         two_images+=1
                         middle = (row_indexes[1] + row_indexes[2])/2
                         list_middles.append(middle)

@@ -1,7 +1,7 @@
 from main import *
 
 base_dir = '../'
-name_query='qsd2_w1/'
+name_query='qsd1_w2/'
 directory_query = base_dir + name_query
 directory_output = base_dir + 'boxes/'
 from scipy.signal import find_peaks
@@ -41,12 +41,13 @@ for filename in os.scandir(directory_query):
         #ara mateix hi ha una approach que consisteix en aprofitar que la box tindra alguna linea (part sense lletres) on hi haura el mateix pixel repetit moltes vegades, pero no acaba de funcionar
         M,N = image.shape
 
- 
+        #kernel = np.ones((2,2),np.uint8)
+        #image_e= cv2.dilate(image,kernel,iterations = 5)
         image_th = np.zeros((M,N))
-        for i in range(M-1):
+        for i in range(M-11):
    
-            for j in range(N-1):
-                if image[i][j] == image[i][j+1] and image[i][j] == image[i+1][j] and image[i][j] == image[i-1][j] and image[i][j] == image[i][j-1]:
+            for j in range(N-31):
+                if image[i][j] == image[i][j+30] and image[i][j] == image[i+10][j]:# and image_e[i][j] == image_e[i-1][j] and image_e[i][j] == image_e[i][j-1]:
                     image_th[i][j] = 255
                 else:
                     image_th[i][j]=0
@@ -57,10 +58,11 @@ for filename in os.scandir(directory_query):
                     image_th[i][j] = 0'''
 
         th, image_th = cv2.threshold(image_th, 128, 255, cv2.THRESH_BINARY)
-        element = cv2.getStructuringElement(cv2.MORPH_RECT, (3,3))
-        #mask_close = cv2.morphologyEx(image_th, cv2.MORPH_OPEN, element, iterations=8)
+        element = cv2.getStructuringElement(cv2.MORPH_RECT, (2,2))
+        mask_close = cv2.morphologyEx(image_th, cv2.MORPH_OPEN, element, iterations=2)
         
         cv2.imwrite(directory_output + f_name + '.jpg',image)
-        cv2.imwrite(directory_output  + f_name + '_box'+ '.jpg', image_th)
+        cv2.imwrite(directory_output + f_name + '__eroded.jpg',image)
+        cv2.imwrite(directory_output  + f_name + '_box'+ '.jpg', mask_close)
         
 
