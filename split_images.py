@@ -14,9 +14,9 @@ def split_images(directory_query, directory_output):
             f_name = filename.name.split('.')[0]
 
             image = cv2.imread(f,0)
-            kernel = np.ones((5,5),np.uint8)
-            image= cv2.erode(image,kernel,iterations = 2)
-            ret,imgt = cv2.threshold(image,100,255,cv2.THRESH_BINARY_INV)
+            kernel = np.ones((3,3),np.uint8)
+            image_e= cv2.erode(image,kernel,iterations = 2)
+            ret,imgt = cv2.threshold(image_e,90,255,cv2.THRESH_BINARY_INV)
 
             size = 5
             element = cv2.getStructuringElement(cv2.MORPH_RECT, (2*size+1, 2*size+1))
@@ -39,12 +39,12 @@ def split_images(directory_query, directory_output):
                         list_middles.append(middle)
 
             if two_images>one_image:
-                real_middle = int(np.mean(list_middles))
+                real_middle = int(max(set(list_middles), key = list_middles.count))#int(np.mean(list_middles))
 
                 first_img = mask_close[:,:real_middle]
                 second_img = mask_close[:,real_middle:]
 
-
+                #De moment ho guardo tot per poder veure que està fent, realment només hauria de guardar les màscares dividides
                 cv2.imwrite(directory_output + f_name + '.jpg',image)
                 cv2.imwrite(directory_output  + f_name + '_maskraw'+ '.jpg', mask_close)
                 cv2.imwrite(directory_output + f_name + '_mask1' + '.jpg', first_img)

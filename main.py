@@ -77,8 +77,10 @@ def main():
     # Directories assignment
     directory_bbdd = base_dir + name_bbdd
     directory_query = base_dir + name_query
-    output_path = "/" + output_name
+    output_path = "/" + output_name + "/"
     directory_output = directory_query + output_path
+    directory_proves = base_dir + output_name
+    print(directory_proves)
 
     # Arguments bound checking
     if(method_search == 1 or method_search == 2):
@@ -108,12 +110,16 @@ def main():
     
     # Masks generation
     if(backgrounds):
-        split_images.split_images(directory_query, directory_output)
+        split_images.split_images(directory_query, directory_proves)
         '''
         if(method_mask == 1):
             mask_v1.generate_masks(directory_query, directory_output, threshold_value = default_threshold, plot_histograms = plot_histograms)
         elif(method_mask == 2):
             mask_v2.generate_masks(directory_query, directory_output, plot_histograms = plot_histograms)'''
+
+    
+
+
 
     # Generating DB and query dictionary of histograms
     #hist_query = histograms.get_histograms(directory_query, output_name, color_code, query = True , with_mask = True and backgrounds)
@@ -122,23 +128,23 @@ def main():
     #si es vol amb backgrounds, s'hauria de passar la imatge ja filtrada amb la part rectangular que volem
 
     #Block histograms 1 level
-    #hist_query = histograms.get_block_histograms(directory_query, output_name,6, 40, query = True )
-    #hist_bbdd = histograms.get_block_histograms(directory_bbdd, output_name, 6, 40, query = False )
+    hist_query = histograms.get_block_histograms(directory_query, output_name,7, 40, query = True )
+    hist_bbdd = histograms.get_block_histograms(directory_bbdd, output_name, 7, 40, query = False )
 
     #Block histograms Multilevel
     #hist_query = histograms.get_block_histograms_multiLevel(directory_query, output_name,5,7, 40, query = True )
     #hist_bbdd = histograms.get_block_histograms_multiLevel(directory_bbdd, output_name, 5,7, 40, query = False )
 
     #3D histograms 
-    hist_query = histograms.get_histograms3D(directory_query, output_name, 30, query = True , with_mask = True and backgrounds)
-    hist_bbdd = histograms.get_histograms3D(directory_bbdd, output_name, 30, query = False , with_mask = False)
+    #hist_query = histograms.get_histograms3D(directory_query, output_name, 30, query = True , with_mask = True and backgrounds)
+    #hist_bbdd = histograms.get_histograms3D(directory_bbdd, output_name, 30, query = False , with_mask = False)
   
 
     # Calculating distances between the histograms 
     #dists = distances.query_measures_colour(hist_query, hist_bbdd, distance_type)
 
     # Calculating distances between 3D histograms 
-    dists = distances.query_measures_colour_3D(hist_query, hist_bbdd, distance_type)
+    dists = distances.query_measures_colour(hist_query, hist_bbdd, distance_type)
 
     # Results sorting
 
@@ -154,7 +160,7 @@ def main():
             mask_evaluation.mask_eval_avg(directory_output, directory_query, print_each = False, print_avg = True)
     else:
         print('No solutions given --> evaluation not avaliable.')
-    
+
     # Shorten of the results lists to k=10
     results_sorted_top = [l[:10] for l in results_sorted]
     for idx, l in enumerate(results_sorted_top):
