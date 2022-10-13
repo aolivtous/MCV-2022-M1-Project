@@ -49,6 +49,35 @@ def query_measures_colour(hist_query, hist_bbdd, distance_type):
 
     return dists
 
+def query_measures_colour_3D(hist_query, hist_bbdd, distance_type):
+    """
+    It calculates the distance between the histograms of the query images and the database images
+    
+    :param hist_query: a dictionary of histograms of the query images
+    :param hist_bbdd: a dictionary of histograms of the database images
+    :param distance_type: the type of distance to use
+    :return: A dictionary of dictionaries. The first level has the keys of the query images. The
+    second level has the keys of the database images. The values of the second dictionary are the
+    distances between the query and database images.
+    """
+    
+
+    dists = {}
+    for key_query, img_query in hist_query.items():
+        dists[key_query]={}
+        for key_bbdd, img_bbdd in hist_bbdd.items():
+
+            #agafem ch1 pero en realitat en aquell argument hi ha guardat el histograma 3d dels tres canals ( no he canviat la classe histogram, que tenia 3 subhistogrames)
+            if distance_type == 'eucli':
+                dist = cv2.norm(img_query.hist_ch1, img_bbdd.hist_ch1, normType=cv2.NORM_L2)
+
+            else:
+                dist = cv2.compareHist(img_query.hist_ch1, img_bbdd.hist_ch1, main.argument_relations[distance_type])
+                
+            dists[key_query][key_bbdd] = distances(dist)
+
+    return dists
+
 def get_sorted_list_of_lists(dists, distance_type):
     """
     It takes a dictionary of dictionaries and returns a list of lists, where each list is a sorted list
