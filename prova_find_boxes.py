@@ -376,12 +376,14 @@ def prova4(base_dir,directory_query,name_query,directory_output):
             image_th = np.zeros((height, width))
             for i in range(height - 1):
                 for j in range(width - 1):
-                    if image_hsv[i][j][1] * (1/2.55) > 10 or (image_hsv[i][j][2] * (1/2.55) > 25 and image_hsv[i][j][2] * (1/2.55) < 75): # ! Provar sense or
-                        bin_image[i][j] = 255
-                    else:
+                    if image_hsv[i][j][1] * (1/2.55) > 8 or (image_hsv[i][j][2] * (1/2.55) > 40 and image_hsv[i][j][2] * (1/2.55) < 60): # ! Provar sense or
                         bin_image[i][j] = 0
+                    else:
+                        bin_image[i][j] = 255
 
-            cv2.imwrite(directory_output + f_name + '_bin.png', bin_image)
+            ret, mask = cv2.threshold(bin_image, 100, 255, cv2.THRESH_BINARY)
+            
+            cv2.imwrite(directory_output + f_name + '_bin_mask2.png', mask)
 
 # prova2(base_dir,directory_query,name_query,directory_output)
 # prova3(base_dir,directory_query,name_query,directory_output)
