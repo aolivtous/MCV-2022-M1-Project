@@ -118,9 +118,7 @@ def color_factor(image_rgb):
             gb = abs(int(image_rgb[i,j][1])-int(image_rgb[i,j][2]))
             diff += rg+rb+gb
     
-    return diff / (width*height) 
-
-
+    return diff / (width*height)
 
 def prova2(base_dir,directory_query,name_query,directory_output):
     for filename in os.scandir(directory_query):
@@ -371,6 +369,8 @@ def prova4(base_dir,directory_query,name_query,directory_output):
             image = cv2.imread(f)
             height, width, channels = image.shape
             image_hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+            image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
             bin_image = np.zeros((height, width), dtype=np.uint8)
 
             image_th = np.zeros((height, width))
@@ -381,16 +381,91 @@ def prova4(base_dir,directory_query,name_query,directory_output):
                     else:
                         bin_image[i][j] = 255
 
-            ret, mask = cv2.threshold(bin_image, 100, 255, cv2.THRESH_BINARY)
+            # ret, mask = cv2.threshold(bin_image, 100, 255, cv2.THRESH_BINARY)
+
+            element = cv2.getStructuringElement(cv2.MORPH_RECT, (30, 2))
+            bin_image_close = cv2.morphologyEx(bin_image, cv2.MORPH_CLOSE, element)
 
             retr_mode = cv2.RETR_EXTERNAL
-            contours, hierarchy = cv2.findContours(mask, retr_mode,cv2.CHAIN_APPROX_SIMPLE)
+            contours_close, hierarchy = cv2.findContours(bin_image_close, retr_mode,cv2.CHAIN_APPROX_SIMPLE)
+            contours, hierarchy = cv2.findContours(bin_image, retr_mode,cv2.CHAIN_APPROX_SIMPLE)
+
+            cv2.imshow('opening', bin_image_close)
+            cv2.waitKey(0)
+
+            contours = contours + contours_close
+            contours = contours_close
+
+            best_x, best_y, best_w, best_h, b_bl_cnt, b_tl_cnt, b_br_cnt, b_tr_cnt, min_var = 0, 0, 0, 0, 0, 0, 0, 0, 99999
+
+            image_cpy = image.copy()
+            mindiff = 1000000000
+            x_min = y_min = w_min = h_min = 0
+            for idx, cnt in enumerate(contours):
+                x, y, w, h = cv2.boundingRect(cnt)
+                
+                if w < int(width * 0.05) or h < int(height * 0.01) or h > int(height*0.5):
+                    continue
+                if h > w:
+                    continue
+                if (x + (w / 2.0) < (width /2.0) - width * 0.05) or (x + (w / 2.0) > (width / 2.0) + width * 0.05):
+                    continue
+
+                mark_red_rectangle = cv2.rectangle(image_cpy, (x, y), (x + w, y + h), (0, 0, 255), 3)
+                
+                # bl_cnt = image[y, x]
+                # tl_cnt = image[y + h - 1, x]
+                # br_cnt = image[y, x + w - 1]
+                # tr_cnt = image[y + h - 1, x + w - 1]
+
+                # color_var = np.var([bl_cnt, tl_cnt, br_cnt, tr_cnt], axis=0)
+                # print('color var:', color_var)
+                # mean_var = np.mean(color_var)
+                # print('mean var:', mean_var)
+
+                # mark_red_rectangle = cv2.rectangle(image_cpy, (x, y), (x + w, y + h), (0, 0, 255), 3)
+
+                # if idx == 0 or mean_var < min_var:
+                #     best_x = x
+                #     best_y = y
+                #     best_w = w
+                #     best_h = h
+                #     b_bl_cnt = bl_cnt
+                #     b_tl_cnt = tl_cnt
+                #     b_br_cnt = br_cnt
+                #     b_tr_cnt = tr_cnt
+                #     min_var = mean_var
+                #     print('changing mean var:', mean_var)
+                #     print('changing color bl:', bl_cnt)
+                #     print('changing color tl:', tl_cnt)
+                #     print('changing color br:', br_cnt)
+                #     print('changing color tr:', tr_cnt)
+
+                diff = color_factor(image_rgb[y:y + h, x:x + w]) # [y:y + h, x:x + w]
+                print('diff', diff)
+                print('x', x)
+                print('y', y)
+                if diff < mindiff:
+                    mindiff=diff
+                    x_min = x
+                    y_min = y
+                    w_min = w
+                    h_min = h
+                    
+            print(mindiff)
+            mark_green_rectangle = cv2.rectangle(image_cpy, (x_min, y_min), (x_min + w_min, y_min + h_min), (0, 255, 0), 3)
+
+            # print('final mean var:', min_var)
+            # print('final color bl:', b_bl_cnt)
+            # print('final color tl:', b_tl_cnt)
+            # print('final color br:', b_br_cnt)
+            # print('final color tr:', b_tr_cnt)
+            # mark_green_rectangle = cv2.rectangle(image_cpy, (best_x, best_y), (best_x + best_w, best_y + best_h), (0, 255, 0), 2)
             
-            cv2.imwrite(directory_output + f_name + '_bin_mask2.png', mask)
-
-            
-
-
+            cv2.namedWindow('output', cv2.WINDOW_NORMAL)
+            cv2.imshow('output', image_cpy)
+            cv2.waitKey(0)
+            # cv2.imwrite(directory_output + f_name + '_bin.png', bin_image)
 
 # prova2(base_dir,directory_query,name_query,directory_output)
 # prova3(base_dir,directory_query,name_query,directory_output)
