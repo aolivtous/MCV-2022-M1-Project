@@ -70,6 +70,38 @@ def prova1(base_dir,directory_query,name_query,directory_output):
 
 
 
+
+import pickle
+with open(directory_query+'text_boxes.pkl', 'rb') as f:
+    data = pickle.load(f)
+
+
+def bbox_iou(bboxA, bboxB):
+    # compute the intersection over union of two bboxes
+
+    # Format of the bboxes is [tly, tlx, bry, brx, ...], where tl and br
+    # indicate top-left and bottom-right corners of the bbox respectively.
+
+    # determine the coordinates of the intersection rectangle
+    xA = max(bboxA[1], bboxB[1])
+    yA = max(bboxA[0], bboxB[0])
+    xB = min(bboxA[3], bboxB[3])
+    yB = min(bboxA[2], bboxB[2])
+    
+    # compute the area of intersection rectangle
+    interArea = max(0, xB - xA + 1) * max(0, yB - yA + 1)
+ 
+    # compute the area of both bboxes
+    bboxAArea = (bboxA[2] - bboxA[0] + 1) * (bboxA[3] - bboxA[1] + 1)
+    bboxBArea = (bboxB[2] - bboxB[0] + 1) * (bboxB[3] - bboxB[1] + 1)
+    
+    iou = interArea / float(bboxAArea + bboxBArea - interArea)
+    
+    # return the intersection over union value
+    return iou
+
+
+
 def color_factor(image_rgb):
     height,width,channels = image_rgb.shape
     diff = 0
@@ -80,7 +112,7 @@ def color_factor(image_rgb):
             gb = abs(int(image_rgb[i,j][1])-int(image_rgb[i,j][2]))
             diff += rg+rb+gb
     
-    return diff
+    return diff / (width*height) 
 
 
 
@@ -88,7 +120,7 @@ def prova2(base_dir,directory_query,name_query,directory_output):
     for filename in os.scandir(directory_query):
         f = os.path.join(directory_query, filename)
         # checking if it is a file
-        if f.endswith('.jpg'):
+        if f.endswith('00022.jpg'):
             f_name = filename.name.split('.')[0]
             image = cv2.imread(f)
             image_rgb = cv2.imread(f)
@@ -107,11 +139,11 @@ def prova2(base_dir,directory_query,name_query,directory_output):
 
             ret, maska = cv2.threshold(a, 0 ,255, cv2.THRESH_OTSU + cv2.THRESH_BINARY_INV)
             ret, maskb = cv2.threshold(b, 0 ,255, cv2.THRESH_OTSU + cv2.THRESH_BINARY_INV)
-            '''
+            
             cv2.imshow('',maska)
             cv2.waitKey(0)
             cv2.imshow('',maskb)
-            cv2.waitKey(0)'''
+            cv2.waitKey(0)
 
             height,width,channels = image.shape
 
@@ -120,11 +152,11 @@ def prova2(base_dir,directory_query,name_query,directory_output):
             black_hat_x = cv2.morphologyEx(maska, cv2.MORPH_BLACKHAT, element, iterations=1)
             '''rect_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (18,18))
             top_hat = cv2.dilate(maska, rect_kernel, iterations = 1)'''
-            '''
+            
             cv2.imshow('top_hat x',top_hat_x)
             cv2.waitKey(0)
             cv2.imshow('black_hat x',black_hat_x)
-            cv2.waitKey(0)'''
+            cv2.waitKey(0)
 
             ''''
             element = cv2.getStructuringElement(cv2.MORPH_RECT, (2,20))
@@ -142,17 +174,19 @@ def prova2(base_dir,directory_query,name_query,directory_output):
             cv2.imshow('black_hat intersect',black_hat_intersect)
             cv2.waitKey(0)'''
 
-            element = cv2.getStructuringElement(cv2.MORPH_RECT, (5,2))
+            element = cv2.getStructuringElement(cv2.MORPH_RECT, (10,2))
             close_top_hat_x = cv2.morphologyEx(top_hat_x, cv2.MORPH_CLOSE, element)
             close_black_hat_x = cv2.morphologyEx(black_hat_x, cv2.MORPH_CLOSE, element)
-            '''
+            
             cv2.imshow('close top_hat x',close_top_hat_x)
             cv2.waitKey(0)
             cv2.imshow('close black_hat x',close_black_hat_x)
-            cv2.waitKey(0)'''
+            cv2.waitKey(0)
 
             contours_top, hierarchy_top = cv2.findContours(top_hat_x, cv2.RETR_CCOMP,cv2.CHAIN_APPROX_SIMPLE)
             contours_black, hierarchy_top = cv2.findContours(black_hat_x, cv2.RETR_CCOMP,cv2.CHAIN_APPROX_SIMPLE)
+            contours_close_top, hierarchy_top = cv2.findContours(close_top_hat_x, cv2.RETR_CCOMP,cv2.CHAIN_APPROX_SIMPLE)
+            contours_close_black, hierarchy_top = cv2.findContours(close_black_hat_x, cv2.RETR_CCOMP,cv2.CHAIN_APPROX_SIMPLE)
 
             im2 = image.copy()
             x_min = 0
@@ -161,14 +195,14 @@ def prova2(base_dir,directory_query,name_query,directory_output):
             h_min = 0
             diffmin = 1000000
             
-            contours = contours_top + contours_black 
+            contours = contours_top + contours_black + contours_close_top + contours_close_black
             
             for cnt in contours:
                 x, y, w, h = cv2.boundingRect(cnt)
                 maxmin = l[y:y + h, x:x + w].max() - l[y:y + h, x:x + w].min()
                 var = np.var(maska[y:y + h, x:x + w])
 
-                if w < width-int(width*0.1) and w > int(width*0.15) and h < int(height*0.15) and h > int(height*0.03):
+                if w < width-int(width*0.05) and w > int(width*0.15) and h < int(height*0.3) and h > int(height*0.03):
                     # Drawing a rectangle on copied image
                     #print(var)
                     #print(maxmin)
@@ -185,8 +219,13 @@ def prova2(base_dir,directory_query,name_query,directory_output):
                         w_min = w
                         h_min = h
                         
-                        
-            print(f'diffmin={diffmin}')
+            #Extendre el rectangle escollit Verd per tenir la box sencera
+            # 
+            #
+            # 
+            # 
+            # Evaluar les dues boxes amb bbox_iou()           
+            print(f'Imatge {f_name} : diffmin={diffmin}')
             rectminvar = cv2.rectangle(im2, (x_min, y_min), (x_min + w_min, y_min + h_min), (0, 255, 0), 2)
             # Cropping the text block for giving input to OCR
             cropped = image[y_min:y_min + h_min, x_min:x_min + w_min]
