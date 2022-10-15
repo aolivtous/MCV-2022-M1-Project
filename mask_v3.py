@@ -18,7 +18,7 @@ def generate_masks(dir_query2, dir_output,plot_histograms = False):
             # Splitting the file name and getting the file name without the extension.
             filename = filename.name
             image = cv2.imread(f)
-            image_lab = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+            image_lab = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
 
             l,a,b = cv2.split(image_lab)
             '''
