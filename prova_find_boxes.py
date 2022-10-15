@@ -11,7 +11,7 @@ def prova1(base_dir,directory_query,name_query,directory_output):
     for filename in os.scandir(directory_query):
         f = os.path.join(directory_query, filename)
         # checking if it is a file
-        if f.endswith('00022.jpg'):
+        if f.endswith('.jpg'):
             f_name = filename.name.split('.')[0]
             image = cv2.imread(f,0)
             '''
@@ -29,13 +29,14 @@ def prova1(base_dir,directory_query,name_query,directory_output):
             plt.show()
             histr2 = cv2.calcHist([image_up],[0],None,[256],[0,256])
             plt.plot(histr2)
-            plt.show()
+            plt.show()'''
 
-            sorted_hist = sorted(histr,reverse = True)[:3]
+            histr = cv2.calcHist([image],[0],None,[256],[0,256])
+            sorted_hist = sorted(histr,reverse = True)[:1]
             indexes = []
             histr_list=list(histr)
             for i in range(len(sorted_hist)):
-                indexes.append(histr_list.index(int(sorted_hist[i])))'''
+                indexes.append(histr_list.index(int(sorted_hist[i])))
 
             #ara mateix hi ha una approach que consisteix en aprofitar que la box tindra alguna linea (part sense lletres) on hi haura el mateix pixel repetit moltes vegades, pero no acaba de funcionar
             M,N = image.shape
@@ -43,25 +44,31 @@ def prova1(base_dir,directory_query,name_query,directory_output):
             #kernel = np.ones((2,2),np.uint8)
             #image_e= cv2.dilate(image,kernel,iterations = 5)
             image_th = np.zeros((M,N))
-            for i in range(M-11):
+            for i in range(M-1):
     
-                for j in range(N-31):
-                    if image[i][j] == image[i][j+30] and image[i][j] == image[i+10][j]:# and image_e[i][j] == image_e[i-1][j] and image_e[i][j] == image_e[i][j-1]:
+                for j in range(N-1):
+                    '''if image[i][j] == image[i][j+30] and image[i][j] == image[i+10][j]:# and image_e[i][j] == image_e[i-1][j] and image_e[i][j] == image_e[i][j-1]:
                         image_th[i][j] = 255
                     else:
-                        image_th[i][j]=0
-                    ''' #fer això si es vol l'approach de la intensitat maxima
+                        image_th[i][j]=0'''
+                     #fer això si es vol l'approach de la intensitat maxima
                     if image[i][j] in indexes:
                         image_th[i][j] = 255
                     else: 
-                        image_th[i][j] = 0'''
+                        image_th[i][j] = 0
 
             th, image_th = cv2.threshold(image_th, 128, 255, cv2.THRESH_BINARY)
             element = cv2.getStructuringElement(cv2.MORPH_RECT, (2,2))
             mask_close = cv2.morphologyEx(image_th, cv2.MORPH_OPEN, element, iterations=2)
             
-            cv2.imwrite(directory_output + f_name + '.jpg',image)
-            cv2.imwrite(directory_output + f_name + '__eroded.jpg',image)
+            try:
+                os.makedirs(directory_output)
+            except FileExistsError:
+                # Directory already exists
+                pass
+
+            cv2.imwrite(directory_output + f_name + '.jpg', image)
+            #cv2.imwrite(directory_output + f_name + '__eroded.jpg',image_th)
             cv2.imwrite(directory_output  + f_name + '_box'+ '.jpg', mask_close)
             
     return
@@ -119,7 +126,7 @@ def prova2(base_dir,directory_query,name_query,directory_output):
     for filename in os.scandir(directory_query):
         f = os.path.join(directory_query, filename)
         # checking if it is a file
-        if f.endswith('00007.jpg'):
+        if f.endswith('07.jpg'):
             f_name = filename.name.split('.')[0]
             image = cv2.imread(f)
 
@@ -138,7 +145,9 @@ def prova2(base_dir,directory_query,name_query,directory_output):
 
             ret, maska = cv2.threshold(a, 0 ,255, cv2.THRESH_OTSU + cv2.THRESH_BINARY_INV)
             ret, maskb = cv2.threshold(b, 0 ,255, cv2.THRESH_OTSU + cv2.THRESH_BINARY_INV)
-            ret, maskg = cv2.threshold(image_gray, 0 ,255, cv2.THRESH_OTSU + cv2.THRESH_BINARY_INV)
+            ret, maskg = cv2.threshold(image_gray, 0 ,255, cv2.THRESH_OTSU | cv2.THRESH_BINARY_INV)
+            ret, maskl = cv2.threshold(a, 0 ,255, cv2.THRESH_OTSU + cv2.THRESH_BINARY_INV)
+
 
             
             # cv2.imshow('mask a',maska)
@@ -155,14 +164,15 @@ def prova2(base_dir,directory_query,name_query,directory_output):
             '''rect_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (18,18))
             top_hat = cv2.dilate(maska, rect_kernel, iterations = 1)'''
             total_hat = top_hat_x + black_hat_x
-            # cv2.imshow('top_hat x',top_hat_x)
-            # cv2.waitKey(0)
-            # cv2.imshow('black_hat x',black_hat_x)
-            # cv2.waitKey(0)
+            cv2.imshow('top_hat x',top_hat_x)
+            cv2.waitKey(0)
+            cv2.imshow('black_hat x',black_hat_x)
+            cv2.waitKey(0)
             cv2.imshow('total hat ',total_hat)
             cv2.waitKey(0)
 
-            element = cv2.getStructuringElement(cv2.MORPH_RECT, (10, 10))
+            
+            element = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
             close_total = cv2.morphologyEx(total_hat, cv2.MORPH_CLOSE, element)
             cv2.imshow('close total hat ',close_total)
             cv2.waitKey(0)
@@ -198,7 +208,7 @@ def prova2(base_dir,directory_query,name_query,directory_output):
             # cv2.imshow('open black_hat x',open_black_hat_x)
             # cv2.waitKey(0)
 
-            retr_mode = cv2.RETR_TREE # cv2.RETR_CCOMP
+            retr_mode = cv2.RETR_EXTERNAL
             contours_top, hierarchy_top = cv2.findContours(top_hat_x, retr_mode,cv2.CHAIN_APPROX_SIMPLE)
             contours_black, hierarchy_top = cv2.findContours(black_hat_x, retr_mode,cv2.CHAIN_APPROX_SIMPLE)
             contours_total, hierarchy_total = cv2.findContours(total_hat, retr_mode,cv2.CHAIN_APPROX_SIMPLE)
@@ -301,10 +311,79 @@ def prova2(base_dir,directory_query,name_query,directory_output):
             # rectminvar = cv2.rectangle(image_rgb_cpy, (x_min, y_min), (x_min + w_min, y_min + h_min), (0, 255, 0), 2)
             # # Cropping the text block for giving input to OCR
             # cropped = image[y_min:y_min + h_min, x_min:x_min + w_min]
+            cv2.namedWindow('cropped', cv2.WINDOW_NORMAL)
             cv2.imshow('cropped',image_rgb_cpy)
             cv2.waitKey(0)
             cv2.destroyAllWindows()
     
     return
+
+def prova3(base_dir,directory_query,name_query,directory_output):
+    for filename in os.scandir(directory_query):
+        f = os.path.join(directory_query, filename)
+        # checking if it is a file
+        if f.endswith('.jpg'):
+            f_name = filename.name.split('.')[0]
+            image = cv2.imread(f)
+            height, width, channels = image.shape
+            image_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+            cv2.imshow('grayscale', image_gray)
+            cv2.waitKey(0)
+
+            # _, mask = cv2.threshold(image_gray, 180, 255, cv2.THRESH_OTSU) # ! Comprovar 180 i veure si es pot canbiar el thresh binary per cv2.THRESH_OTSU
+            # image_bit = cv2.bitwise_and(image_gray, image_gray, mask=mask)
+            # cv2.imshow('image bit bin thresh I', image_bit)
+            # cv2.waitKey(0)
+
+            _, image_bit = cv2.threshold(image_gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)  # for black text , cv.THRESH_BINARY_INV
+            cv2.imshow('image bit bin thresh II', image_bit)
+            cv2.waitKey(0)
+
+            element = cv2.getStructuringElement(cv2.MORPH_RECT, (9, 9))
+            # element = cv2.getStructuringElement(cv2.MORPH_CROSS, (3, 3))  # ! provar altres formes to manipulate the orientation of dilution , large x means horizonatally dilating  more, large y means vertically dilating more
+            image_dil = cv2.dilate(image_bit, element, iterations=1) # ! dilate , more the iteration more the dilation, provar altres iteracions
+            cv2.imshow('image bit dilated', image_dil)
+            cv2.waitKey(0)
             
-prova2(base_dir,directory_query,name_query,directory_output)
+            contours, _ = cv2.findContours(image_dil, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE )  # ! findContours returns 3 variables for getting contours provar algo diferent pel retr_external
+            
+            for contour in contours:
+                x, y, w, h = cv2.boundingRect(contour)
+
+                # If it's that small then it's not text
+                if w < int(width * 0.01) or h < int(height * 0.01):
+                    continue
+
+                # Rectangle drawing of the contour
+                cv2.rectangle(image, (x, y), (x + w, y + h), (0, 0, 255), 2)
+
+            cv2.imshow('text_detection_result', image)
+            cv2.waitKey()
+            cv2.destroyAllWindows()
+
+def prova4(base_dir,directory_query,name_query,directory_output):
+    for filename in os.scandir(directory_query):
+        f = os.path.join(directory_query, filename)
+        # checking if it is a file
+        if f.endswith('.jpg'):
+            f_name = filename.name.split('.')[0]
+            image = cv2.imread(f)
+            height, width, channels = image.shape
+            image_hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+            bin_image = np.zeros((height, width), dtype=np.uint8)
+
+            image_th = np.zeros((height, width))
+            for i in range(height - 1):
+                for j in range(width - 1):
+                    if image_hsv[i][j][1] * (1/2.55) > 10 or (image_hsv[i][j][2] * (1/2.55) > 25 and image_hsv[i][j][2] * (1/2.55) < 75): # ! Provar sense or
+                        bin_image[i][j] = 255
+                    else:
+                        bin_image[i][j] = 0
+
+            cv2.imwrite(directory_output + f_name + '_bin.png', bin_image)
+
+# prova2(base_dir,directory_query,name_query,directory_output)
+# prova3(base_dir,directory_query,name_query,directory_output)
+# prova1(base_dir,directory_query,name_query,directory_output)
+prova4(base_dir,directory_query,name_query,directory_output)
