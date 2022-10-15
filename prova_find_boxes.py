@@ -1,3 +1,4 @@
+from turtle import window_height
 from main import *
 
 base_dir = '../'
@@ -5,8 +6,6 @@ name_query='qsd1_w2/'
 directory_query = base_dir + name_query
 directory_output = base_dir + 'boxes/'
 #from scipy.signal import find_peaks
-import pandas as pd
-
 
 def prova1(base_dir,directory_query,name_query,directory_output):
     for filename in os.scandir(directory_query):
@@ -120,7 +119,7 @@ def prova2(base_dir,directory_query,name_query,directory_output):
     for filename in os.scandir(directory_query):
         f = os.path.join(directory_query, filename)
         # checking if it is a file
-        if f.endswith('00022.jpg'):
+        if f.endswith('00007.jpg'):
             f_name = filename.name.split('.')[0]
             image = cv2.imread(f)
             image_rgb = cv2.imread(f)
@@ -188,6 +187,7 @@ def prova2(base_dir,directory_query,name_query,directory_output):
             contours_close_top, hierarchy_top = cv2.findContours(close_top_hat_x, cv2.RETR_CCOMP,cv2.CHAIN_APPROX_SIMPLE)
             contours_close_black, hierarchy_top = cv2.findContours(close_black_hat_x, cv2.RETR_CCOMP,cv2.CHAIN_APPROX_SIMPLE)
 
+            
             im2 = image.copy()
             x_min = 0
             y_min = 0
@@ -195,29 +195,80 @@ def prova2(base_dir,directory_query,name_query,directory_output):
             h_min = 0
             diffmin = 1000000
             
+            # Angel change
+            image_rgb_cpy = image.copy()
+            best_x, best_y, best_w, best_h, b_bl_cnt, b_tl_cnt, b_br_cnt, b_tr_cnt, min_var = 0, 0, 0, 0, 0, 0, 0, 0, 99999
+
             contours = contours_top + contours_black + contours_close_top + contours_close_black
             
-            for cnt in contours:
+            for idx, cnt in enumerate(contours):
                 x, y, w, h = cv2.boundingRect(cnt)
-                maxmin = l[y:y + h, x:x + w].max() - l[y:y + h, x:x + w].min()
-                var = np.var(maska[y:y + h, x:x + w])
+                if w < int(width*0.95) and w > int(width*0.05) and h < int(height*0.3) and h > int(height*0.03):
+                    # maxmin = l[y:y + h, x:x + w].max() - l[y:y + h, x:x + w].min()
+                    # var = np.var(maska[y:y + h, x:x + w])
+                    max_val = image_rgb[y:y + h, x:x + w].max()
+                    min_val = image_rgb[y:y + h, x:x + w].min()
+                    
+                    print('x', x, 'y', y, 'w', w, 'h', h)
 
-                if w < width-int(width*0.05) and w > int(width*0.15) and h < int(height*0.3) and h > int(height*0.03):
-                    # Drawing a rectangle on copied image
-                    #print(var)
-                    #print(maxmin)
-                    rectangle = cv2.rectangle(im2, (x, y), (x + w, y + h), (0, 0, 255), 3)
+                    bl_cnt = image_rgb[y, x]
+                    tl_cnt = image_rgb[y + h - 1, x]
+                    br_cnt = image_rgb[y, x + w - 1]
+                    tr_cnt = image_rgb[y + h - 1, x + w - 1]
+                    
+                    
+                    # print('color bl:', bl_cnt)
+                    # print('color tl:', tl_cnt)
+                    # print('color br:', br_cnt)
+                    # print('color tr:', tr_cnt)
 
-                    cropped = image_rgb[y:y + h, x:x + w]
-                    diff = color_factor(cropped)
-                    print(f'diff={diff}')
+                    color_var = np.var([bl_cnt, tl_cnt, br_cnt, tr_cnt], axis=0)
+                    print('color var:', color_var)
+                    mean_var = np.mean(color_var)
+                    print('mean var:', mean_var)
 
-                    if diff < diffmin:
-                        diffmin=diff
-                        x_min = x
-                        y_min = y
-                        w_min = w
-                        h_min = h
+                    mark_red_rectangle = cv2.rectangle(image_rgb_cpy, (x, y), (x + w, y + h), (0, 0, 255), 3)
+
+                    if idx == 0 or mean_var < min_var:
+                        best_x = x
+                        best_y = y
+                        best_w = w
+                        best_h = h
+                        b_bl_cnt = bl_cnt
+                        b_tl_cnt = tl_cnt
+                        b_br_cnt = br_cnt
+                        b_tr_cnt = tr_cnt
+                        min_var = mean_var
+                        print('changing mean var:', mean_var)
+                        print('changing color bl:', bl_cnt)
+                        print('changing color tl:', tl_cnt)
+                        print('changing color br:', br_cnt)
+                        print('changing color tr:', tr_cnt)
+
+            print('final mean var:', mean_var)
+            print('final color bl:', b_bl_cnt)
+            print('final color tl:', b_tl_cnt)
+            print('final color br:', b_br_cnt)
+            print('final color tr:', b_tr_cnt)
+            mark_green_rectangle = cv2.rectangle(image_rgb_cpy, (best_x, best_y), (best_x + best_w, best_y + best_h), (0, 255, 0), 2)
+
+                # if w < width-int(width*0.05) and w > int(width*0.15) and h < int(height*0.3) and h > int(height*0.03):
+                #     # Drawing a rectangle on copied image
+                #     #print(var)
+                #     #print(maxmin)
+                #     rectangle = cv2.rectangle(im2, (x, y), (x + w, y + h), (0, 0, 255), 3)
+
+                #     cropped = image_rgb[y:y + h, x:x + w]
+                #     diff = color_factor(cropped)
+                #     print(f'diff={diff}')
+
+                #     if diff < diffmin:
+                #         diffmin=diff
+                #         x_min = x
+                #         y_min = y
+                #         w_min = w
+                #         h_min = h
+
                         
             #Extendre el rectangle escollit Verd per tenir la box sencera
             # 
@@ -225,16 +276,16 @@ def prova2(base_dir,directory_query,name_query,directory_output):
             # 
             # 
             # Evaluar les dues boxes amb bbox_iou()           
-            print(f'Imatge {f_name} : diffmin={diffmin}')
-            rectminvar = cv2.rectangle(im2, (x_min, y_min), (x_min + w_min, y_min + h_min), (0, 255, 0), 2)
-            # Cropping the text block for giving input to OCR
-            cropped = image[y_min:y_min + h_min, x_min:x_min + w_min]
-            cv2.imshow('cropped',im2)
+            # print(f'Imatge {f_name} : diffmin={diffmin}')
+            # rectminvar = cv2.rectangle(image_rgb_cpy, (x_min, y_min), (x_min + w_min, y_min + h_min), (0, 255, 0), 2)
+            # # Cropping the text block for giving input to OCR
+            # cropped = image[y_min:y_min + h_min, x_min:x_min + w_min]
+            cv2.imshow('cropped',image_rgb_cpy)
             cv2.waitKey(0)
  
             cv2.destroyAllWindows()
 
             
     return
-
+            
 prova2(base_dir,directory_query,name_query,directory_output)
