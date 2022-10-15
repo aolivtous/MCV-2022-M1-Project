@@ -382,8 +382,15 @@ def prova4(base_dir,directory_query,name_query,directory_output):
                         bin_image[i][j] = 255
 
             ret, mask = cv2.threshold(bin_image, 100, 255, cv2.THRESH_BINARY)
+
+            retr_mode = cv2.RETR_EXTERNAL
+            contours, hierarchy = cv2.findContours(mask, retr_mode,cv2.CHAIN_APPROX_SIMPLE)
             
             cv2.imwrite(directory_output + f_name + '_bin_mask2.png', mask)
+
+            
+
+
 
 # prova2(base_dir,directory_query,name_query,directory_output)
 # prova3(base_dir,directory_query,name_query,directory_output)
