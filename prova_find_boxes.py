@@ -122,12 +122,12 @@ def prova2(base_dir,directory_query,name_query,directory_output):
         if f.endswith('00007.jpg'):
             f_name = filename.name.split('.')[0]
             image = cv2.imread(f)
-            image_rgb = cv2.imread(f)
 
-            cv2.cvtColor(image_rgb, cv2.COLOR_BGR2RGB)
+            image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+            image_lab = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
+            image_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-            cv2.cvtColor(image,cv2.COLOR_BGR2LAB)
-            l,a,b = cv2.split(image)
+            l,a,b = cv2.split(image_lab)
             '''
             cv2.imshow('',l)
             cv2.waitKey(0)
@@ -138,23 +138,33 @@ def prova2(base_dir,directory_query,name_query,directory_output):
 
             ret, maska = cv2.threshold(a, 0 ,255, cv2.THRESH_OTSU + cv2.THRESH_BINARY_INV)
             ret, maskb = cv2.threshold(b, 0 ,255, cv2.THRESH_OTSU + cv2.THRESH_BINARY_INV)
-            
-            cv2.imshow('',maska)
-            cv2.waitKey(0)
-            cv2.imshow('',maskb)
-            cv2.waitKey(0)
+            ret, maskg = cv2.threshold(image_gray, 0 ,255, cv2.THRESH_OTSU + cv2.THRESH_BINARY_INV)
 
+            
+            # cv2.imshow('mask a',maska)
+            # cv2.waitKey(0)
+            cv2.imshow('mask b',maskg)
+            cv2.waitKey(0)
+            # cv2.imshow('mask gray',maskg)
+            # cv2.waitKey(0)
             height,width,channels = image.shape
 
-            element = cv2.getStructuringElement(cv2.MORPH_RECT, (int(width*0.10),2))
-            top_hat_x = cv2.morphologyEx(maska, cv2.MORPH_TOPHAT, element, iterations=1)
-            black_hat_x = cv2.morphologyEx(maska, cv2.MORPH_BLACKHAT, element, iterations=1)
+            element = cv2.getStructuringElement(cv2.MORPH_RECT, (2,2))
+            top_hat_x = cv2.morphologyEx(maskg, cv2.MORPH_TOPHAT, element, iterations=5)
+            black_hat_x = cv2.morphologyEx(maskg, cv2.MORPH_BLACKHAT, element, iterations=5)
             '''rect_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (18,18))
             top_hat = cv2.dilate(maska, rect_kernel, iterations = 1)'''
-            
-            cv2.imshow('top_hat x',top_hat_x)
+            total_hat = top_hat_x + black_hat_x
+            # cv2.imshow('top_hat x',top_hat_x)
+            # cv2.waitKey(0)
+            # cv2.imshow('black_hat x',black_hat_x)
+            # cv2.waitKey(0)
+            cv2.imshow('total hat ',total_hat)
             cv2.waitKey(0)
-            cv2.imshow('black_hat x',black_hat_x)
+
+            element = cv2.getStructuringElement(cv2.MORPH_RECT, (10, 10))
+            close_total = cv2.morphologyEx(total_hat, cv2.MORPH_CLOSE, element)
+            cv2.imshow('close total hat ',close_total)
             cv2.waitKey(0)
 
             ''''
@@ -173,20 +183,30 @@ def prova2(base_dir,directory_query,name_query,directory_output):
             cv2.imshow('black_hat intersect',black_hat_intersect)
             cv2.waitKey(0)'''
 
-            element = cv2.getStructuringElement(cv2.MORPH_RECT, (10,2))
-            close_top_hat_x = cv2.morphologyEx(top_hat_x, cv2.MORPH_CLOSE, element)
-            close_black_hat_x = cv2.morphologyEx(black_hat_x, cv2.MORPH_CLOSE, element)
-            
-            cv2.imshow('close top_hat x',close_top_hat_x)
-            cv2.waitKey(0)
-            cv2.imshow('close black_hat x',close_black_hat_x)
-            cv2.waitKey(0)
+            # element = cv2.getStructuringElement(cv2.MORPH_RECT, (10,2))
+            # close_top_hat_x = cv2.morphologyEx(top_hat_x, cv2.MORPH_CLOSE, element)
+            # close_black_hat_x = cv2.morphologyEx(black_hat_x, cv2.MORPH_CLOSE, element)
+            # open_top_hat_x = cv2.morphologyEx(top_hat_x, cv2.MORPH_OPEN, element)
+            # open_black_hat_x = cv2.morphologyEx(black_hat_x, cv2.MORPH_OPEN, element)
 
-            contours_top, hierarchy_top = cv2.findContours(top_hat_x, cv2.RETR_CCOMP,cv2.CHAIN_APPROX_SIMPLE)
-            contours_black, hierarchy_top = cv2.findContours(black_hat_x, cv2.RETR_CCOMP,cv2.CHAIN_APPROX_SIMPLE)
-            contours_close_top, hierarchy_top = cv2.findContours(close_top_hat_x, cv2.RETR_CCOMP,cv2.CHAIN_APPROX_SIMPLE)
-            contours_close_black, hierarchy_top = cv2.findContours(close_black_hat_x, cv2.RETR_CCOMP,cv2.CHAIN_APPROX_SIMPLE)
+            # cv2.imshow('close top_hat x',close_top_hat_x)
+            # cv2.waitKey(0)
+            # cv2.imshow('close black_hat x',close_black_hat_x)
+            # cv2.waitKey(0)
+            # cv2.imshow('open top_hat x',open_top_hat_x)
+            # cv2.waitKey(0)
+            # cv2.imshow('open black_hat x',open_black_hat_x)
+            # cv2.waitKey(0)
 
+            retr_mode = cv2.RETR_TREE # cv2.RETR_CCOMP
+            contours_top, hierarchy_top = cv2.findContours(top_hat_x, retr_mode,cv2.CHAIN_APPROX_SIMPLE)
+            contours_black, hierarchy_top = cv2.findContours(black_hat_x, retr_mode,cv2.CHAIN_APPROX_SIMPLE)
+            contours_total, hierarchy_total = cv2.findContours(total_hat, retr_mode,cv2.CHAIN_APPROX_SIMPLE)
+            contours_total_close, hierarchy_total = cv2.findContours(close_total, retr_mode,cv2.CHAIN_APPROX_SIMPLE)
+            # contours_close_top, hierarchy_top = cv2.findContours(close_top_hat_x, cv2.RETR_CCOMP,cv2.CHAIN_APPROX_SIMPLE)
+            # contours_close_black, hierarchy_top = cv2.findContours(close_black_hat_x, cv2.RETR_CCOMP,cv2.CHAIN_APPROX_SIMPLE)
+            # contours_open_top, hierarchy_top = cv2.findContours(open_top_hat_x, cv2.RETR_CCOMP,cv2.CHAIN_APPROX_SIMPLE)
+            # contours_open_black, hierarchy_top = cv2.findContours(open_black_hat_x, cv2.RETR_CCOMP,cv2.CHAIN_APPROX_SIMPLE)
             
             im2 = image.copy()
             x_min = 0
@@ -199,11 +219,12 @@ def prova2(base_dir,directory_query,name_query,directory_output):
             image_rgb_cpy = image.copy()
             best_x, best_y, best_w, best_h, b_bl_cnt, b_tl_cnt, b_br_cnt, b_tr_cnt, min_var = 0, 0, 0, 0, 0, 0, 0, 0, 99999
 
-            contours = contours_top + contours_black + contours_close_top + contours_close_black
-            
+            contours = contours_top + contours_black + contours_total#+ contours_close_top + contours_close_black + contours_open_top + contours_open_black
+            contours = contours_total + contours_total_close
+
             for idx, cnt in enumerate(contours):
                 x, y, w, h = cv2.boundingRect(cnt)
-                if w < int(width*0.95) and w > int(width*0.05) and h < int(height*0.3) and h > int(height*0.03):
+                if w < int(width*0.99) and w > int(width*0.02) and h < int(height*0.4) and h > int(height*0.02):
                     # maxmin = l[y:y + h, x:x + w].max() - l[y:y + h, x:x + w].min()
                     # var = np.var(maska[y:y + h, x:x + w])
                     max_val = image_rgb[y:y + h, x:x + w].max()
@@ -245,7 +266,7 @@ def prova2(base_dir,directory_query,name_query,directory_output):
                         print('changing color br:', br_cnt)
                         print('changing color tr:', tr_cnt)
 
-            print('final mean var:', mean_var)
+            print('final mean var:', min_var)
             print('final color bl:', b_bl_cnt)
             print('final color tl:', b_tl_cnt)
             print('final color br:', b_br_cnt)
@@ -282,10 +303,8 @@ def prova2(base_dir,directory_query,name_query,directory_output):
             # cropped = image[y_min:y_min + h_min, x_min:x_min + w_min]
             cv2.imshow('cropped',image_rgb_cpy)
             cv2.waitKey(0)
- 
             cv2.destroyAllWindows()
-
-            
+    
     return
             
 prova2(base_dir,directory_query,name_query,directory_output)
