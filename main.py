@@ -22,6 +22,7 @@ import mask_v2
 import mask_v3
 import mask_evaluation
 import split_images
+import find_boxes
 
 argument_relations = { 
     'corr': cv2.HISTCMP_CORREL,
@@ -105,6 +106,11 @@ def main():
         except:
             pass
     
+    with open(directory_query+'text_boxes.pkl', 'rb') as f:
+        data = pickle.load(f)
+    
+    print(data)
+    
     try:
         os.makedirs(directory_output)
     except FileExistsError:
@@ -123,6 +129,9 @@ def main():
             mask_v3.generate_masks(directory_query, directory_output)
 
     
+    if(boundingbox):
+        coord_boxes = find_boxes.find_boxes(directory_query, directory_output, printbox = False)
+        iou = find_boxes.bbox_iou(co)
 
 
     # Generating DB and query dictionary of histograms

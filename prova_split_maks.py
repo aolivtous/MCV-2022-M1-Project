@@ -2,7 +2,7 @@ from main import *
 
 # Default arguments
 name_bbdd = 'BBDD'
-name_query = 'provamask'
+name_query = 'qsd2_w2'
 method_search = 1
 color_code = "LAB" # ["RGB", "HSV", "LAB", "YCrCb"]
 distance_type = 'hellin' # Possible arguments of distance_type at argument_relations

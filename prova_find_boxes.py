@@ -365,7 +365,7 @@ def prova4(base_dir,directory_query,name_query,directory_output):
     for filename in os.scandir(directory_query):
         f = os.path.join(directory_query, filename)
         # checking if it is a file
-        if f.endswith('.jpg'):
+        if f.endswith('10.jpg'):
             f_name = filename.name.split('.')[0]
             image = cv2.imread(f)
             height, width, channels = image.shape
@@ -396,14 +396,14 @@ def prova4(base_dir,directory_query,name_query,directory_output):
             element = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
             bin_image_close_close = cv2.morphologyEx(bin_image_close_close, cv2.MORPH_OPEN, element)
 
-            bin_image[:,0:2]=0
-            bin_image[:,-2:]=0
-            bin_image[0:2,:]=0
-            bin_image[-2:,:]=0
-            bin_image_close[:,0:2]=0
-            bin_image_close[:,-2:]=0
-            bin_image_close[0:2,:]=0
-            bin_image_close[-2:,:]=0
+            # bin_image[:,0:2]=0
+            # bin_image[:,-2:]=0
+            # bin_image[0:2,:]=0
+            # bin_image[-2:,:]=0
+            # bin_image_close[:,0:2]=0
+            # bin_image_close[:,-2:]=0
+            # bin_image_close[0:2,:]=0
+            # bin_image_close[-2:,:]=0
 
             retr_mode = cv2.RETR_EXTERNAL
             contours_close, hierarchy = cv2.findContours(bin_image_close, retr_mode,cv2.CHAIN_APPROX_SIMPLE)
@@ -475,19 +475,19 @@ def prova4(base_dir,directory_query,name_query,directory_output):
                     w_min = w
                     h_min = h
 
-            # Extensió del rectangle 
-            # tol = 2
-            # while abs(int(image_hsv[y_min + h_min, x_min][0]) - int(image_hsv[y_min + h_min +1, x_min][0])) and (image_hsv[y_min + h_min, x_min][0]<25 orimage_hsv[y_min + h_min, x_min][0]>240)< tol :
-            #     h_min = h_min + 1
+            #Extensió del rectangle 
+            tol = 10
+            while abs(int(image_hsv[y_min + h_min, x_min][1]) - int(image_hsv[y_min + h_min +1, x_min][1])) < tol and (image_hsv[y_min + h_min, x_min][2]<50 or image_hsv[y_min + h_min, x_min][2]>200) :
+                h_min = h_min + 1
             
-            # while abs(int(image_hsv[y_min + h_min, x_min][0]) - int(image_hsv[y_min + h_min, x_min - 1][0])) < tol :
-            #     x_min = x_min - 1
+            while abs(int(image_hsv[y_min + h_min, x_min][1]) - int(image_hsv[y_min + h_min, x_min - 1][1])) < tol and (image_hsv[y_min + h_min, x_min][2]<50 or image_hsv[y_min + h_min, x_min][2]>200) :
+                x_min = x_min - 1
 
-            # while abs(int(image_hsv[y_min, x_min + w_min][0]) - int(image_hsv[y_min, x_min + w_min + 1][0])) < tol :
-            #     w_min = w_min + 1
+            while abs(int(image_hsv[y_min, x_min + w_min][1]) - int(image_hsv[y_min, x_min + w_min + 1][1])) < tol and (image_hsv[y_min, x_min + w_min][2]<50 or image_hsv[y_min, x_min + w_min][2]>200):
+                w_min = w_min + 1
             
-            # while abs(int(image_hsv[y_min, x_min + w_min][0]) - int(image_hsv[y_min - 1 , x_min + w_min][0])) < tol :
-            #     y_min = y_min - 1
+            while abs(int(image_hsv[y_min, x_min + w_min][1]) - int(image_hsv[y_min - 1 , x_min + w_min][1])) < tol and (image_hsv[y_min, x_min + w_min][2]<50 or image_hsv[y_min, x_min + w_min][2]>200):
+                y_min = y_min - 1
 
                 
             print(mindiff)
@@ -503,6 +503,7 @@ def prova4(base_dir,directory_query,name_query,directory_output):
             # cv2.namedWindow('output', cv2.WINDOW_NORMAL)
             # cv2.imshow('output', image_cpy)
             # cv2.waitKey(0)
+            
             cv2.imwrite(directory_output + f_name + '_bin.png', bin_image)
             cv2.imwrite(directory_output + f_name + '_bin_close.png', bin_image_close)
             cv2.imwrite(directory_output + f_name + '_bin_close_close.png', bin_image_close_close)
