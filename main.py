@@ -144,9 +144,9 @@ def main():
     if(boundingbox):
         bbox_result, coord_results = find_boxes.find_boxes(directory_query, directory_output, printbox = True)
         if(solutions):
-            iou = find_boxes.find_boxes_eval(bbox_result, boxes_solutions)
+            iou = find_boxes.find_boxes_eval(coord_results, boxes_solutions)
             print(f'Mean IoU = {sum(iou)/len(iou)}')
-    
+
     # Generating DB and query dictionary of histograms
     #hist_query = histograms.get_histograms(directory_query, output_name, color_code, query = True , with_mask = True and backgrounds)
     #hist_bbdd = histograms.get_histograms(directory_bbdd, output_name, color_code, query = False , with_mask = False)
