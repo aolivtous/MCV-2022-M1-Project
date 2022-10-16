@@ -8,3 +8,9 @@ def str_to_bool(v):
     :return: A boolean value.
     """
     return str(v).lower() in ("yes", "true", "t", "1")
+
+def refine_results(results):
+    new_list = []
+    for result in results:
+        new_list.append([result[:10]])
+    return new_list

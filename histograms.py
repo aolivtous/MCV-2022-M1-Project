@@ -99,6 +99,7 @@ def get_block_histograms(directory, directory_output, n_patches, bins, query):
                 f_name = f_name.split('_')[1]
 
             #print('name', f_name)
+            f = directory + '/' + filename.name
 
             image = cv2.imread(f)
             image = cv2.cvtColor(image, cv2.COLOR_BGR2Lab) 
@@ -106,6 +107,12 @@ def get_block_histograms(directory, directory_output, n_patches, bins, query):
             if(query):
                 box_mask = cv2.imread(directory_output + '/' + f_name + '_bin_box.png', cv2.IMREAD_GRAYSCALE)
                 th, box_mask = cv2.threshold(box_mask, 128, 255, cv2.THRESH_BINARY)
+                mask = cv2.imread(directory_output + '/' + f_name + '_mask.png', cv2.IMREAD_GRAYSCALE)
+                th, mask = cv2.threshold(box_mask, 128, 255, cv2.THRESH_BINARY)
+                # add masks
+                mask = 255*(mask + box_mask)
+                mask = mask.clip(0, 255).astype("uint8")
+                      
             
             #spliting the image into blocks
             #n_patches = int((2**blockLevel)/2)
@@ -116,7 +123,7 @@ def get_block_histograms(directory, directory_output, n_patches, bins, query):
 
             tiles = [image[x:x+M,y:y+N] for x in range(0,image.shape[0]-image.shape[0]%n_patches,M) for y in range(0,image.shape[1]-image.shape[1]%n_patches,N)]
             if(query):
-                tiles_mask = [box_mask[x:x+M,y:y+N] for x in range(0,box_mask.shape[0]-box_mask.shape[0]%n_patches,M) for y in range(0,box_mask.shape[1]-box_mask.shape[1]%n_patches,N)]
+                tiles_mask = [mask[x:x+M,y:y+N] for x in range(0,mask.shape[0]-mask.shape[0]%n_patches,M) for y in range(0,mask.shape[1]-mask.shape[1]%n_patches,N)]
             
             concat_hist_ch1 = []
             concat_hist_ch2 = []
@@ -136,6 +143,7 @@ def get_block_histograms(directory, directory_output, n_patches, bins, query):
                     hist_ch1 = cv2.calcHist([tile], [0], None, [bins], [0, 255])
                     hist_ch2 = cv2.calcHist([tile], [1], None, [bins], [0, 255])
                     hist_ch3 = cv2.calcHist([tile], [2], None, [bins], [0, 255])
+                    
                 hist_ch1 /= hist_ch1.sum()
                 hist_ch2 /= hist_ch2.sum()
                 hist_ch3 /= hist_ch3.sum()

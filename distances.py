@@ -123,7 +123,9 @@ def get_sorted_list_of_lists(dists, distance_type):
     # Sort dict to assure the order
     dists = dict(sorted(dists.items(),key=lambda x:x[0]))
     for key_query, _ in dists.items():
+        print('key query', key_query)
         sorted_list = [int(key) for key, _ in sorted(dists[key_query].items(), key=lambda item: item[1].dist, reverse=reverse)]
+        print('sorted_list', sorted_list)
         list_of_lists.append(sorted_list)
 
     return list_of_lists

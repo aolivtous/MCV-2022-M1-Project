@@ -15,17 +15,31 @@ def color_factor(image_rgb):
     return diff / (width*height)
 
 
-def find_boxes(directory_query,directory_output, printbox=False):
+def find_boxes(directory_query, directory_output, printbox=False):
     bbox_output = []
+    aux_bbox_output = []
     result = []
+    aux_result = []
+    last_part = ''
+    is_part = False
+    part_name = ''
     for filename in os.scandir(directory_query):
         f = os.path.join(directory_query, filename)
         # checking if it is a file
         if f.endswith('.jpg'):
+            
             f_name = filename.name.split('.')[0]
+            f = directory_query + '/' + filename.name
+            
             print('finding boxes at:', f_name)
             image = cv2.imread(f)
-            height, width, channels = image.shape
+            try:
+                height, width, channels = image.shape
+            except:
+                print(f_name)
+                print(f)
+                cv2.imshow('test', image)
+                cv2.waitKey(0)
             image_hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
             image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
@@ -159,11 +173,19 @@ def find_boxes(directory_query,directory_output, printbox=False):
             #th, box_mask_bi = cv2.threshold(box_mask, 128, 255, cv2.THRESH_BINARY)
             cv2.imwrite(directory_output + '/' + f_name + '_bin_box.png', box_mask)
 
-            result.append([x_min, y_min, x_min+w_min, y_min+h_min])   
-            bbox_output.append([np.array([x_min, y_min]),np.array([x_min, y_min + h_min]),np.array([x_min + w_min, y_min + h_min]),np.array([x_min + w_min, y_min])])
+            if(is_part):
+                aux_result.append([x_min, y_min, x_min+w_min, y_min+h_min])
+                aux_bbox_output.append([np.array([x_min, y_min]),np.array([x_min, y_min + h_min]),np.array([x_min + w_min, y_min + h_min]),np.array([x_min + w_min, y_min])])
+                if f_name.endswith('1'):
+                    result.append(aux_result)   
+                    bbox_output.append(aux_bbox_output)
+                    aux_result = []
+                    aux_bbox_output = []
 
+            result.append([[x_min, y_min, x_min+w_min, y_min+h_min]])   
+            bbox_output.append([[np.array([x_min, y_min]),np.array([x_min, y_min + h_min]),np.array([x_min + w_min, y_min + h_min]),np.array([x_min + w_min, y_min])]])
           
-    return bbox_output
+    return bbox_output, result
 
 
 
@@ -197,7 +219,8 @@ def find_boxes_eval(list_bbox_prediction, list_bbox_solution):
     # for i in range(len(list_bbox_prediction)):
     #     print('image', i, 'pred', list_bbox_prediction[i])
     for i in range(len(list_bbox_prediction)):
-        iou = bbox_iou(list_bbox_prediction[i], list_bbox_solution[i][0])
-        iou_list.append(iou)
-        print(f'iou of image{i}: {iou}')
+        for j in range(len(list_bbox_prediction[i])):
+            iou = bbox_iou(list_bbox_prediction[i][j], list_bbox_solution[i][j])
+            iou_list.append(iou)
+            print(f'iou of image {i} part {j}: {iou}')
     return iou_list

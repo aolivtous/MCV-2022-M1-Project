@@ -101,20 +101,17 @@ def main():
         print('Exiting. Method mask must be 1 or 2')
         exit(1)
 
-    query_solutions = None
+    query_solutions = boxes_solutions = None
     if(solutions):
         try:
             with open( directory_query + '/gt_corresps.pkl', "rb" ) as f:
                 query_solutions = pickle.load(f)
+            with open(directory_query + '/text_boxes.pkl', 'rb') as f:
+                boxes_solutions = pickle.load(f)
         except:
             pass
     
-    with open(directory_query + '/text_boxes.pkl', 'rb') as f:
-        boxes_solutions = pickle.load(f)
-    
-    
-    for i, bsol in enumerate(boxes_solutions):
-        print('i', i, 'solution', bsol)
+   
 
     try:
         os.makedirs(directory_output)
@@ -123,7 +120,7 @@ def main():
         pass
     
     try:
-        os.makedirs(directory_masks_q2)
+        os.makedirs(directory_masks)
     except FileExistsError:
         # Directory already exists
         pass
@@ -140,20 +137,16 @@ def main():
         except FileExistsError:
             # Directory already exists
             pass
-        split_images.split_images1(directory_query,directory_masks, directory_split)
-       
+        split_images.split_images1(directory_query, directory_masks, directory_split)
+        directory_query = directory_split
+
+        
     if(boundingbox):
-        if(splitimage):
-            coord_boxes = find_boxes.find_boxes(directory_split, directory_output, name_query, printbox = True)
-            iou = find_boxes.find_boxes_eval(coord_boxes, boxes_solutions)
-
-        else:
-
-    hist_query = histograms.get_block_histograms(directory_query, directory_output, 7, 40, query = True )
-    hist_bbdd = histograms.get_block_histograms(directory_bbdd, directory_output, 7, 40, query = False )
-
-
-
+        bbox_result, coord_results = find_boxes.find_boxes(directory_query, directory_output, printbox = True)
+        if(solutions):
+            iou = find_boxes.find_boxes_eval(bbox_result, boxes_solutions)
+            print(f'Mean IoU = {sum(iou)/len(iou)}')
+    
     # Generating DB and query dictionary of histograms
     #hist_query = histograms.get_histograms(directory_query, output_name, color_code, query = True , with_mask = True and backgrounds)
     #hist_bbdd = histograms.get_histograms(directory_bbdd, output_name, color_code, query = False , with_mask = False)
@@ -179,8 +172,9 @@ def main():
     # Calculating distances between 3D histograms 
     dists = distances.query_measures_colour(hist_query, hist_bbdd, distance_type)
     # Results sorting
-
     results_sorted = distances.get_sorted_list_of_lists(dists, distance_type)
+    # Results refining
+    results_refined = utils.refine_results(results_sorted)
 
     if(solutions):
         # Algorithm evaluation
@@ -193,12 +187,17 @@ def main():
     else:
         print('No solutions given --> evaluation not avaliable.')
 
-    # Shorten of the results lists to k=10
-    results_sorted_top = [l[:10] for l in results_sorted]
-    for idx, l in enumerate(results_sorted_top):
+    # # Shorten of the results lists to k=10
+    # results_sorted_top = [l[:10] for l in results_sorted]
+    for idx, l in enumerate(results_refined):
         print(f'Result for image {idx}:', l)
     with open(directory_output + '/result.pkl', 'wb') as handle:
-        pickle.dump(results_sorted_top, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        print('results', results_refined)
+        pickle.dump(results_refined, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    
+    with open(directory_output + '/text_boxes.pkl', 'wb') as handle:
+        print('text_boxes', coord_results)
+        pickle.dump(coord_results, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 if __name__ == "__main__":
     main()
