@@ -6,62 +6,27 @@ from main import *
 # then thresholds it. It then creates a mask_close and checks if there are two images or one image. If
 # there are two images, it splits the image and saves the images in the directory_output. If there is
 # only one image, it saves the image in the directory_output.
-def split_images1(directory_query, directory_output):
+def split_images1(directory_query, directory_masks_q2, directory_output):
     for filename in os.scandir(directory_query):
         f = os.path.join(directory_query, filename)
         # checking if it is a file
         if f.endswith('.jpg'):
             f_name = filename.name.split('.')[0]
+            image = cv2.imread(f)
 
-            image = cv2.imread(f,0)
-            image_aux = cv2.imread(f)
-            kernel = np.ones((2,2),np.uint8)
-            image_e= cv2.erode(image,kernel,iterations = 2)
-            a,imgt = cv2.threshold(image_e, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
-            
-            size = 5
-            element = cv2.getStructuringElement(cv2.MORPH_RECT, (2*size+1, 2*size+1))
-            mask_close = cv2.morphologyEx(imgt, cv2.MORPH_CLOSE, element, iterations=5)
+            m = os.path.join(directory_masks_q2 + '/' + f_name + '.png')
+            mask = cv2.imread(m,0)
 
-            mask_close[:,0:2]=0
-            mask_close[:,-2:]=0
-            mask_close[0:2,:]=0
-            mask_close[-2:,:]=0
-            mask_close[:,0:2]=0
-            mask_close[:,-2:]=0
-            mask_close[0:2,:]=0
-            mask_close[-2:,:]=0
 
-            retr_mode = cv2.RETR_EXTERNAL
-            contours, hierarchy = cv2.findContours(mask_close, retr_mode,cv2.CHAIN_APPROX_SIMPLE)
-            height,width = mask_close.shape
-
-            image_cpy = image_aux.copy()
-
-            for idx, cnt in enumerate(contours):
-                x, y, w, h = cv2.boundingRect(cnt)
-                
-                if w < int(width * 0.1) or h < int(height*0.2):
-                    continue
-                if h*w < (height*width)*0.0005:
-                    continue
-                # if h < w:
-                #     continue
-                # if (x + (w / 2.0) < (width /2.0) - width * 0.03) or (x + (w / 2.0) > (width / 2.0) + width * 0.03):
-                #     continue
-
-                mark_red_rectangle = cv2.rectangle(image_cpy, (x, y), (x + w, y + h), (0, 0, 255), 3)
-
-            cv2.imwrite(directory_output + f_name + 'rectangles.jpg',image_cpy)
-            
+            height, width, channels = image.shape
             one_image = 0
             two_images = 0
             list_middles=[]
             for i in range(height):
-                if sum(mask_close[i])>width*255*0.5:
+                if sum(mask[i])>width*255*0.5:
                     row_indexes =[]
                     for j in range(width-1):
-                        if mask_close[i][j] != mask_close[i][j+1]:
+                        if mask[i][j] != mask[i][j+1]:
                             row_indexes.append(j)
                     if len(row_indexes) == 2:
                         one_image+=1
@@ -77,15 +42,19 @@ def split_images1(directory_query, directory_output):
             if two_images>one_image:
                 real_middle = int(max(set(list_middles), key = list_middles.count))#int(np.mean(list_middles))
 
-                first_img = image_aux[:,:real_middle]
-                second_img = image_aux[:,real_middle:]
+                first_img = image[:,:real_middle]
+                second_img = image[:,real_middle:]
 
-                #De moment ho guardo tot per poder veure que està fent, realment només hauria de guardar les màscares dividides              
-                # cv2.imwrite(directory_output + f_name + '_part1' + '.jpg', first_img)
-                # cv2.imwrite(directory_output +  f_name + '_part2' + '.jpg', second_img)
+                first_mask = mask[:,:real_middle]
+                second_mask = mask[:,real_middle:]
+           
+                cv2.imwrite(directory_output + f_name + '_part1' + '.jpg', first_img)
+                cv2.imwrite(directory_output +  f_name + '_part2' + '.jpg', second_img)
+                cv2.imwrite(directory_output + f_name + '_mask_part1' + '.png', first_mask)
+                cv2.imwrite(directory_output +  f_name + '_mask_part2' + '.png', second_mask)
             else:
-                # cv2.imwrite(directory_output + f_name + '.jpg',image_aux)
-                pass
+                cv2.imwrite(directory_output + f_name + '.jpg',image)
+                cv2.imwrite(directory_output + f_name + '_mask.png',mask)
     return
 
         
@@ -204,10 +173,4 @@ def split_images3(directory_query, directory_output):
                 cv2.imwrite(directory_output  + f_name + '_maskraw.jpg', mask_close)
     return
 
-
-base_dir = '../'
-name_query='qsd2_w2/'
-directory_query = base_dir + name_query
-directory_output = base_dir + 'predictions/'
-split_images1(directory_query, directory_output)
 

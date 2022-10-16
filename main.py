@@ -73,7 +73,8 @@ def main():
         method_mask = int(sys.argv[3])
         backgrounds = bool(utils.str_to_bool(sys.argv[4]))
         boundingbox = bool(utils.str_to_bool(sys.argv[5]))
-        solutions = bool(utils.str_to_bool(sys.argv[6]))
+        splitimage = bool(utils.str_to_bool(sys.argv[6]))
+        solutions = bool(utils.str_to_bool(sys.argv[7]))
     except:
         print(f'Exiting. Not enough arguments ({len(sys.argv) - 1} of 6)')
         exit(1)
@@ -84,6 +85,8 @@ def main():
     output_path = "/" + output_name + "/"
     directory_output = directory_query + output_path
     directory_proves = base_dir + output_path
+    directory_masks = directory_query + '/masks'
+    directory_split = directory_query + '/split'
     print(directory_proves)
 
     # Arguments bound checking
@@ -119,22 +122,36 @@ def main():
         # Directory already exists
         pass
     
+    try:
+        os.makedirs(directory_masks_q2)
+    except FileExistsError:
+        # Directory already exists
+        pass
+    
+
+
     # Masks generation
     if(backgrounds):
-        #split_images.split_images(directory_query, directory_proves)
-        
-        if(method_mask == 1):
-            mask_v1.generate_masks(directory_query, directory_output, threshold_value = default_threshold, plot_histograms = plot_histograms)
-        elif(method_mask == 2):
-            mask_v2.generate_masks(directory_query, directory_output, plot_histograms = plot_histograms)
-        elif(method_mask == 3):
-            mask_v3.generate_masks(directory_query, directory_output)
+        mask_v1.generate_masks_otsu(directory_query, directory_masks)
 
+    if(splitimage):
+        try:
+            os.makedirs(directory_split)
+        except FileExistsError:
+            # Directory already exists
+            pass
+        split_images.split_images1(directory_query,directory_masks, directory_split)
+       
+    if(boundingbox):
+        if(splitimage):
+            coord_boxes = find_boxes.find_boxes(directory_split, directory_output, name_query, printbox = True)
+            iou = find_boxes.find_boxes_eval(coord_boxes, boxes_solutions)
 
-    # ! Descomentar!    
-    # if(boundingbox):
-    #     coord_boxes = find_boxes.find_boxes(directory_query, directory_output, printbox = True)
-    #     iou = find_boxes.find_boxes_eval(coord_boxes, boxes_solutions)
+        else:
+
+    hist_query = histograms.get_block_histograms(directory_query, directory_output, 7, 40, query = True )
+    hist_bbdd = histograms.get_block_histograms(directory_bbdd, directory_output, 7, 40, query = False )
+
 
 
     # Generating DB and query dictionary of histograms
