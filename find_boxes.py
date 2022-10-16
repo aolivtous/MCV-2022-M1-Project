@@ -20,9 +20,7 @@ def find_boxes(directory_query, directory_output, printbox=False):
     aux_bbox_output = []
     result = []
     aux_result = []
-    last_part = ''
     is_part = False
-    part_name = ''
     for filename in os.scandir(directory_query):
         f = os.path.join(directory_query, filename)
         # checking if it is a file
@@ -31,6 +29,11 @@ def find_boxes(directory_query, directory_output, printbox=False):
             f_name = filename.name.split('.')[0]
             f = directory_query + '/' + filename.name
             
+            if 'part' in f_name:
+                is_part = True
+            else:
+                is_part = False
+
             print('finding boxes at:', f_name)
             image = cv2.imread(f)
             try:
@@ -181,13 +184,11 @@ def find_boxes(directory_query, directory_output, printbox=False):
                     bbox_output.append(aux_bbox_output)
                     aux_result = []
                     aux_bbox_output = []
-
-            result.append([[x_min, y_min, x_min+w_min, y_min+h_min]])   
-            bbox_output.append([[np.array([x_min, y_min]),np.array([x_min, y_min + h_min]),np.array([x_min + w_min, y_min + h_min]),np.array([x_min + w_min, y_min])]])
+            else:
+                result.append([[x_min, y_min, x_min+w_min, y_min+h_min]])   
+                bbox_output.append([[np.array([x_min, y_min]),np.array([x_min, y_min + h_min]),np.array([x_min + w_min, y_min + h_min]),np.array([x_min + w_min, y_min])]])
           
     return bbox_output, result
-
-
 
 def bbox_iou(bboxA, bboxB):
     # compute the intersection over union of two bboxes
