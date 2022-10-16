@@ -81,6 +81,7 @@ import pickle
 with open(directory_query+'text_boxes.pkl', 'rb') as f:
     data = pickle.load(f)
 
+#print(data)
 
 def bbox_iou(bboxA, bboxB):
     # compute the intersection over union of two bboxes
@@ -383,18 +384,38 @@ def prova4(base_dir,directory_query,name_query,directory_output):
 
             # ret, mask = cv2.threshold(bin_image, 100, 255, cv2.THRESH_BINARY)
 
-            element = cv2.getStructuringElement(cv2.MORPH_RECT, (30, 2))
+            element = cv2.getStructuringElement(cv2.MORPH_RECT, (int(width/20.0), 1))
             bin_image_close = cv2.morphologyEx(bin_image, cv2.MORPH_CLOSE, element)
+
+            element = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
+            bin_image_close = cv2.morphologyEx(bin_image_close, cv2.MORPH_OPEN, element)
+
+            element = cv2.getStructuringElement(cv2.MORPH_RECT, (int(width/4.0), 1))
+            bin_image_close_close = cv2.morphologyEx(bin_image_close, cv2.MORPH_OPEN, element)
+
+            element = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
+            bin_image_close_close = cv2.morphologyEx(bin_image_close_close, cv2.MORPH_OPEN, element)
+
+            bin_image[:,0:2]=0
+            bin_image[:,-2:]=0
+            bin_image[0:2,:]=0
+            bin_image[-2:,:]=0
+            bin_image_close[:,0:2]=0
+            bin_image_close[:,-2:]=0
+            bin_image_close[0:2,:]=0
+            bin_image_close[-2:,:]=0
 
             retr_mode = cv2.RETR_EXTERNAL
             contours_close, hierarchy = cv2.findContours(bin_image_close, retr_mode,cv2.CHAIN_APPROX_SIMPLE)
+            contours_close_close, hierarchy = cv2.findContours(bin_image_close_close, retr_mode,cv2.CHAIN_APPROX_SIMPLE)
             contours, hierarchy = cv2.findContours(bin_image, retr_mode,cv2.CHAIN_APPROX_SIMPLE)
 
-            cv2.imshow('opening', bin_image_close)
-            cv2.waitKey(0)
+            # cv2.imshow('closing', bin_image_close)
+            # cv2.waitKey(0)
 
-            contours = contours + contours_close
-            contours = contours_close
+
+            contours = contours + contours_close + contours_close_close
+            #contours = contours_close
 
             best_x, best_y, best_w, best_h, b_bl_cnt, b_tl_cnt, b_br_cnt, b_tr_cnt, min_var = 0, 0, 0, 0, 0, 0, 0, 0, 99999
 
@@ -406,9 +427,11 @@ def prova4(base_dir,directory_query,name_query,directory_output):
                 
                 if w < int(width * 0.05) or h < int(height * 0.01) or h > int(height*0.5):
                     continue
+                if h*w < (height*width)*0.0005:
+                    continue
                 if h > w:
                     continue
-                if (x + (w / 2.0) < (width /2.0) - width * 0.05) or (x + (w / 2.0) > (width / 2.0) + width * 0.05):
+                if (x + (w / 2.0) < (width /2.0) - width * 0.03) or (x + (w / 2.0) > (width / 2.0) + width * 0.03):
                     continue
 
                 mark_red_rectangle = cv2.rectangle(image_cpy, (x, y), (x + w, y + h), (0, 0, 255), 3)
@@ -451,7 +474,22 @@ def prova4(base_dir,directory_query,name_query,directory_output):
                     y_min = y
                     w_min = w
                     h_min = h
-                    
+
+            # Extensió del rectangle 
+            # tol = 2
+            # while abs(int(image_hsv[y_min + h_min, x_min][0]) - int(image_hsv[y_min + h_min +1, x_min][0])) and (image_hsv[y_min + h_min, x_min][0]<25 orimage_hsv[y_min + h_min, x_min][0]>240)< tol :
+            #     h_min = h_min + 1
+            
+            # while abs(int(image_hsv[y_min + h_min, x_min][0]) - int(image_hsv[y_min + h_min, x_min - 1][0])) < tol :
+            #     x_min = x_min - 1
+
+            # while abs(int(image_hsv[y_min, x_min + w_min][0]) - int(image_hsv[y_min, x_min + w_min + 1][0])) < tol :
+            #     w_min = w_min + 1
+            
+            # while abs(int(image_hsv[y_min, x_min + w_min][0]) - int(image_hsv[y_min - 1 , x_min + w_min][0])) < tol :
+            #     y_min = y_min - 1
+
+                
             print(mindiff)
             mark_green_rectangle = cv2.rectangle(image_cpy, (x_min, y_min), (x_min + w_min, y_min + h_min), (0, 255, 0), 3)
 
@@ -462,10 +500,13 @@ def prova4(base_dir,directory_query,name_query,directory_output):
             # print('final color tr:', b_tr_cnt)
             # mark_green_rectangle = cv2.rectangle(image_cpy, (best_x, best_y), (best_x + best_w, best_y + best_h), (0, 255, 0), 2)
             
-            cv2.namedWindow('output', cv2.WINDOW_NORMAL)
-            cv2.imshow('output', image_cpy)
-            cv2.waitKey(0)
-            # cv2.imwrite(directory_output + f_name + '_bin.png', bin_image)
+            # cv2.namedWindow('output', cv2.WINDOW_NORMAL)
+            # cv2.imshow('output', image_cpy)
+            # cv2.waitKey(0)
+            cv2.imwrite(directory_output + f_name + '_bin.png', bin_image)
+            cv2.imwrite(directory_output + f_name + '_bin_close.png', bin_image_close)
+            cv2.imwrite(directory_output + f_name + '_bin_close_close.png', bin_image_close_close)
+            cv2.imwrite(directory_output + f_name + '_rectangle_exten.png', image_cpy)
 
 # prova2(base_dir,directory_query,name_query,directory_output)
 # prova3(base_dir,directory_query,name_query,directory_output)
