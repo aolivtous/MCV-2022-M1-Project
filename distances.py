@@ -30,69 +30,46 @@ def query_measures_colour(hist_query, hist_bbdd, distance_type):
     distances between the query and database images.
     """
     
-
     dists = {}
     for key_query, img_query in hist_query.items():
+        print('key', key_query)
+
         dists[key_query]={}
-        np.set_printoptions(threshold=np.inf)
-        if(key_query == '00017'):
-            if np.isnan(img_query.hist_ch1).any():
-                print('ch1')
-                print(img_query.hist_ch1)
-            if np.isnan(img_query.hist_ch2).any():
-                print('ch2')
-                print(img_query.hist_ch2)
-            if np.isnan(img_query.hist_ch3).any():
-                print('ch3')
-                print(img_query.hist_ch3)
+        idx_1 = idx_2 = idx_3 = []
+        to_delete = False
 
         if np.isnan(img_query.hist_ch1).any() or np.isnan(img_query.hist_ch2).any() or np.isnan(img_query.hist_ch3).any():
-            print(img_query.hist_ch1)
-            idx_1 = img_query.hist_ch1.where(np.isnan)
-            idx_2 = img_query.hist_ch2.where(np.isnan)
-            idx_3 = img_query.hist_ch3.where(np.isnan)
+            idx_1 = np.argwhere(np.isnan(img_query.hist_ch1))
+            idx_2 = np.argwhere(np.isnan(img_query.hist_ch2))
+            idx_3 = np.argwhere(np.isnan(img_query.hist_ch3))
 
-            del (img_query.hist_ch1[idx_1])
-            del (img_query.hist_ch2[idx_2])
-            del (img_query.hist_ch3[idx_3])
+            img_query.hist_ch1= np.delete(img_query.hist_ch1, idx_1)
+            img_query.hist_ch2= np.delete(img_query.hist_ch2, idx_2)
+            img_query.hist_ch3= np.delete(img_query.hist_ch3, idx_3)
+            to_delete = True
 
+        for key_bbdd, img_bbdd in hist_bbdd.items():
+            
+            hist_ch1_bbdd = np.array(img_bbdd.hist_ch1)
+            hist_ch2_bbdd = np.array(img_bbdd.hist_ch2)
+            hist_ch3_bbdd = np.array(img_bbdd.hist_ch3)
 
-            for key_bbdd, img_bbdd in hist_bbdd.items():
+            if to_delete:
+                hist_ch1_bbdd = np.delete(hist_ch1_bbdd, idx_1)
+                hist_ch2_bbdd = np.delete(hist_ch2_bbdd, idx_2)
+                hist_ch3_bbdd = np.delete(hist_ch3_bbdd, idx_3)
 
-                    del (img_bbdd.hist_ch1[idx_1])
-                    del (img_bbdd.hist_ch2[idx_2])
-                    del (img_bbdd.hist_ch3[idx_3])
-                
-                if distance_type == 'eucli':
-                    dist_ch1 = cv2.norm(img_query.hist_ch1, img_bbdd.hist_ch1, normType=cv2.NORM_L2)
-                    dist_ch2 = cv2.norm(img_query.hist_ch2, img_bbdd.hist_ch2, normType=cv2.NORM_L2)
-                    dist_ch3 = cv2.norm(img_query.hist_ch3, img_bbdd.hist_ch3, normType=cv2.NORM_L2)
-                    dist = np.mean(np.array([dist_ch1, dist_ch2, dist_ch3]))
-                else:
-                    dist_ch1 = cv2.compareHist(img_query.hist_ch1, img_bbdd.hist_ch1, main.argument_relations[distance_type])
-                    dist_ch2 = cv2.compareHist(img_query.hist_ch2, img_bbdd.hist_ch2, main.argument_relations[distance_type])
-                    dist_ch3 = cv2.compareHist(img_query.hist_ch3, img_bbdd.hist_ch3, main.argument_relations[distance_type])
-                    dist = np.mean(np.array([dist_ch1, dist_ch2, dist_ch3]))
-                dists[key_query][key_bbdd] = distances(dist)
-
-        else:
-            for key_bbdd, img_bbdd in hist_bbdd.items():
-
-                    del (img_bbdd.hist_ch1[idx_1])
-                    del (img_bbdd.hist_ch2[idx_2])
-                    del (img_bbdd.hist_ch3[idx_3])
-                
             if distance_type == 'eucli':
-                dist_ch1 = cv2.norm(img_query.hist_ch1, img_bbdd.hist_ch1, normType=cv2.NORM_L2)
-                dist_ch2 = cv2.norm(img_query.hist_ch2, img_bbdd.hist_ch2, normType=cv2.NORM_L2)
-                dist_ch3 = cv2.norm(img_query.hist_ch3, img_bbdd.hist_ch3, normType=cv2.NORM_L2)
+                dist_ch1 = cv2.norm(img_query.hist_ch1, hist_ch1_bbdd, normType=cv2.NORM_L2)
+                dist_ch2 = cv2.norm(img_query.hist_ch2, hist_ch2_bbdd, normType=cv2.NORM_L2)
+                dist_ch3 = cv2.norm(img_query.hist_ch3, hist_ch3_bbdd, normType=cv2.NORM_L2)
                 dist = np.mean(np.array([dist_ch1, dist_ch2, dist_ch3]))
             else:
-                dist_ch1 = cv2.compareHist(img_query.hist_ch1, img_bbdd.hist_ch1, main.argument_relations[distance_type])
-                dist_ch2 = cv2.compareHist(img_query.hist_ch2, img_bbdd.hist_ch2, main.argument_relations[distance_type])
-                dist_ch3 = cv2.compareHist(img_query.hist_ch3, img_bbdd.hist_ch3, main.argument_relations[distance_type])
+                dist_ch1 = cv2.compareHist(img_query.hist_ch1, hist_ch1_bbdd, main.argument_relations[distance_type])
+                dist_ch2 = cv2.compareHist(img_query.hist_ch2, hist_ch2_bbdd, main.argument_relations[distance_type])
+                dist_ch3 = cv2.compareHist(img_query.hist_ch3, hist_ch3_bbdd, main.argument_relations[distance_type])
                 dist = np.mean(np.array([dist_ch1, dist_ch2, dist_ch3]))
-            dists[key_query][key_bbdd] = distances(dist) 
+            dists[key_query][key_bbdd] = distances(dist)
 
     return dists
 

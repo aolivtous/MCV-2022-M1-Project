@@ -139,13 +139,6 @@ def get_block_histograms(directory, directory_output, n_patches, bins, query):
                 hist_ch1 /= hist_ch1.sum()
                 hist_ch2 /= hist_ch2.sum()
                 hist_ch3 /= hist_ch3.sum()
-
-                if(query):
-                    if np.sum(tiles_mask[idx]) == 0:
-                        print(idx)
-                        print(hist_ch1)
-                        print(hist_ch2)
-                        print(hist_ch3)  
                     
                 concat_hist_ch1 = np.append(concat_hist_ch1,hist_ch1)
                 concat_hist_ch2 = np.append(concat_hist_ch2,hist_ch2)
