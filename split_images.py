@@ -179,5 +179,5 @@ base_dir = '../'
 name_query='qsd2_w2/'
 directory_query = base_dir + name_query
 directory_output = base_dir + 'predictions/'
-split_images3(directory_query, directory_output)
+# split_images3(directory_query, directory_output)
 

@@ -79,7 +79,7 @@ class histograms:
 
     return hist_dict"""
 
-def get_block_histograms(directory, output_name, n_patches, bins, query):
+def get_block_histograms(directory, directory_output, n_patches, bins, query):
     
     """Calculate and concatenate histograms made from parts of the image of a particular block level
 
@@ -98,9 +98,14 @@ def get_block_histograms(directory, output_name, n_patches, bins, query):
             if not query:
                 f_name = f_name.split('_')[1]
 
+            print('name', f_name)
+
             image = cv2.imread(f)
             image = cv2.cvtColor(image, cv2.COLOR_BGR2Lab) 
 
+            if(query):
+                box_mask = cv2.imread(directory_output + '/' + f_name + '_bin_box.png', cv2.IMREAD_GRAYSCALE)
+                th, box_mask = cv2.threshold(box_mask, 128, 255, cv2.THRESH_BINARY)
             
             #spliting the image into blocks
             #n_patches = int((2**blockLevel)/2)
@@ -110,6 +115,9 @@ def get_block_histograms(directory, output_name, n_patches, bins, query):
             N = image.shape[1]//n_patches
 
             tiles = [image[x:x+M,y:y+N] for x in range(0,image.shape[0]-image.shape[0]%n_patches,M) for y in range(0,image.shape[1]-image.shape[1]%n_patches,N)]
+            if(query):
+                tiles_mask = [box_mask[x:x+M,y:y+N] for x in range(0,box_mask.shape[0]-box_mask.shape[0]%n_patches,M) for y in range(0,box_mask.shape[1]-box_mask.shape[1]%n_patches,N)]
+            
             concat_hist_ch1 = []
             concat_hist_ch2 = []
             concat_hist_ch3 = []
@@ -118,16 +126,27 @@ def get_block_histograms(directory, output_name, n_patches, bins, query):
             concat_hist_ch2 = np.float32(concat_hist_ch2)
             concat_hist_ch3 = np.float32(concat_hist_ch3)
 
-
-            for tile in tiles:
-
-                hist_ch1 = cv2.calcHist([tile], [0], None, [bins], [0, 255])
-                hist_ch2 = cv2.calcHist([tile], [1], None, [bins], [0, 255])
-                hist_ch3 = cv2.calcHist([tile], [2], None, [bins], [0, 255])
+            for idx, tile in enumerate(tiles):
+                
+                if(query):
+                    hist_ch1 = cv2.calcHist([tile], [0], tiles_mask[idx], [bins], [0, 255])
+                    hist_ch2 = cv2.calcHist([tile], [1], tiles_mask[idx], [bins], [0, 255])
+                    hist_ch3 = cv2.calcHist([tile], [2], tiles_mask[idx], [bins], [0, 255])
+                else:
+                    hist_ch1 = cv2.calcHist([tile], [0], None, [bins], [0, 255])
+                    hist_ch2 = cv2.calcHist([tile], [1], None, [bins], [0, 255])
+                    hist_ch3 = cv2.calcHist([tile], [2], None, [bins], [0, 255])
                 hist_ch1 /= hist_ch1.sum()
                 hist_ch2 /= hist_ch2.sum()
-                hist_ch3 /= hist_ch3.sum()  
-                
+                hist_ch3 /= hist_ch3.sum()
+
+                if(query):
+                    if np.sum(tiles_mask[idx]) == 0:
+                        print(idx)
+                        print(hist_ch1)
+                        print(hist_ch2)
+                        print(hist_ch3)  
+                    
                 concat_hist_ch1 = np.append(concat_hist_ch1,hist_ch1)
                 concat_hist_ch2 = np.append(concat_hist_ch2,hist_ch2)
                 concat_hist_ch3 = np.append(concat_hist_ch3,hist_ch3)

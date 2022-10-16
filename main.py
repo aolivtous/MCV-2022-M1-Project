@@ -106,11 +106,13 @@ def main():
         except:
             pass
     
-    with open(directory_query+'text_boxes.pkl', 'rb') as f:
-        data = pickle.load(f)
+    with open(directory_query + '/text_boxes.pkl', 'rb') as f:
+        boxes_solutions = pickle.load(f)
     
-    print(data)
     
+    for i, bsol in enumerate(boxes_solutions):
+        print('i', i, 'solution', bsol)
+
     try:
         os.makedirs(directory_output)
     except FileExistsError:
@@ -128,21 +130,22 @@ def main():
         elif(method_mask == 3):
             mask_v3.generate_masks(directory_query, directory_output)
 
-    
-    if(boundingbox):
-        coord_boxes = find_boxes.find_boxes(directory_query, directory_output, printbox = False)
-        iou = find_boxes.bbox_iou(co)
+
+    # ! Descomentar!    
+    # if(boundingbox):
+    #     coord_boxes = find_boxes.find_boxes(directory_query, directory_output, printbox = True)
+    #     iou = find_boxes.find_boxes_eval(coord_boxes, boxes_solutions)
 
 
     # Generating DB and query dictionary of histograms
-    hist_query = histograms.get_histograms(directory_query, output_name, color_code, query = True , with_mask = True and backgrounds)
-    hist_bbdd = histograms.get_histograms(directory_bbdd, output_name, color_code, query = False , with_mask = False)
+    #hist_query = histograms.get_histograms(directory_query, output_name, color_code, query = True , with_mask = True and backgrounds)
+    #hist_bbdd = histograms.get_histograms(directory_bbdd, output_name, color_code, query = False , with_mask = False)
     
     #si es vol amb backgrounds, s'hauria de passar la imatge ja filtrada amb la part rectangular que volem
 
     #Block histograms 1 level'''
-    '''hist_query = histograms.get_block_histograms(directory_query, output_name,7, 40, query = True )
-    hist_bbdd = histograms.get_block_histograms(directory_bbdd, output_name, 7, 40, query = False )'''
+    hist_query = histograms.get_block_histograms(directory_query, directory_output, 7, 40, query = True )
+    hist_bbdd = histograms.get_block_histograms(directory_bbdd, directory_output, 7, 40, query = False )
 
     #Block histograms Multilevel
     #hist_query = histograms.get_block_histograms_multiLevel(directory_query, output_name,5,7, 40, query = True )

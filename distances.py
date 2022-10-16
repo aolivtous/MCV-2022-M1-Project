@@ -34,6 +34,17 @@ def query_measures_colour(hist_query, hist_bbdd, distance_type):
     dists = {}
     for key_query, img_query in hist_query.items():
         dists[key_query]={}
+        np.set_printoptions(threshold=np.inf)
+        if(key_query == '00017'):
+            if np.isnan(img_query.hist_ch1).any():
+                print('ch1')
+                print(img_query.hist_ch1)
+            if np.isnan(img_query.hist_ch2).any():
+                print('ch2')
+                print(img_query.hist_ch2)
+            if np.isnan(img_query.hist_ch3).any():
+                print('ch3')
+                print(img_query.hist_ch3)
         for key_bbdd, img_bbdd in hist_bbdd.items():
             if distance_type == 'eucli':
                 dist_ch1 = cv2.norm(img_query.hist_ch1, img_bbdd.hist_ch1, normType=cv2.NORM_L2)
