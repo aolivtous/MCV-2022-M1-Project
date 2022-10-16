@@ -190,6 +190,7 @@ def find_boxes(directory_query, directory_output, printbox=False):
           
     return bbox_output, result
 
+
 def bbox_iou(bboxA, bboxB):
     # compute the intersection over union of two bboxes
 
@@ -197,22 +198,49 @@ def bbox_iou(bboxA, bboxB):
     # indicate top-left and bottom-right corners of the bbox respectively.
 
     # determine the coordinates of the intersection rectangle
-    xA = max(bboxA[0][0], bboxB[0][0])
-    yA = max(bboxA[0][1], bboxB[0][1])
-    xB = min(bboxA[2][0], bboxB[2][0])
-    yB = min(bboxA[2][1], bboxB[2][1])
+    xA = max(bboxA[1], bboxB[1])
+    yA = max(bboxA[0], bboxB[0])
+    xB = min(bboxA[3], bboxB[3])
+    yB = min(bboxA[2], bboxB[2])
     
     # compute the area of intersection rectangle
     interArea = max(0, xB - xA + 1) * max(0, yB - yA + 1)
  
     # compute the area of both bboxes
-    bboxAArea = (bboxA[2][0] - bboxA[0][0] + 1) * (bboxA[2][1] - bboxA[0][1] + 1)
-    bboxBArea = (bboxB[2][0] - bboxB[0][0] + 1) * (bboxB[2][1] - bboxB[0][1] + 1)
+    bboxAArea = (bboxA[2] - bboxA[0] + 1) * (bboxA[3] - bboxA[1] + 1)
+    bboxBArea = (bboxB[2] - bboxB[0] + 1) * (bboxB[3] - bboxB[1] + 1)
     
     iou = interArea / float(bboxAArea + bboxBArea - interArea)
     
     # return the intersection over union value
     return iou
+
+
+
+# def bbox_iou(bboxA, bboxB):
+#     # compute the intersection over union of two bboxes
+
+#     # Format of the bboxes is [tly, tlx, bry, brx, ...], where tl and br
+#     # indicate top-left and bottom-right corners of the bbox respectively.
+
+#     # determine the coordinates of the intersection rectangle
+#     xA = max(bboxA[0][0], bboxB[0][0])
+#     yA = max(bboxA[0][1], bboxB[0][1])
+#     xB = min(bboxA[2][0], bboxB[2][0])
+#     yB = min(bboxA[2][1], bboxB[2][1])
+    
+#     # compute the area of intersection rectangle
+#     interArea = max(0, xB - xA + 1) * max(0, yB - yA + 1)
+ 
+#     # compute the area of both bboxes
+#     bboxAArea = (bboxA[2][0] - bboxA[0][0] + 1) * (bboxA[2][1] - bboxA[0][1] + 1)
+#     bboxBArea = (bboxB[2][0] - bboxB[0][0] + 1) * (bboxB[2][1] - bboxB[0][1] + 1)
+    
+#     iou = interArea / float(bboxAArea + bboxBArea - interArea)
+    
+#     # return the intersection over union value
+#     return iou
+
 
 
 def find_boxes_eval(list_bbox_prediction, list_bbox_solution):
