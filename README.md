@@ -25,7 +25,8 @@ Top level directory layout\
 3. **Third:** Method to generate the masks &rarr; (1, 2)
 4. **Four:** Images have backgrounds &rarr; (True, False)
 5. **Five:** Images have text box &rarr; (True,False)
-6. **Six:** Solutions are available (to compute scores) &rarr; (True, False)
+6. **Six:** Images may have two paintings &rarr; (True, False)
+7. **Seven:** Solutions are available (to compute scores) &rarr; (True, False)
 
 Boolean values can be defined in several ways:
 - **True** &rarr; {1, 't', 'true', 'yes'}
