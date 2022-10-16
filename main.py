@@ -161,7 +161,7 @@ def main():
 
     # Calculating distances between 3D histograms 
     dists = distances.query_measures_colour(hist_query, hist_bbdd, distance_type)
-
+    print(dists['00017']['00000'].dist)
     # Results sorting
 
     results_sorted = distances.get_sorted_list_of_lists(dists, distance_type)

@@ -98,7 +98,7 @@ def get_block_histograms(directory, directory_output, n_patches, bins, query):
             if not query:
                 f_name = f_name.split('_')[1]
 
-            print('name', f_name)
+            #print('name', f_name)
 
             image = cv2.imread(f)
             image = cv2.cvtColor(image, cv2.COLOR_BGR2Lab) 

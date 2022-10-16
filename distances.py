@@ -45,7 +45,43 @@ def query_measures_colour(hist_query, hist_bbdd, distance_type):
             if np.isnan(img_query.hist_ch3).any():
                 print('ch3')
                 print(img_query.hist_ch3)
-        for key_bbdd, img_bbdd in hist_bbdd.items():
+
+        if np.isnan(img_query.hist_ch1).any() or np.isnan(img_query.hist_ch2).any() or np.isnan(img_query.hist_ch3).any():
+            print(img_query.hist_ch1)
+            idx_1 = img_query.hist_ch1.where(np.isnan)
+            idx_2 = img_query.hist_ch2.where(np.isnan)
+            idx_3 = img_query.hist_ch3.where(np.isnan)
+
+            del (img_query.hist_ch1[idx_1])
+            del (img_query.hist_ch2[idx_2])
+            del (img_query.hist_ch3[idx_3])
+
+
+            for key_bbdd, img_bbdd in hist_bbdd.items():
+
+                    del (img_bbdd.hist_ch1[idx_1])
+                    del (img_bbdd.hist_ch2[idx_2])
+                    del (img_bbdd.hist_ch3[idx_3])
+                
+                if distance_type == 'eucli':
+                    dist_ch1 = cv2.norm(img_query.hist_ch1, img_bbdd.hist_ch1, normType=cv2.NORM_L2)
+                    dist_ch2 = cv2.norm(img_query.hist_ch2, img_bbdd.hist_ch2, normType=cv2.NORM_L2)
+                    dist_ch3 = cv2.norm(img_query.hist_ch3, img_bbdd.hist_ch3, normType=cv2.NORM_L2)
+                    dist = np.mean(np.array([dist_ch1, dist_ch2, dist_ch3]))
+                else:
+                    dist_ch1 = cv2.compareHist(img_query.hist_ch1, img_bbdd.hist_ch1, main.argument_relations[distance_type])
+                    dist_ch2 = cv2.compareHist(img_query.hist_ch2, img_bbdd.hist_ch2, main.argument_relations[distance_type])
+                    dist_ch3 = cv2.compareHist(img_query.hist_ch3, img_bbdd.hist_ch3, main.argument_relations[distance_type])
+                    dist = np.mean(np.array([dist_ch1, dist_ch2, dist_ch3]))
+                dists[key_query][key_bbdd] = distances(dist)
+
+        else:
+            for key_bbdd, img_bbdd in hist_bbdd.items():
+
+                    del (img_bbdd.hist_ch1[idx_1])
+                    del (img_bbdd.hist_ch2[idx_2])
+                    del (img_bbdd.hist_ch3[idx_3])
+                
             if distance_type == 'eucli':
                 dist_ch1 = cv2.norm(img_query.hist_ch1, img_bbdd.hist_ch1, normType=cv2.NORM_L2)
                 dist_ch2 = cv2.norm(img_query.hist_ch2, img_bbdd.hist_ch2, normType=cv2.NORM_L2)
@@ -56,7 +92,7 @@ def query_measures_colour(hist_query, hist_bbdd, distance_type):
                 dist_ch2 = cv2.compareHist(img_query.hist_ch2, img_bbdd.hist_ch2, main.argument_relations[distance_type])
                 dist_ch3 = cv2.compareHist(img_query.hist_ch3, img_bbdd.hist_ch3, main.argument_relations[distance_type])
                 dist = np.mean(np.array([dist_ch1, dist_ch2, dist_ch3]))
-            dists[key_query][key_bbdd] = distances(dist)
+            dists[key_query][key_bbdd] = distances(dist) 
 
     return dists
 
