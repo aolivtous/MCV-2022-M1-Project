@@ -1,5 +1,6 @@
-from main import *
-import main
+import global_variables
+import cv2
+import numpy as np
 
 
 class distances: 
@@ -18,12 +19,12 @@ class distances:
 #     }
 # }
 
-def query_measures_colour(hist_query, hist_bbdd, distance_type):
+def query_measures_colour(hist_query, hist_db, distance_type):
     """
     It calculates the distance between the histograms of the query images and the database images
     
     :param hist_query: a dictionary of histograms of the query images
-    :param hist_bbdd: a dictionary of histograms of the database images
+    :param hist_db: a dictionary of histograms of the database images
     :param distance_type: the type of distance to use
     :return: A dictionary of dictionaries. The first level has the keys of the query images. The
     second level has the keys of the database images. The values of the second dictionary are the
@@ -32,18 +33,18 @@ def query_measures_colour(hist_query, hist_bbdd, distance_type):
     dists = {}
     for key_query, img_query in hist_query.items():
         dists[key_query]={}
-        for key_bbdd, img_bbdd in hist_bbdd.items():
+        for key_db, img_db in hist_db.items():
             if distance_type == 'eucli':
-                dist_ch1 = cv2.norm(img_query.hist_ch1, img_bbdd.hist_ch1, normType=cv2.NORM_L2)
-                dist_ch2 = cv2.norm(img_query.hist_ch2, img_bbdd.hist_ch2, normType=cv2.NORM_L2)
-                dist_ch3 = cv2.norm(img_query.hist_ch3, img_bbdd.hist_ch3, normType=cv2.NORM_L2)
+                dist_ch1 = cv2.norm(img_query.hist_ch1, img_db.hist_ch1, normType=cv2.NORM_L2)
+                dist_ch2 = cv2.norm(img_query.hist_ch2, img_db.hist_ch2, normType=cv2.NORM_L2)
+                dist_ch3 = cv2.norm(img_query.hist_ch3, img_db.hist_ch3, normType=cv2.NORM_L2)
                 dist = np.mean(np.array([dist_ch1, dist_ch2, dist_ch3]))
             else:
-                dist_ch1 = cv2.compareHist(img_query.hist_ch1, img_bbdd.hist_ch1, main.argument_relations[distance_type])
-                dist_ch2 = cv2.compareHist(img_query.hist_ch2, img_bbdd.hist_ch2, main.argument_relations[distance_type])
-                dist_ch3 = cv2.compareHist(img_query.hist_ch3, img_bbdd.hist_ch3, main.argument_relations[distance_type])
+                dist_ch1 = cv2.compareHist(img_query.hist_ch1, img_db.hist_ch1, global_variables.argument_relations[distance_type])
+                dist_ch2 = cv2.compareHist(img_query.hist_ch2, img_db.hist_ch2, global_variables.argument_relations[distance_type])
+                dist_ch3 = cv2.compareHist(img_query.hist_ch3, img_db.hist_ch3, global_variables.argument_relations[distance_type])
                 dist = np.mean(np.array([dist_ch1, dist_ch2, dist_ch3]))
-            dists[key_query][key_bbdd] = distances(dist)
+            dists[key_query][key_db] = distances(dist)
 
     return dists
 

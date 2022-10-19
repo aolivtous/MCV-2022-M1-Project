@@ -1,7 +1,4 @@
-import global_variables
-import cv2
-import numpy as np
-import os
+from main import *
 
 def mask_eval_avg(dir_masks_predicted,dir_masks_solution, print_each = True, print_avg = True):
     """

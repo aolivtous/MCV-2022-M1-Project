@@ -48,7 +48,7 @@ def main():
     algorithm.
     """
     # Default arguments
-    name_bbdd = 'BBDD'
+    name_db = 'db'
     name_query = 'qsd2_w1'
     method_search = 1
     color_code = "LAB" # ["RGB", "HSV", "LAB", "YCrCb"]
@@ -74,10 +74,10 @@ def main():
         exit(1)
 
     # Directories assignment
-    directory_bbdd = base_dir + name_bbdd
-    directory_query = base_dir + name_query
+    dir_db = base_dir + name_db
+    dir_query = base_dir + name_query
     output_path = "/" + output_name
-    directory_output = directory_query + output_path
+    directory_output = dir_query + output_path
 
     # Arguments bound checking
     if(method_search == 1 or method_search == 2):
@@ -94,7 +94,7 @@ def main():
     query_solutions = None
     if(solutions):
         try:
-            with open( directory_query + '/gt_corresps.pkl', "rb" ) as f:
+            with open( dir_query + '/gt_corresps.pkl', "rb" ) as f:
                 query_solutions = pickle.load(f)
         except:
             pass
@@ -108,16 +108,16 @@ def main():
     # Masks generation
     if(backgrounds):
         if(method_mask == 1):
-            mask_v1.generate_masks(directory_query, directory_output, threshold_value = default_threshold, plot_histograms = plot_histograms)
+            mask_v1.generate_masks(dir_query, directory_output, threshold_value = default_threshold, plot_histograms = plot_histograms)
         elif(method_mask == 2):
-            mask_v2.generate_masks(directory_query, directory_output, plot_histograms = plot_histograms)
+            mask_v2.generate_masks(dir_query, directory_output, plot_histograms = plot_histograms)
 
     # Generating DB and query dictionary of histograms
-    hist_query = histograms.get_histograms(directory_query, output_name, color_code, query = True , with_mask = True and backgrounds)
-    hist_bbdd = histograms.get_histograms(directory_bbdd, output_name, color_code, query = False , with_mask = False)
+    hist_query = histograms.get_histograms(dir_query, output_name, color_code, query = True , with_mask = True and backgrounds)
+    hist_db = histograms.get_histograms(dir_db, output_name, color_code, query = False , with_mask = False)
 
     # Calculating distances between the histograms
-    dists = distances.query_measures_colour(hist_query, hist_bbdd, distance_type)
+    dists = distances.query_measures_colour(hist_query, hist_db, distance_type)
 
     # Results sorting
     results_sorted = distances.get_sorted_list_of_lists(dists, distance_type)
@@ -129,7 +129,7 @@ def main():
         mapk5 = scores.mapk(query_solutions, results_sorted, k = 5)
         print(f'The map-5 score is: {round(mapk5, 2)}')
         if(backgrounds):
-            mask_evaluation.mask_eval_avg(directory_output, directory_query, print_each = False, print_avg = True)
+            mask_evaluation.mask_eval_avg(directory_output, dir_query, print_each = False, print_avg = True)
     else:
         print('No solutions given --> evaluation not avaliable.')
     

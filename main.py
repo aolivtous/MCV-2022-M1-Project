@@ -13,35 +13,14 @@ import pickle
 import statistics
 
 # Internal modules
+import global_variables
 import utils
 import histograms
 import distances
 import scores
-import mask_v1
-import mask_v2
-import mask_v3
+import masks
 import mask_evaluation
-import split_images
 import find_boxes
-
-argument_relations = { 
-    'corr': cv2.HISTCMP_CORREL,
-    'chisq': cv2.HISTCMP_CHISQR,
-    'intersect': cv2.HISTCMP_INTERSECT,
-    'hellin': cv2.HISTCMP_BHATTACHARYYA,
-    'eucli': False
-}
-
-methods_search = {
-    1: {
-        'color_code': 'LAB',
-        'distance_type': 'hellin'
-    },
-    2: {
-        'color_code': 'LAB',
-        'distance_type': 'intersect'
-    }
-}
 
 def main():
     """
@@ -50,154 +29,145 @@ def main():
     images, calculates the distances between the histograms, sorts the results and evaluates the
     algorithm.
     """
-    # Default arguments
-    name_bbdd = 'BBDD'
-    name_query = 'qsd2_w1'
-    method_search = 1
-    color_code = "LAB" # ["RGB", "HSV", "LAB", "YCrCb"]
-    distance_type = 'hellin' # Possible arguments of distance_type at argument_relations
-    backgrounds = True
-    boundingbox = True
-    solutions = True
-    plot_histograms = False
-    default_threshold = 95
-
-    # Global variable
-    base_dir = "../"
-    output_name = "predictions"
+    ## Variables initialization
 
     # If there are not enough arguments, exit the program.
     try:
         name_query = sys.argv[1]
         method_search = int(sys.argv[2])
-        method_mask = int(sys.argv[3])
-        backgrounds = bool(utils.str_to_bool(sys.argv[4]))
-        boundingbox = bool(utils.str_to_bool(sys.argv[5]))
-        splitimage = bool(utils.str_to_bool(sys.argv[6]))
-        solutions = bool(utils.str_to_bool(sys.argv[7]))
+        backgrounds = bool(utils.str_to_bool(sys.argv[3]))
+        has_boundingbox = bool(utils.str_to_bool(sys.argv[4]))
+        may_have_split = bool(utils.str_to_bool(sys.argv[5]))
+        solutions = bool(utils.str_to_bool(sys.argv[6]))
+        recompute_db = bool(utils.str_to_bool(sys.argv[7]))
     except:
         print(f'Exiting. Not enough arguments ({len(sys.argv) - 1} of 6)')
         exit(1)
 
-    # Directories assignment
-    directory_bbdd = base_dir + name_bbdd
-    directory_query = base_dir + name_query
-    output_path = "/" + output_name + "/"
-    directory_output = directory_query + output_path
-    directory_proves = base_dir + output_path
-    directory_masks = directory_query + '/masks'
-    directory_split = directory_query + '/split'
-    print(directory_proves)
-
+    global_variables.init(name_query)
     # Arguments bound checking
     if(method_search == 1 or method_search == 2):
-        color_code = methods_search[method_search]['color_code']
-        distance_type = methods_search[method_search]['distance_type']
+        color_code = global_variables.methods_search[method_search]['color_code']
+        distance_type = global_variables.methods_search[method_search]['distance_type']
     else:
         print('Exiting. Method search must be 1 or 2')
-        exit(1)
-    
-    if(method_mask != 1 and method_mask != 2 and method_mask !=3):
-        print('Exiting. Method mask must be 1 or 2')
         exit(1)
 
     query_solutions = boxes_solutions = None
     if(solutions):
         try:
-            with open( directory_query + '/gt_corresps.pkl', "rb" ) as f:
+            with open(f'{global_variables.dir_query}gt_corresps.pkl', "rb" ) as f:
                 query_solutions = pickle.load(f)
-            with open(directory_query + '/text_boxes.pkl', 'rb') as f:
-                boxes_solutions = pickle.load(f)
+            if(has_boundingbox):
+                with open(f'{global_variables.dir_query}text_boxes.pkl', 'rb') as f:
+                    boxes_solutions = pickle.load(f)
         except:
             pass
     
-   
-
-    try:
-        os.makedirs(directory_output)
-    except FileExistsError:
-        # Directory already exists
-        pass
-    
-    try:
-        os.makedirs(directory_masks)
-    except FileExistsError:
-        # Directory already exists
-        pass
-    
-
-
-    # Masks generation
-    if(backgrounds):
-        mask_v1.generate_masks_otsu(directory_query, directory_masks)
-
-    if(splitimage):
+    for dir in global_variables.new_dirs:
         try:
-            os.makedirs(directory_split)
+            os.makedirs(dir)
         except FileExistsError:
             # Directory already exists
             pass
-        split_images.split_images1(directory_query, directory_masks, directory_split)
-        directory_query = directory_split
-
-        
-    if(boundingbox):
-        bbox_result, coord_results = find_boxes.find_boxes(directory_query, directory_output, printbox = True)
-        if(solutions):
-            iou = find_boxes.find_boxes_eval(coord_results, boxes_solutions)
-            print(f'Mean IoU = {sum(iou)/len(iou)}')
-
-    # Generating DB and query dictionary of histograms
-    #hist_query = histograms.get_histograms(directory_query, output_name, color_code, query = True , with_mask = True and backgrounds)
-    #hist_bbdd = histograms.get_histograms(directory_bbdd, output_name, color_code, query = False , with_mask = False)
     
-    #si es vol amb backgrounds, s'hauria de passar la imatge ja filtrada amb la part rectangular que volem
+    ### PIPELINE
 
-    #Block histograms 1 level'''
-    hist_query = histograms.get_block_histograms(directory_query, directory_output, 7, 40, query = True )
-    hist_bbdd = histograms.get_block_histograms(directory_bbdd, directory_output, 7, 40, query = False )
+    ## DB Descriptors extraction
+    db_descriptors = {}
+    if(recompute_db):
+        print(f'Exctracting descriptors from DB directory: {global_variables.dir_db}')
+        for filename in os.scandir(global_variables.dir_db):
+            f = os.path.join(global_variables.dir_db, filename)
+            # checking if it is a file
+            if f.endswith('.jpg'):
+                f_name = filename.name.split('.')[0].split('_')[1]
+                image = cv2.imread(f)
+                db_descriptors[f_name] = histograms.get_block_histograms(image, 7, 40, has_boundingbox, is_query = False, text_mask = None)
+        with open(f'{global_variables.dir_db_aux}precomputed_descriptors.pkl', 'wb') as handle:
+            pickle.dump(db_descriptors, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    else:
+        try:
+            with open(f'{global_variables.dir_db_aux}precomputed_descriptors.pkl', "rb" ) as f:
+                db_descriptors = pickle.load(f)
+        except:
+            print('Exiting. No precomputed pickle found')
+            exit(1)
 
-    #Block histograms Multilevel
-    #hist_query = histograms.get_block_histograms_multiLevel(directory_query, output_name,5,7, 40, query = True )
-    #hist_bbdd = histograms.get_block_histograms_multiLevel(directory_bbdd, output_name, 5,7, 40, query = False )
+    ## Query processing 
+    dists = {}
+    all_bbox_result = []
+    all_coord_results = []
+    print(f'Start of processing fo the query: {global_variables.dir_query}')
+    for filename in os.scandir(global_variables.dir_query):
+        f = os.path.join(global_variables.dir_query, filename)
+        # checking if it is a file
+        if f.endswith(f'{global_variables.test_image}.jpg'): 
+            f_name = filename.name.split('.')[0]
+            image = cv2.imread(f)
 
-    #3D histograms 
-    #hist_query = histograms.get_histograms3D(directory_query, output_name, 30, query = True , with_mask = True and backgrounds)
-    #hist_bbdd = histograms.get_histograms3D(directory_bbdd, output_name, 30, query = False , with_mask = False)
-  
+            # BG removal
+            if(backgrounds):
+                # Idea Guillem: query_descriptors[f_name].num_paint, query_descriptors[f_name].mask_coords = mask_v1.generate_masks_otsu(image, f_name, dir_results, may_have_split)
+                masks.generate_masks_otsu(image, f_name, may_have_split)
 
-    # Calculating distances between the histograms 
-    #dists = distances.query_measures_colour(hist_query, hist_bbdd, distance_type)
+            # ! We are going to change it completely, so it is not necessary to test it
+            # ! if(may_have_split):
+            # !    split_images.split_images(image, f_name, dir_query)
+            bbox_result = coord_results = []
+            text_mask = None
+            if(has_boundingbox):
+                print('Searching boxes at:', f_name)
+                bbox_result, coord_results, text_mask = find_boxes.find_boxes(image, f_name, printbox = True)
+                all_bbox_result.append(bbox_result)
+                all_coord_results.append(coord_results)
 
-    # Calculating distances between 3D histograms 
-    dists = distances.query_measures_colour(hist_query, hist_bbdd, distance_type)
+            hist_image = histograms.get_block_histograms(image, 7, 40, has_boundingbox, is_query = True, text_mask = text_mask)
+
+            dists[f_name] = distances.query_measures_colour(hist_image, db_descriptors, distance_type)
+            
+    ## Results processing
+
     # Results sorting
     results_sorted = distances.get_sorted_list_of_lists(dists, distance_type)
-    # Results refining
-    results_refined = utils.refine_results(results_sorted)
+    for idx, l in enumerate(results_sorted):
+        print(f'Result for image {idx}:', l)
+    
+    # ! Because of inestability of expected text box output
+    final_box_results = all_bbox_result
 
+    print('Coordinates result:')
+    print(final_box_results)
+
+    # Results printing
+    for idx, l in enumerate(results_sorted):
+        print(f'For image {idx}:')
+        print(f'Search result: {l}')
+        if(has_boundingbox): print(f'Boxes: {final_box_results[idx]}')
+
+    # Results evaluation
     if(solutions):
         # Algorithm evaluation
         mapk1 = scores.mapk(query_solutions, results_sorted, k = 1)
         print(f'The map-1 score is: {round(mapk1, 2)}')
         mapk5 = scores.mapk(query_solutions, results_sorted, k = 5)
         print(f'The map-5 score is: {round(mapk5, 2)}')
-        if(backgrounds):
-            mask_evaluation.mask_eval_avg(directory_output, directory_query, print_each = False, print_avg = True)
-    else:
-        print('No solutions given --> evaluation not avaliable.')
+        # if(backgrounds):
+        #     mask_evaluation.mask_eval_avg(directory_output, dir_query, print_each = False, print_avg = True)
+        if(has_boundingbox):
+            iou = find_boxes.find_boxes_eval(final_box_results, boxes_solutions)
+            print(f'Mean IoU = {sum(iou)/len(iou)}')
 
-    # # Shorten of the results lists to k=10
-    # results_sorted_top = [l[:10] for l in results_sorted]
-    for idx, l in enumerate(results_refined):
-        print(f'Result for image {idx}:', l)
-    with open(directory_output + '/result.pkl', 'wb') as handle:
-        print('results', results_refined)
-        pickle.dump(results_refined, handle, protocol=pickle.HIGHEST_PROTOCOL)
-    
-    with open(directory_output + '/text_boxes.pkl', 'wb') as handle:
-        print('text_boxes', coord_results)
-        pickle.dump(coord_results, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    else:
+        print('No solutions given --> Evaluation not avaliable.')
+
+    # Results writing to Pickle file
+    with open(f'{global_variables.dir_results}result.pkl', 'wb') as handle:
+        pickle.dump(results_sorted, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    if(has_boundingbox):
+        with open(f'{global_variables.dir_results}text_boxes.pkl', 'wb') as handle:
+            print('text_boxes', final_box_results)
+            pickle.dump(final_box_results, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 if __name__ == "__main__":
     main()

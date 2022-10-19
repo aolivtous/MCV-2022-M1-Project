@@ -1,3 +1,5 @@
+from main import *
+
 def str_to_bool(v):
     """
     It takes a string and its boolean value
