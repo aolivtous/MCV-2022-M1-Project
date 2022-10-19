@@ -68,37 +68,3 @@ def query_measures_colour(hist_image, db_descriptors, distance_type):
         dists[key_db] = distances(dist)
 
     return dists
-
-def get_sorted_list_of_lists(dists, distance_type):
-    """
-    It takes a dictionary of dictionaries and returns a list of lists, where each list is a sorted list
-    of the keys of the inner dictionaries
-    
-    :param dists: a dictionary of dictionaries, where the key of the outer dictionary is the query
-    image, and the key of the inner dictionary is the database image. The value of the inner dictionary
-    is an object of type Distance, which contains the distance between the query image and the database
-    image
-    :param distance_type: the type of distance metric to use.
-    :return: A list of lists, where each list is the sorted list of image index results for a query.
-    """
-    list_of_lists = []
-    if distance_type == "eucli" or distance_type ==  "hellin" or distance_type == "chisq":
-        reverse = False
-    else:
-        reverse = True
-    
-    # Sort dict to assure the order
-    dists = dict(sorted(dists.items(),key=lambda x:x[0]))
-    aux_result = []
-    for key_query, _ in dists.items():
-        sorted_list = [int(key) for key, _ in sorted(dists[key_query].items(), key=lambda item: item[1].dist, reverse=reverse)][:10]
-        print('key', key_query)
-        if 'part' in key_query:
-            aux_result.append(sorted_list)
-            if key_query.endswith('2'):
-                list_of_lists.append(aux_result)
-                aux_result = []
-        else:
-            list_of_lists.append([sorted_list])
-
-    return list_of_lists

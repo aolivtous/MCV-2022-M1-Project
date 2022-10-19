@@ -96,8 +96,9 @@ def main():
 
     ## Query processing 
     dists = {}
-    all_bbox_result = []
-    all_coord_results = []
+    textbox_coords = {}
+    # all_bbox_result = []
+    # all_coord_results = []
     print(f'Start of processing fo the query: {global_variables.dir_query}')
     for filename in os.scandir(global_variables.dir_query):
         f = os.path.join(global_variables.dir_query, filename)
@@ -119,8 +120,10 @@ def main():
             if(has_boundingbox):
                 print('Searching boxes at:', f_name)
                 bbox_result, coord_results, text_mask = find_boxes.find_boxes(image, f_name, printbox = True)
-                all_bbox_result.append(bbox_result)
-                all_coord_results.append(coord_results)
+                # ! Change this in case of neccessity (inestability of expected text box output)
+                textbox_coords[f_name] = bbox_result
+                # all_bbox_result.append(bbox_result)
+                # all_coord_results.append(coord_results)
 
             hist_image = histograms.get_block_histograms(image, 7, 40, has_boundingbox, is_query = True, text_mask = text_mask)
 
@@ -129,21 +132,14 @@ def main():
     ## Results processing
 
     # Results sorting
-    results_sorted = distances.get_sorted_list_of_lists(dists, distance_type)
-    for idx, l in enumerate(results_sorted):
-        print(f'Result for image {idx}:', l)
-    
-    # ! Because of inestability of expected text box output
-    final_box_results = all_bbox_result
-
-    print('Coordinates result:')
-    print(final_box_results)
+    results_sorted = utils.get_sorted_list_of_lists_from_dict_of_dicts(dists, distance_type, two_level = may_have_split)
+    textboxes_result = utils.get_simple_list_of_lists_from_dict_of_dicts(textbox_coords, two_level = may_have_split)
 
     # Results printing
     for idx, l in enumerate(results_sorted):
         print(f'For image {idx}:')
         print(f'Search result: {l}')
-        if(has_boundingbox): print(f'Boxes: {final_box_results[idx]}')
+        if(has_boundingbox): print(f'Boxes: {textboxes_result[idx]}')
 
     # Results evaluation
     if(solutions):
@@ -155,7 +151,7 @@ def main():
         # if(backgrounds):
         #     mask_evaluation.mask_eval_avg(directory_output, dir_query, print_each = False, print_avg = True)
         if(has_boundingbox):
-            iou = find_boxes.find_boxes_eval(final_box_results, boxes_solutions)
+            iou = find_boxes.find_boxes_eval(textboxes_result, boxes_solutions)
             print(f'Mean IoU = {sum(iou)/len(iou)}')
 
     else:
@@ -166,8 +162,7 @@ def main():
         pickle.dump(results_sorted, handle, protocol=pickle.HIGHEST_PROTOCOL)
     if(has_boundingbox):
         with open(f'{global_variables.dir_results}text_boxes.pkl', 'wb') as handle:
-            print('text_boxes', final_box_results)
-            pickle.dump(final_box_results, handle, protocol=pickle.HIGHEST_PROTOCOL)
+            pickle.dump(textboxes_result, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 if __name__ == "__main__":
     main()

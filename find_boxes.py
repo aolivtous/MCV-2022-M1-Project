@@ -214,7 +214,7 @@ def find_boxes_eval(list_bbox_prediction, list_bbox_solution):
             try:
                 iou = bbox_iou(list_bbox_prediction[i][j], list_bbox_solution[i][j])
                 iou_list.append(iou)
-                print(f'iou of image {i} part {j}: {iou}')
+                # print(f'iou of image {i} part {j}: {iou}')
             except:
                 continue 
     return iou_list
