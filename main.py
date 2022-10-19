@@ -97,8 +97,6 @@ def main():
     ## Query processing 
     dists = {}
     textbox_coords = {}
-    # all_bbox_result = []
-    # all_coord_results = []
     print(f'Start of processing fo the query: {global_variables.dir_query}')
     for filename in os.scandir(global_variables.dir_query):
         f = os.path.join(global_variables.dir_query, filename)
@@ -122,8 +120,6 @@ def main():
                 bbox_result, coord_results, text_mask = find_boxes.find_boxes(image, f_name, printbox = True)
                 # ! Change this in case of neccessity (inestability of expected text box output)
                 textbox_coords[f_name] = bbox_result
-                # all_bbox_result.append(bbox_result)
-                # all_coord_results.append(coord_results)
 
             hist_image = histograms.get_block_histograms(image, 7, 40, has_boundingbox, is_query = True, text_mask = text_mask)
 
