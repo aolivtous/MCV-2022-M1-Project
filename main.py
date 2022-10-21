@@ -41,7 +41,7 @@ def main():
         solutions = bool(utils.str_to_bool(sys.argv[6]))
         recompute_db = bool(utils.str_to_bool(sys.argv[7]))
     except:
-        print(f'Exiting. Not enough arguments ({len(sys.argv) - 1} of 6)')
+        print(f'Exiting. Not enough arguments ({len(sys.argv) - 1} of 7)')
         exit(1)
 
     global_variables.init(name_query)
@@ -100,6 +100,7 @@ def main():
     mask_coords = {}
     dists = {}
     textbox_coords = {}
+    painting = {}
 
     print(f'Start of processing fo the query: {global_variables.dir_query}')
     count=0
@@ -109,27 +110,49 @@ def main():
         if f.endswith(f'{global_variables.test_image}.jpg'): 
             f_name = filename.name.split('.')[0]
             image = cv2.imread(f)
-
-            # BG removal
+            
+            painting = [image]
+            cv2.imshow('', painting[0])
+            cv2.waitKey()
+            cv2.destroyAllWindows
+            # BG removal and croping images in paintings
             if(backgrounds):
                 # Idea Guillem: query_descriptors[f_name].num_paint, query_descriptors[f_name].mask_coords = mask_v1.generate_masks_otsu(image, f_name, dir_results, may_have_split)
                 num_paintings[f_name], mask_coords[f_name] = masks.generate_masks(image, f_name, may_have_split)
+                print(f'num painting image {f_name}: {num_paintings[f_name]}')
+                print(f'top left x ={mask_coords[f_name][0][0]}, top left y ={mask_coords[f_name][0][1]},bottom right x ={mask_coords[f_name][0][2]},bottom right y ={mask_coords[f_name][0][3]}')
+              
+                if(num_paintings[f_name] == 1):
+                    painting = [image[mask_coords[f_name][0][0]:mask_coords[f_name][0][2],mask_coords[f_name][0][1]:mask_coords[f_name][0][3]]]
+                    cv2.imshow('painting 0', painting[0])
+                    cv2.waitKey()
+                    cv2.destroyAllWindows
+                elif(num_paintings[f_name] == 2):
+                    painting = [image[mask_coords[f_name][0][0]:mask_coords[f_name][0][2],mask_coords[f_name][0][1]:mask_coords[f_name][0][3]],image[mask_coords[f_name][1][0]:mask_coords[f_name][1][2],mask_coords[f_name][1][1]:mask_coords[f_name][1][3]]]
+                    cv2.imshow('painting 0', painting[0])
+                    cv2.waitKey()
+                    cv2.imshow('painting 1', painting[1])
+                    cv2.waitKey()
+                    cv2.destroyAllWindows
 
+            
+                    
             count+=1
             if count==3:
-                break
-
+                 break
+            
             # ! We are going to change it completely, so it is not necessary to test it
             # ! if(may_have_split):
             # !    split_images.split_images(image, f_name, dir_query)
-            """bbox_result = coord_results = []
+            bbox_result = coord_results = []
             text_mask = None
             if(has_boundingbox):
                 print('Searching boxes at:', f_name)
                 bbox_result, coord_results, text_mask = find_boxes.find_boxes(image, f_name, printbox = True)
                 # ! Change this in case of neccessity (inestability of expected text box output)
                 textbox_coords[f_name] = bbox_result
-
+    
+            """
             hist_image = histograms.get_block_histograms(image, 7, 40, has_boundingbox, is_query = True, text_mask = text_mask)
 
             dists[f_name] = distances.query_measures_colour(hist_image, db_descriptors, distance_type)"""
