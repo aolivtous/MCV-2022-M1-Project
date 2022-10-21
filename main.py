@@ -74,7 +74,7 @@ def main():
     ### PIPELINE
 
     ## DB Descriptors extraction
-    """db_descriptors = {}
+    '''db_descriptors = {}
     if(recompute_db):
         print(f'Exctracting descriptors from DB directory: {global_variables.dir_db}')
         for filename in os.scandir(global_variables.dir_db):
@@ -84,7 +84,8 @@ def main():
                 f_name = filename.name.split('.')[0].split('_')[1]
                 image = cv2.imread(f)
                 db_descriptors[f_name] = histograms.get_block_histograms(image, 7, 40, has_boundingbox, is_query = False, text_mask = None)
-        with open(f'{global_variables.dir_db_aux}precomputed_descriptors.pkl', 'wb') as handle:
+        with open(f'{gl
+        obal_variables.dir_db_aux}precomputed_descriptors.pkl', 'wb') as handle:
             pickle.dump(db_descriptors, handle, protocol=pickle.HIGHEST_PROTOCOL)
     else:
         try:
@@ -92,12 +93,13 @@ def main():
                 db_descriptors = pickle.load(f)
         except:
             print('Exiting. No precomputed pickle found')
-            exit(1)"""
+            exit(1)'''
 
     ## Query processing 
     dists = {}
     textbox_coords = {}
     print(f'Start of processing fo the query: {global_variables.dir_query}')
+    count=0
     for filename in os.scandir(global_variables.dir_query):
         f = os.path.join(global_variables.dir_query, filename)
         # checking if it is a file
@@ -109,6 +111,10 @@ def main():
             if(backgrounds):
                 # Idea Guillem: query_descriptors[f_name].num_paint, query_descriptors[f_name].mask_coords = mask_v1.generate_masks_otsu(image, f_name, dir_results, may_have_split)
                 masks.generate_masks(image, f_name, may_have_split)
+
+            count+=1
+            if count==3:
+                break
 
             # ! We are going to change it completely, so it is not necessary to test it
             # ! if(may_have_split):
