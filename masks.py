@@ -39,11 +39,15 @@ def generate_masks(image, f_name, splitimage): #NOVA FUNCIO PER DETECTAR ELS QUA
     :param threshold_value: The value that the pixels will be compared to, defaults to 100 (optional)
     :return: the mask of the image.
     """
+
+
+    #Parametres provats en el seguent ordre: thr per la binaritzacio del laplacia, size opening 1, size dilation, size opening 2
+    # Funcionen bastant semblant 7,3,5,20  / 10,2,5,20 / 10,2,3,20 (igual millor la tercera opcio)
+    # No van be: 10,2,7,20 / 10,2,7,25 / 10,3,5,20 /  10,2,5,25
+
     image_cpy = image.copy()
     width, height, _ = image.shape
-    print(width)
-    print(height)
-    
+   
 
     # remove noise
     image = cv2.GaussianBlur(image,(7,7),0)
@@ -51,21 +55,26 @@ def generate_masks(image, f_name, splitimage): #NOVA FUNCIO PER DETECTAR ELS QUA
     gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
     # convolute with proper kernels
-    laplacian = cv2.Laplacian(gray_image,cv2.CV_64F, ksize = 3)
+    lap = cv2.Laplacian(gray_image,cv2.CV_32F, ksize = 3)
 
-    cv2.imshow("Laplacian", laplacian)
+    th, laplacian = cv2.threshold(lap, 10,255,cv2.THRESH_BINARY)
+    
+    """cv2.imshow("Laplacian", abs_dst)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
     
-    # Apply close morphology operator in order denoise
+    cv2.imshow("Laplacian", lap)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()"""
+    # Apply close morphology operator
   
-    element = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
+    element = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2))
     mask_open = cv2.morphologyEx(laplacian, cv2.MORPH_OPEN, element)
 
-    element_dil = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
+    element_dil = cv2.getStructuringElement(cv2.MORPH_RECT, (3,3))
     dilation = cv2.dilate(mask_open,element_dil)
 
-    cv2.imshow("Laplacian", mask_open)
+    """cv2.imshow("Laplacian", mask_open)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
@@ -74,15 +83,19 @@ def generate_masks(image, f_name, splitimage): #NOVA FUNCIO PER DETECTAR ELS QUA
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
-    element2 = cv2.getStructuringElement(cv2.MORPH_RECT, (20, 20))
-    mask_open2 = cv2.morphologyEx(dilation, cv2.MORPH_CLOSE, element2)
-
     cv2.imshow("Laplacian", mask_open2)
     cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    cv2.destroyAllWindows()"""
+
+
+    element2 = cv2.getStructuringElement(cv2.MORPH_RECT, (25, 25))
+    mask_open2 = cv2.morphologyEx(dilation, cv2.MORPH_CLOSE, element2)
+
 
 
     contours, hierarchy = cv2.findContours(np.uint8(mask_open2), cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+
+    print(len(contours))
 
     areaArray = []
     for i, c in enumerate(contours):
@@ -93,6 +106,7 @@ def generate_masks(image, f_name, splitimage): #NOVA FUNCIO PER DETECTAR ELS QUA
     sorteddata = sorted(zip(areaArray, contours), key=lambda x: x[0], reverse=True)
 
     #find the nth largest contours
+  
     firstgestcontour = sorteddata[0][1]
     x, y, w, h = cv2.boundingRect(firstgestcontour)
     mark_red_rectangle = cv2.rectangle(image_cpy, (x, y), (x + w, y + h), (0, 0, 255), 3)
@@ -101,14 +115,19 @@ def generate_masks(image, f_name, splitimage): #NOVA FUNCIO PER DETECTAR ELS QUA
         secondlargestcontour = sorteddata[1][1]
         x2, y2, w2, h2 = cv2.boundingRect(secondlargestcontour)
 
-        if(w2*h2 > 0.1*width*height):
+        if(w2*h2 > 0.06*width*height):
             mark_red_rectangle = cv2.rectangle(image_cpy, (x2, y2), (x2 + w2, y2 + h2), (0, 0, 255), 3)
 
-      
-        
-    cv2.imshow("Laplacian", image_cpy)
+
+    """cv2.imshow("Laplacian", image_cpy)
     cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    cv2.destroyAllWindows()"""
+
+    cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_laplacian.png', laplacian)
+    cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_laplacian_open.png', np.uint8(mask_open))
+    cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_laplaian_open_dilate.png', np.uint8(dilation))
+    cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_laplaian_open_dilate_open.png', np.uint8(mask_open2))
+    cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_laplacian_boxes.png', image_cpy)
     return
 
 
