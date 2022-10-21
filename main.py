@@ -96,8 +96,11 @@ def main():
             exit(1)'''
 
     ## Query processing 
+    num_paintings = {}
+    mask_coords = {}
     dists = {}
     textbox_coords = {}
+
     print(f'Start of processing fo the query: {global_variables.dir_query}')
     count=0
     for filename in os.scandir(global_variables.dir_query):
@@ -110,7 +113,7 @@ def main():
             # BG removal
             if(backgrounds):
                 # Idea Guillem: query_descriptors[f_name].num_paint, query_descriptors[f_name].mask_coords = mask_v1.generate_masks_otsu(image, f_name, dir_results, may_have_split)
-                masks.generate_masks(image, f_name, may_have_split)
+                num_paintings[f_name], mask_coords[f_name] = masks.generate_masks(image, f_name, may_have_split)
 
             count+=1
             if count==3:

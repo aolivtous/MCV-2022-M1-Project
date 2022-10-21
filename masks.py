@@ -113,7 +113,9 @@ def generate_masks(image, f_name, splitimage): #NOVA FUNCIO PER DETECTAR ELS QUA
     painting_box = [[x, y, x+w, y+h]]
     part1 = im.crop(x, y, x+w, y+h)
 
+    num_paintings = 1
     if len(contours) > 1 :
+        num_paintings = 2
         secondlargestcontour = sorteddata[1][1]
         x2, y2, w2, h2 = cv2.boundingRect(secondlargestcontour)
 
@@ -134,7 +136,7 @@ def generate_masks(image, f_name, splitimage): #NOVA FUNCIO PER DETECTAR ELS QUA
 
 
 
-    return painting_box
+    return num_paintings, painting_box
 
 
 

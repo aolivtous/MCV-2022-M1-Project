@@ -95,13 +95,20 @@ def noise_ckeck_removal(image,f_name):
 
     median = cv2.medianBlur(image,3)
     ssim = calculate_ssim(image,median)
-    check = False
+    to_be_denoised = False
     image_denoised = image
     if(ssim < 0.65):
-        check = True
+        to_be_denoised = True
         image_denoised = median
     
-    return check, image_denoised
+    return to_be_denoised, image_denoised
+
+
+
+
+
+
+
 
 
 
