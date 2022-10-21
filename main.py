@@ -97,8 +97,11 @@ def main():
             exit(1)
     
     ## Query processing 
+    num_paintings = {}
+    mask_coords = {}
     dists = {}
     textbox_coords = {}
+    painting = {}
     print(f'Start of processing fo the query: {global_variables.dir_query}')
     for filename in tqdm(os.scandir(global_variables.dir_query)):
         f = os.path.join(global_variables.dir_query, filename)
@@ -107,14 +110,30 @@ def main():
             f_name = filename.name.split('.')[0]
             image = cv2.imread(f)
 
-            # BG removal
+            painting = [image]
+            cv2.imshow('', painting[0])
+            cv2.waitKey()
+            cv2.destroyAllWindows
+            # BG removal and croping images in paintings
             if(backgrounds):
                 # Idea Guillem: query_descriptors[f_name].num_paint, query_descriptors[f_name].mask_coords = mask_v1.generate_masks_otsu(image, f_name, dir_results, may_have_split)
-                masks.generate_masks(image, f_name, may_have_split)
+                num_paintings[f_name], mask_coords[f_name] = masks.generate_masks(image, f_name, may_have_split)
+                print(f'num painting image {f_name}: {num_paintings[f_name]}')
+                print(f'top left x ={mask_coords[f_name][0][0]}, top left y ={mask_coords[f_name][0][1]},bottom right x ={mask_coords[f_name][0][2]},bottom right y ={mask_coords[f_name][0][3]}')
+              
+                if(num_paintings[f_name] == 1):
+                    painting = [image[mask_coords[f_name][0][0]:mask_coords[f_name][0][2],mask_coords[f_name][0][1]:mask_coords[f_name][0][3]]]
+                    cv2.imshow('painting 0', painting[0])
+                    cv2.waitKey()
+                    cv2.destroyAllWindows
+                elif(num_paintings[f_name] == 2):
+                    painting = [image[mask_coords[f_name][0][0]:mask_coords[f_name][0][2],mask_coords[f_name][0][1]:mask_coords[f_name][0][3]],image[mask_coords[f_name][1][0]:mask_coords[f_name][1][2],mask_coords[f_name][1][1]:mask_coords[f_name][1][3]]]
+                    cv2.imshow('painting 0', painting[0])
+                    cv2.waitKey()
+                    cv2.imshow('painting 1', painting[1])
+                    cv2.waitKey()
+                    cv2.destroyAllWindows
 
-            # ! We are going to change it completely, so it is not necessary to test it
-            # ! if(may_have_split):
-            # !    split_images.split_images(image, f_name, dir_query)
             bbox_result = coord_results = []
             text_mask = None
             if(has_boundingbox):
