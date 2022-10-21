@@ -95,7 +95,7 @@ def generate_masks(image, f_name, splitimage): #NOVA FUNCIO PER DETECTAR ELS QUA
 
     contours, hierarchy = cv2.findContours(np.uint8(mask_open2), cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
 
-    print(len(contours))
+    # print(len(contours))
 
     areaArray = []
     for i, c in enumerate(contours):
@@ -111,16 +111,19 @@ def generate_masks(image, f_name, splitimage): #NOVA FUNCIO PER DETECTAR ELS QUA
     x, y, w, h = cv2.boundingRect(firstgestcontour)
     mark_red_rectangle = cv2.rectangle(image_cpy, (x, y), (x + w, y + h), (0, 0, 255), 3)
     painting_box = [[x, y, x+w, y+h]]
-    part1 = im.crop(x, y, x+w, y+h)
+    #part1 = im.crop(x, y, x+w, y+h)
 
+    num_paintings = 1
     if len(contours) > 1 :
+        
         secondlargestcontour = sorteddata[1][1]
         x2, y2, w2, h2 = cv2.boundingRect(secondlargestcontour)
 
         if(w2*h2 > 0.06*width*height):
             mark_red_rectangle = cv2.rectangle(image_cpy, (x2, y2), (x2 + w2, y2 + h2), (0, 0, 255), 3)
-        painting_box = [[x, y, x+w, y+h],[x2, y2, x2+w2, y2+h2]]
-        part2 = im.crop(x2, y2, x2+w2, y2+h2)
+            num_paintings = 2
+            painting_box = [[x, y, x+w, y+h],[x2, y2, x2+w2, y2+h2]]
+            #part2 = im.crop(x2, y2, x2+w2, y2+h2)
 
     """cv2.imshow("Laplacian", image_cpy)
     cv2.waitKey(0)
@@ -134,7 +137,7 @@ def generate_masks(image, f_name, splitimage): #NOVA FUNCIO PER DETECTAR ELS QUA
 
 
 
-    return painting_box
+    return num_paintings, painting_box
 
 
 

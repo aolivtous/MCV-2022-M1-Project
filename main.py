@@ -85,7 +85,7 @@ def main():
             if f.endswith('.jpg'):
                 f_name = filename.name.split('.')[0].split('_')[1]
                 image = cv2.imread(f)
-                db_descriptors[f_name] = histograms.get_block_histograms(image, 1, 255, has_boundingbox, is_query = False, text_mask = None, descriptor='texture')
+                db_descriptors[f_name] = histograms.get_block_histograms(image, 7, 40, has_boundingbox, is_query = False, text_mask = None, descriptor='texture')
         with open(f'{global_variables.dir_db_aux}precomputed_descriptors.pkl', 'wb') as handle:
             pickle.dump(db_descriptors, handle, protocol=pickle.HIGHEST_PROTOCOL)
     else:
@@ -123,7 +123,7 @@ def main():
                 # ! Change this in case of neccessity (inestability of expected text box output)
                 textbox_coords[f_name] = bbox_result
 
-            hist_image = histograms.get_block_histograms(image, 1, 255, has_boundingbox, is_query = True, text_mask = text_mask, descriptor = 'texture')
+            hist_image = histograms.get_block_histograms(image, 7, 40, has_boundingbox, is_query = True, text_mask = text_mask, descriptor = 'texture')
 
             dists[f_name] = distances.query_measures_colour(hist_image, db_descriptors, distance_type, descriptor = 'texture')
             

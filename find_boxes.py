@@ -92,7 +92,7 @@ def find_boxes(image, f_name, printbox=False):
             w_min = w
             h_min = h
    
-    #Extensió del rectangle 
+    #Extension of rectangle 
     tol = 10
     try:
         while abs(int(image_hsv[y_min + h_min, x_min][1]) - int(image_hsv[y_min + h_min +1, x_min][1])) < tol and (image_hsv[y_min + h_min, x_min][2]<25 or image_hsv[y_min + h_min, x_min][2]>240) :
