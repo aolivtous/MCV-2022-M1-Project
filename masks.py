@@ -53,7 +53,7 @@ def generate_masks(image, f_name, splitimage): #NOVA FUNCIO PER DETECTAR ELS QUA
     image = cv2.GaussianBlur(image,(7,7),0)
 
     gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-
+    
     # convolute with proper kernels
     lap = cv2.Laplacian(gray_image,cv2.CV_32F, ksize = 3)
 
@@ -128,6 +128,9 @@ def generate_masks(image, f_name, splitimage): #NOVA FUNCIO PER DETECTAR ELS QUA
     cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_laplaian_open_dilate.png', np.uint8(dilation))
     cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_laplaian_open_dilate_open.png', np.uint8(mask_open2))
     cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_laplacian_boxes.png', image_cpy)
+
+    
+
     return
 
 
