@@ -10,7 +10,9 @@ from matplotlib import pyplot as plt
 import numpy as np
 from numpy.ma.core import mean
 import pickle
+from skimage import feature
 import statistics
+from tqdm import tqdm
 
 # Internal modules
 import global_variables
@@ -74,18 +76,17 @@ def main():
     ### PIPELINE
 
     ## DB Descriptors extraction
-    '''db_descriptors = {}
-    if(recompute_db):
+    db_descriptors = {}
+    if recompute_db:
         print(f'Exctracting descriptors from DB directory: {global_variables.dir_db}')
-        for filename in os.scandir(global_variables.dir_db):
+        for filename in tqdm(os.scandir(global_variables.dir_db)):
             f = os.path.join(global_variables.dir_db, filename)
             # checking if it is a file
             if f.endswith('.jpg'):
                 f_name = filename.name.split('.')[0].split('_')[1]
                 image = cv2.imread(f)
-                db_descriptors[f_name] = histograms.get_block_histograms(image, 7, 40, has_boundingbox, is_query = False, text_mask = None)
-        with open(f'{gl
-        obal_variables.dir_db_aux}precomputed_descriptors.pkl', 'wb') as handle:
+                db_descriptors[f_name] = histograms.get_block_histograms(image, 1, 255, has_boundingbox, is_query = False, text_mask = None, descriptor='texture')
+        with open(f'{global_variables.dir_db_aux}precomputed_descriptors.pkl', 'wb') as handle:
             pickle.dump(db_descriptors, handle, protocol=pickle.HIGHEST_PROTOCOL)
     else:
         try:
@@ -93,14 +94,13 @@ def main():
                 db_descriptors = pickle.load(f)
         except:
             print('Exiting. No precomputed pickle found')
-            exit(1)'''
-
+            exit(1)
+    
     ## Query processing 
     dists = {}
     textbox_coords = {}
     print(f'Start of processing fo the query: {global_variables.dir_query}')
-    count=0
-    for filename in os.scandir(global_variables.dir_query):
+    for filename in tqdm(os.scandir(global_variables.dir_query)):
         f = os.path.join(global_variables.dir_query, filename)
         # checking if it is a file
         if f.endswith(f'{global_variables.test_image}.jpg'): 
@@ -112,14 +112,10 @@ def main():
                 # Idea Guillem: query_descriptors[f_name].num_paint, query_descriptors[f_name].mask_coords = mask_v1.generate_masks_otsu(image, f_name, dir_results, may_have_split)
                 masks.generate_masks(image, f_name, may_have_split)
 
-            count+=1
-            if count==3:
-                break
-
             # ! We are going to change it completely, so it is not necessary to test it
             # ! if(may_have_split):
             # !    split_images.split_images(image, f_name, dir_query)
-            """bbox_result = coord_results = []
+            bbox_result = coord_results = []
             text_mask = None
             if(has_boundingbox):
                 print('Searching boxes at:', f_name)
@@ -127,13 +123,14 @@ def main():
                 # ! Change this in case of neccessity (inestability of expected text box output)
                 textbox_coords[f_name] = bbox_result
 
-            hist_image = histograms.get_block_histograms(image, 7, 40, has_boundingbox, is_query = True, text_mask = text_mask)
+            hist_image = histograms.get_block_histograms(image, 1, 255, has_boundingbox, is_query = True, text_mask = text_mask, descriptor = 'texture')
 
-            dists[f_name] = distances.query_measures_colour(hist_image, db_descriptors, distance_type)"""
+            dists[f_name] = distances.query_measures_colour(hist_image, db_descriptors, distance_type, descriptor = 'texture')
+            
             
     ## Results processing
 
-    """# Results sorting
+    # Results sorting
     results_sorted = utils.get_sorted_list_of_lists_from_dict_of_dicts(dists, distance_type, two_level = may_have_split)
     textboxes_result = utils.get_simple_list_of_lists_from_dict_of_dicts(textbox_coords, two_level = may_have_split)
 
@@ -164,7 +161,7 @@ def main():
         pickle.dump(results_sorted, handle, protocol=pickle.HIGHEST_PROTOCOL)
     if(has_boundingbox):
         with open(f'{global_variables.dir_results}text_boxes.pkl', 'wb') as handle:
-            pickle.dump(textboxes_result, handle, protocol=pickle.HIGHEST_PROTOCOL)"""
+            pickle.dump(textboxes_result, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 if __name__ == "__main__":
     main()
