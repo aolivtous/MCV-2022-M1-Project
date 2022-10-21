@@ -147,35 +147,11 @@ def find_boxes(image, f_name, printbox=False):
     #         aux_result = []
     #         aux_bbox_output = []
     # else:
-    result = [[x_min, y_min, x_min+w_min, y_min+h_min]]   
+    result = [(x_min, y_min, x_min+w_min, y_min+h_min)]   
     bbox_output = [[np.array([x_min, y_min]),np.array([x_min, y_min + h_min]),np.array([x_min + w_min, y_min + h_min]),np.array([x_min + w_min, y_min])]]
           
     return bbox_output, result, text_mask
 
-#  ? For format of qsd2_w2 text box solutions
-# # def bbox_iou(bboxA, bboxB):
-#     # compute the intersection over union of two bboxes
-
-#     # Format of the bboxes is [tly, tlx, bry, brx, ...], where tl and br
-#     # indicate top-left and bottom-right corners of the bbox respectively.
-
-#     # determine the coordinates of the intersection rectangle
-#     xA = max(bboxA[1], bboxB[1])
-#     yA = max(bboxA[0], bboxB[0])
-#     xB = min(bboxA[3], bboxB[3])
-#     yB = min(bboxA[2], bboxB[2])
-    
-#     # compute the area of intersection rectangle
-#     interArea = max(0, xB - xA + 1) * max(0, yB - yA + 1)
- 
-#     # compute the area of both bboxes
-#     bboxAArea = (bboxA[2] - bboxA[0] + 1) * (bboxA[3] - bboxA[1] + 1)
-#     bboxBArea = (bboxB[2] - bboxB[0] + 1) * (bboxB[3] - bboxB[1] + 1)
-    
-#     iou = interArea / float(bboxAArea + bboxBArea - interArea)
-    
-#     # return the intersection over union value
-#     return iou
 
 
 #  ? For format of qsd1_w2 text box solutions
@@ -218,3 +194,52 @@ def find_boxes_eval(list_bbox_prediction, list_bbox_solution):
             except:
                 continue 
     return iou_list
+
+
+
+#  ? For format of qsd2_w2 text box solutions
+def bbox_iou2(bboxA, bboxB):
+    # compute the intersection over union of two bboxes
+
+    # Format of the bboxes is [tly, tlx, bry, brx, ...], where tl and br
+    # indicate top-left and bottom-right corners of the bbox respectively.
+
+    # determine the coordinates of the intersection rectangle
+    xA = max(bboxA[1], bboxB[1])
+    yA = max(bboxA[0], bboxB[0])
+    xB = min(bboxA[3], bboxB[3])
+    yB = min(bboxA[2], bboxB[2])
+    
+    # compute the area of intersection rectangle
+    interArea = max(0, xB - xA + 1) * max(0, yB - yA + 1)
+ 
+    # compute the area of both bboxes
+    bboxAArea = (bboxA[2] - bboxA[0] + 1) * (bboxA[3] - bboxA[1] + 1)
+    bboxBArea = (bboxB[2] - bboxB[0] + 1) * (bboxB[3] - bboxB[1] + 1)
+    
+    iou = interArea / float(bboxAArea + bboxBArea - interArea)
+    
+    # return the intersection over union value
+    return iou
+
+# For pkl qsd1_w3 that uses this format list-list-tuple [[(1,2,3,4)], [(1,2,3,4),(5,6,7,8)]]
+def find_boxes_eval2(list_bbox_prediction, list_bbox_solution):
+    iou_list=[]
+    # for i in range(len(list_bbox_prediction)):
+    #     print('image', i, 'pred', list_bbox_prediction[i])
+    for i in range(len(list_bbox_prediction)):
+        for j in range(len(list_bbox_prediction[i])):
+            try:
+                iou = bbox_iou2(list(list_bbox_prediction[i][j]), list(list_bbox_solution[i][j]))
+                iou_list.append(iou)
+                #print(f'iou of image {i} part {j}: {iou}')
+            except:
+                continue 
+    return iou_list
+
+
+# boxes_predicted = [[(0, 0, 0, 0)], [(110, 40, 605, 82)], [(424, 1232, 472, 1248)], [(0, 0, 0, 0)], [(230, 73, 259, 81)], [(0, 0, 0, 0)], [(119, 14, 706, 116)], [(175, 486, 415, 494)], [(35, 136, 204, 156)], [(57, 265, 319, 301)], [(54, 10, 377, 60)], [(674, 1712, 1269, 1776)], [(39, 10, 217, 52)], [(77, 19, 429, 59)], [(0, 525, 724, 703)], [(75, 328, 410, 334)], [(22, 8, 414, 134)], [(0, 0, 0, 0)], [(316, 177, 456, 212)], [(61, 48, 310, 78)], [(54, 325, 265, 348)], [(0, 357, 1436, 481)], [(78, 320, 430, 368)], [(68, 82, 1531, 512)], [(0, 0, 0, 0)], [(0, 0, 0, 0)], [(82, 560, 457, 607)], [(64, 18, 357, 48)], [(0, 0, 0, 0)], [(144, 438, 217, 471)]]
+# boxes_solutions = [[(51, 39, 292, 73)], [(45, 21, 257, 65)], [(418, 79, 1018, 214)], [(76, 317, 432, 372)], [(38, 10, 216, 52)], [(72, 325, 412, 385)], [(114, 490, 646, 565)], [(64, 360, 365, 404)], [(35, 136, 202, 153)], [(672, 1703, 1272, 1787)], [(75, 17, 429, 60)], [(108, 576, 615, 668)], [(55, 41, 314, 85)], [(65, 8, 369, 60)], [(62, 4, 355, 65)], [(80, 558, 457, 609)], [(47, 324, 265, 369)], [(512, 220, 1112, 300)], [(170, 80, 770, 200)], [(107, 38, 605, 90)], [(56, 265, 318, 301)], [(66, 14, 376, 62)], [(90, 487, 509, 571)], [(120, 17, 679, 119)], [(72, 520, 411, 581)], [(86, 41, 490, 81)], [(74, 67, 419, 119)], [(57, 417, 323, 449)], [(63, 432, 357, 474)], [(65, 8, 369, 69)]]
+
+
+

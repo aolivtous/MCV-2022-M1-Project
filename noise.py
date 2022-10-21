@@ -6,6 +6,7 @@ import math
 
 
 dir_input = '../qsd1_w3/'
+dir_input_non_augmented ='../qsd1_w3/non_augmented/'
 #dir_output = '../denoised/'
 
 def calculate_psnr(img1, img2):
@@ -35,8 +36,8 @@ def ssim(img1, img2):
     sigma2_sq = cv2.filter2D(img2**2, -1, window)[5:-5, 5:-5] - mu2_sq
     sigma12 = cv2.filter2D(img1 * img2, -1, window)[5:-5, 5:-5] - mu1_mu2
 
-    ssim_map = ((2 * mu1_mu2 + C1) * (2 * sigma12 + C2)) / ((mu1_sq + mu2_sq + C1) *
-                                                            (sigma1_sq + sigma2_sq + C2))
+    ssim_map = ((2 * mu1_mu2 + C1) * (2 * sigma12 + C2)) / ((mu1_sq + mu2_sq + C1) * (sigma1_sq + sigma2_sq + C2))
+    
     return ssim_map.mean()
 
 def calculate_ssim(img1, img2):
@@ -90,6 +91,31 @@ def noise_thresholds_def(dir_input):
 #noise_thresholds_def(dir_input)
 
 
+def noise_thresholds_def2(dir_input, dir_input_non_augmented):
+    
+    for filename in os.scandir(dir_input):
+        f = os.path.join(dir_input, filename.name)
+        # checking if it is a file
+        if f.endswith('.jpg'):
+            f_name = filename.name.split('.')[0]
+            #print(f)
+            image=cv2.imread(f)
+            original = cv2.imread(f'{dir_input_non_augmented}{filename.name}')
+
+            psnr = calculate_psnr(image,original)
+            ssim = calculate_ssim(image,original)
+
+            print(f'{f_name}/ssim={ssim} psnr={psnr}')
+
+            compare = np.concatenate((image,original),axis=1)
+
+            # cv2.imshow(f'{f_name}', compare)
+            # cv2.waitKey()
+            # cv2.destroyAllWindows
+
+    return
+
+# noise_thresholds_def2(dir_input,dir_input_non_augmented)
 
 def noise_ckeck_removal(image,f_name):
 

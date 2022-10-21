@@ -95,7 +95,7 @@ def generate_masks(image, f_name, splitimage): #NOVA FUNCIO PER DETECTAR ELS QUA
 
     contours, hierarchy = cv2.findContours(np.uint8(mask_open2), cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
 
-    # print(len(contours))
+    print(len(contours))
 
     areaArray = []
     for i, c in enumerate(contours):
@@ -111,6 +111,7 @@ def generate_masks(image, f_name, splitimage): #NOVA FUNCIO PER DETECTAR ELS QUA
     x, y, w, h = cv2.boundingRect(firstgestcontour)
     mark_red_rectangle = cv2.rectangle(image_cpy, (x, y), (x + w, y + h), (0, 0, 255), 3)
     painting_box = [[x, y, x+w, y+h]]
+    print(x,y,x+w,y+h)
     #part1 = im.crop(x, y, x+w, y+h)
 
     num_paintings = 1
