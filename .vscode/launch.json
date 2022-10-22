@@ -11,7 +11,19 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "justMyCode": true,
-            "args": "qsd1_w1 1 0 0 0 1 1"
+            "args": "qsd1_w3 1 0 1 0 1 1 1"
         }
     ]
+
+
+
+    //name_query = sys.argv[1]
+    //method_search = int(sys.argv[2])
+    //backgrounds = bool(utils.str_to_bool(sys.argv[3]))
+    //has_boundingbox = bool(utils.str_to_bool(sys.argv[4]))
+    //may_have_split = bool(utils.str_to_bool(sys.argv[5]))
+    //may_have_noise = bool(utils.str_to_bool(sys.argv[6]))
+    //solutions = bool(utils.str_to_bool(sys.argv[7]))
+    //recompute_db = bool(utils.str_to_bool(sys.argv[8]))
+
 }

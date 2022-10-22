@@ -31,7 +31,7 @@ def generate_masks_otsu(image, f_name, splitimage):
             
     return
 
-def generate_masks(image, f_name, splitimage): #NOVA FUNCIO PER DETECTAR ELS QUADRES fent el LAPLACIA
+def generate_masks(image, f_name, mayhave_split): #NOVA FUNCIO PER DETECTAR ELS QUADRES fent el LAPLACIA
     """
     > The function takes as input the path of the image and the path of the output directory. It returns
     the mask of the image
@@ -115,7 +115,7 @@ def generate_masks(image, f_name, splitimage): #NOVA FUNCIO PER DETECTAR ELS QUA
     #part1 = im.crop(x, y, x+w, y+h)
 
     num_paintings = 1
-    if len(contours) > 1 :
+    if len(contours) > 1 and mayhave_split:
         
         secondlargestcontour = sorteddata[1][1]
         x2, y2, w2, h2 = cv2.boundingRect(secondlargestcontour)

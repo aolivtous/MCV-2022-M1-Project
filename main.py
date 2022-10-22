@@ -13,6 +13,7 @@ import pickle
 #from skimage import feature
 import statistics
 from tqdm import tqdm
+from skimage import feature
 
 # Internal modules
 import global_variables
@@ -78,7 +79,7 @@ def main():
     
     ### PIPELINE
     
-    ## DB Descriptors extraction
+    # DB Descriptors extraction
     db_descriptors = {}
     if recompute_db:
         print(f'Exctracting descriptors from DB directory: {global_variables.dir_db}')
@@ -88,7 +89,7 @@ def main():
             if f.endswith('.jpg'):
                 f_name = filename.name.split('.')[0].split('_')[1]
                 image = cv2.imread(f)
-                db_descriptors[f_name] = histograms.get_block_histograms(image, 7, 40, has_boundingbox, is_query = False, text_mask = None, descriptor='texture')
+                db_descriptors[f_name] = histograms.get_block_histograms(image, 7, 40, has_boundingbox, is_query = False, text_mask = None, descriptor='color')
         with open(f'{global_variables.dir_db_aux}precomputed_descriptors.pkl', 'wb') as handle:
             pickle.dump(db_descriptors, handle, protocol=pickle.HIGHEST_PROTOCOL)
     else:
@@ -104,7 +105,6 @@ def main():
     mask_coords = {}
     dists = {}
     textbox_coords = {}
-    painting = {}
     to_be_denoised = {}
 
     count = 0
@@ -116,10 +116,14 @@ def main():
             f_name = filename.name.split('.')[0]
             image = cv2.imread(f)
 
+            if(may_have_noise):
+                to_be_denoised[f_name], image_denoised = noise.noise_ckeck_removal(image,f_name)
+                if(to_be_denoised[f_name]):
+                    image = image_denoised
+
+
             painting = [image]
-            # cv2.imshow('', painting[0])
-            # cv2.waitKey()
-            # cv2.destroyAllWindows
+      
             # BG removal and croping images in paintings
             if(backgrounds):
                 # Idea Guillem: query_descriptors[f_name].num_paint, query_descriptors[f_name].mask_coords = mask_v1.generate_masks_otsu(image, f_name, dir_results, may_have_split)
@@ -129,39 +133,40 @@ def main():
               
                 if(num_paintings[f_name] == 1):
                     painting = [image[mask_coords[f_name][0][1]:mask_coords[f_name][0][3],mask_coords[f_name][0][0]:mask_coords[f_name][0][2]]]
-                    # cv2.imshow('painting 0', painting[0])
-                    # cv2.waitKey()
-                    # cv2.destroyAllWindows
+                    cv2.imwrite(f'{global_variables.dir_query_aux}{f_name}.png', painting[0])
+                    
+                   
                 elif(num_paintings[f_name] == 2):
                     painting = [image[mask_coords[f_name][0][1]:mask_coords[f_name][0][3],mask_coords[f_name][0][0]:mask_coords[f_name][0][2]],image[mask_coords[f_name][1][1]:mask_coords[f_name][1][3],mask_coords[f_name][1][0]:mask_coords[f_name][1][2]]]
-                    # cv2.imshow('painting 0', painting[0])
-                    # cv2.waitKey()
-                    # cv2.imshow('painting 1', painting[1])
-                    # cv2.waitKey()
-                    # cv2.destroyAllWindows
+                    
+                    cv2.imwrite(f'{global_variables.dir_query_aux}{f_name}_part1.png', painting[0])
+                    cv2.imwrite(f'{global_variables.dir_query_aux}{f_name}_part2.png', painting[1])
 
-            if(may_have_noise):
-                to_be_denoised[f_name], image_denoised = noise.noise_ckeck_removal(image,f_name)
-                if(to_be_denoised[f_name]):
-                    image = image_denoised
-
-            # count += 1
-            # if count == 3:
-            #     break
-
-            bbox_result = coord_results = []
-            text_mask = None
+                
             if(has_boundingbox):
-                print('Searching boxes at:', f_name)
-                bbox_result, coord_results, text_mask = find_boxes.find_boxes(image, f_name, printbox = True)
+
+                if(backgrounds):
+                    print('Searching boxes at:', f_name)
+                    coords =[]
+                    
+                    for count,p in enumerate(painting):
+                      
+                        coord_results,text_mask = find_boxes.find_boxes(p, f_name, printbox = True)
+                        coords.append([mask_coords[f_name][count][0]+coord_results[0],mask_coords[f_name][count][1]+coord_results[1],mask_coords[f_name][count][2]+coord_results[2],mask_coords[f_name][count][3]+coord_results[3]])
+                        hist_image = histograms.get_block_histograms(p, 7, 40, has_boundingbox, is_query = True, text_mask = text_mask, descriptor = 'color')
+                        dists[str(f_name)+"_part"+str(count+1)] = distances.query_measures_colour(hist_image, db_descriptors, distance_type, descriptor = 'color')
+                else:
+                    coords,text_mask = find_boxes.find_boxes(image, f_name, printbox = True)
+                    #format for qsd1_w3
+                    coords = [(coords[0],coords[1],coords[2],coords[3])] 
+                    hist_image = histograms.get_block_histograms(painting[0], 7, 40, has_boundingbox, is_query = True, text_mask = text_mask, descriptor = 'color')
+                    dists[f_name] = distances.query_measures_colour(hist_image, db_descriptors, distance_type, descriptor = 'color')
+
                 # ! Change this in case of neccessity (inestability of expected text box output)
-                textbox_coords[f_name] = coord_results
-
-            
-            hist_image = histograms.get_block_histograms(image, 7, 40, has_boundingbox, is_query = True, text_mask = text_mask, descriptor = 'texture')
-
-            dists[f_name] = distances.query_measures_colour(hist_image, db_descriptors, distance_type, descriptor = 'texture')
-            
+                textbox_coords[f_name] = coords
+        """count += 1
+        if(count ==3 ):
+            break"""
            
     ## Results processing
 
@@ -174,7 +179,7 @@ def main():
     for idx, l in enumerate(results_sorted):
         print(f'For image {idx}:')
         print(f'Search result: {l}')
-        if(has_boundingbox): print(f'Boxes: {textboxes_result[idx]}')
+        if(has_boundingbox): print(f'Boxes: {boxes_predictions[idx]}')
 
 
 
@@ -194,13 +199,13 @@ def main():
     else:
         print('No solutions given --> Evaluation not avaliable.')
     
-    """
+    
     # Results writing to Pickle file
     with open(f'{global_variables.dir_results}result.pkl', 'wb') as handle:
         pickle.dump(results_sorted, handle, protocol=pickle.HIGHEST_PROTOCOL)
     if(has_boundingbox):
         with open(f'{global_variables.dir_results}text_boxes.pkl', 'wb') as handle:
-            pickle.dump(boxes_predicted, handle, protocol=pickle.HIGHEST_PROTOCOL)"""
+            pickle.dump(boxes_predictions, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 if __name__ == "__main__":
     main()

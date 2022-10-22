@@ -147,11 +147,113 @@ def find_boxes(image, f_name, printbox=False):
     #         aux_result = []
     #         aux_bbox_output = []
     # else:
-    result = [(x_min, y_min, x_min+w_min, y_min+h_min)]   
-    bbox_output = [[np.array([x_min, y_min]),np.array([x_min, y_min + h_min]),np.array([x_min + w_min, y_min + h_min]),np.array([x_min + w_min, y_min])]]
-          
-    return bbox_output, result, text_mask
 
+    #result = [(x_min, y_min, x_min+w_min, y_min+h_min)]   
+    #bbox_output = [[np.array([x_min, y_min]),np.array([x_min, y_min + h_min]),np.array([x_min + w_min, y_min + h_min]),np.array([x_min + w_min, y_min])]]
+    result = [x_min, y_min, x_min+w_min, y_min+h_min]      
+
+    #return bbox_output, result, 
+    #return bbox_output, result
+    return result, text_mask
+
+
+def find_boxes_lapl(image, f_name, printbox=False):
+
+    image_cpy = image.copy()
+    width, height, _ = image.shape
+
+
+    # remove noise
+    image_blur = cv2.GaussianBlur(image,(7,7),0)
+
+
+    gray_image = cv2.cvtColor(image_blur, cv2.COLOR_BGR2GRAY)
+    #gray_image = bin_image
+
+    # convolute with proper kernels
+    lap = cv2.Laplacian(gray_image,cv2.CV_32F, ksize = 3)
+
+    th, laplacian = cv2.threshold(lap, 5,255,cv2.THRESH_BINARY)
+
+    
+    cv2.imshow("Laplacian",laplacian)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
+    laplacian = (laplacian * pixels_saturated).astype(np.uint8)
+
+ 
+    cv2.imshow("Laplacian", laplacian)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+    # Apply close morphology operator
+
+
+    #element = cv2.getStructuringElement(cv2.MORPH_RECT, (11, 11))
+
+    #laplacian_close = cv2.morphologyEx(laplacian, cv2.MORPH_CLOSE, element)
+    
+    element = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
+
+    mask_open = cv2.morphologyEx(laplacian, cv2.MORPH_OPEN, element)
+
+    element_dil = cv2.getStructuringElement(cv2.MORPH_RECT, (3,3))
+    dilation = cv2.dilate(mask_open,element_dil)
+
+
+    
+
+    cv2.imshow("Laplacian", mask_open)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
+
+    cv2.imshow("Laplacian", dilation)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
+
+    element2 = cv2.getStructuringElement(cv2.MORPH_RECT, (30, 30))
+    mask_open2 = cv2.morphologyEx(dilation, cv2.MORPH_CLOSE, element2)
+
+    cv2.imshow("Laplacian", mask_open2)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
+    contours, hierarchy = cv2.findContours(np.uint8(mask_open2), cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+
+    print(len(contours))
+
+    areaArray = []
+    for i, c in enumerate(contours):
+        area = cv2.contourArea(c)
+        areaArray.append(area)
+
+    #first sort the array by area
+    sorteddata = sorted(zip(areaArray, contours), key=lambda x: x[0], reverse=True)
+
+    #find the nth largest contours
+
+    firstgestcontour = sorteddata[0][1]
+    x, y, w, h = cv2.boundingRect(firstgestcontour)
+    mark_red_rectangle = cv2.rectangle(image_cpy, (x, y), (x + w, y + h), (0, 0, 255), 3)
+    text_box = [x, y, x+w, y+h]
+
+    cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_text_laplacian.png', laplacian)
+    cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_text_laplacian_open.png', np.uint8(mask_open))
+    cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_text_laplaian_open_dilate.png', np.uint8(dilation))
+    cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_text_laplaian_open_dilate_open.png', np.uint8(mask_open2))
+    cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_text_laplacian_boxes.png', image_cpy)
+
+    text_mask = np.zeros((height, width), dtype=np.uint8)
+    for i in range(height - 1):
+        for j in range(width - 1):
+            if j > x and i > y and j < (x + w) and i < (y + h):
+                text_mask[i][j] = 0
+            else:
+                text_mask[i][j] = 255
+
+    return text_box, text_mask
 
 
 #  ? For format of qsd1_w2 text box solutions
@@ -197,7 +299,7 @@ def find_boxes_eval(list_bbox_prediction, list_bbox_solution):
 
 
 
-#  ? For format of qsd2_w2 text box solutions
+#  ? For format of qsd2_w2 and qsd2_w3 text box solutions
 def bbox_iou2(bboxA, bboxB):
     # compute the intersection over union of two bboxes
 
