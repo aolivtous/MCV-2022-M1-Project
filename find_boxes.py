@@ -34,6 +34,9 @@ def find_boxes(image, f_name, printbox=False):
         print(f_name)
         cv2.imshow('test', image)
         cv2.waitKey(0)
+
+    #image_blur = cv2.GaussianBlur(image,(3,3),0)
+
     image_hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
     image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
@@ -46,14 +49,15 @@ def find_boxes(image, f_name, printbox=False):
                 bin_image[i][j] = 0
             else:
                 bin_image[i][j] = 255
+    
 
-    element = cv2.getStructuringElement(cv2.MORPH_RECT, (int(width*0.05), 1))
+    element = cv2.getStructuringElement(cv2.MORPH_RECT, (int(width*0.05), 2))
     bin_image_close = cv2.morphologyEx(bin_image, cv2.MORPH_CLOSE, element)
 
-    element = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
+    element = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
     bin_image_close = cv2.morphologyEx(bin_image_close, cv2.MORPH_OPEN, element)
 
-    element = cv2.getStructuringElement(cv2.MORPH_RECT, (int(width*0.25), 1))
+    element = cv2.getStructuringElement(cv2.MORPH_RECT, (int(width*0.25), 2))
     bin_image_close_close = cv2.morphologyEx(bin_image_close, cv2.MORPH_OPEN, element)
 
     element = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
@@ -254,6 +258,169 @@ def find_boxes_lapl(image, f_name, printbox=False):
                 text_mask[i][j] = 255
 
     return text_box, text_mask
+
+
+def find_boxes2(image, f_name, printbox=False):
+    bbox_output = []
+    aux_bbox_output = []
+    result = []
+    aux_result = []
+    is_part = False
+    
+    if 'part' in f_name:
+        is_part = True
+    else:
+        is_part = False
+
+    height, width, channels = 0, 0, 0
+    try:
+        height, width, channels = image.shape
+    except:
+        print(f_name)
+        cv2.imshow('test', image)
+        cv2.waitKey(0)
+
+    # image_blur = cv2.medianBlur(image,3)
+
+    image_hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
+    bin_image = np.zeros((height, width), dtype=np.uint8)
+
+    image_th = np.zeros((height, width))
+    for i in range(height - 1):
+        for j in range(width - 1):
+            if image_hsv[i][j][1] * (1/2.55) > 8 or (image_hsv[i][j][2] * (1/2.55) > 40 and image_hsv[i][j][2] * (1/2.55) < 60): # ! Provar sense or
+                bin_image[i][j] = 0
+            else:
+                bin_image[i][j] = 255
+    
+
+    element = cv2.getStructuringElement(cv2.MORPH_RECT, (int(width*0.1),2))
+    top_hat_x = cv2.morphologyEx(bin_image, cv2.MORPH_TOPHAT, element)
+
+    element = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
+    top_hat_x = cv2.morphologyEx(top_hat_x, cv2.MORPH_OPEN, element)
+
+    element = cv2.getStructuringElement(cv2.MORPH_RECT, (int(width*0.1),2))
+    black_hat_x = cv2.morphologyEx(bin_image, cv2.MORPH_BLACKHAT, element)
+
+    element = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
+    black_hat_x = cv2.morphologyEx(black_hat_x, cv2.MORPH_OPEN, element)
+
+
+    element = cv2.getStructuringElement(cv2.MORPH_RECT, (int(width*0.05), 2))
+    bin_image_close = cv2.morphologyEx(bin_image, cv2.MORPH_CLOSE, element)
+
+    element = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
+    bin_image_close = cv2.morphologyEx(bin_image_close, cv2.MORPH_OPEN, element)
+
+    element = cv2.getStructuringElement(cv2.MORPH_RECT, (int(width*0.25), 2))
+    bin_image_close_close = cv2.morphologyEx(bin_image_close, cv2.MORPH_OPEN, element)
+
+    element = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
+    bin_image_close_close = cv2.morphologyEx(bin_image_close_close, cv2.MORPH_OPEN, element)
+
+    retr_mode = cv2.RETR_EXTERNAL
+    contours_close, hierarchy = cv2.findContours(bin_image_close, retr_mode,cv2.CHAIN_APPROX_SIMPLE)
+    contours_close_close, hierarchy = cv2.findContours(bin_image_close_close, retr_mode,cv2.CHAIN_APPROX_SIMPLE)
+    contours, hierarchy = cv2.findContours(bin_image, retr_mode,cv2.CHAIN_APPROX_SIMPLE)
+    contours_top_hat, hierarchy = cv2.findContours(top_hat_x, retr_mode,cv2.CHAIN_APPROX_SIMPLE)
+    contours_black_hat, hierarchy = cv2.findContours(black_hat_x, retr_mode,cv2.CHAIN_APPROX_SIMPLE)
+    
+
+    contours = contours + contours_close + contours_close_close + contours_top_hat + contours_black_hat
+
+    image_cpy = image.copy()
+    mindiff = 1000000000
+    x_min = y_min = w_min = h_min = 0
+    for idx, cnt in enumerate(contours):
+        x, y, w, h = cv2.boundingRect(cnt)
+        
+        if w < int(width * 0.05) or h < int(height * 0.01) or h > int(height*0.5):
+            continue
+        if h*w < (height*width)*0.0005:
+            continue
+        if h > w:
+            continue
+        if (x + (w / 2.0) < (width /2.0) - width * 0.03) or (x + (w / 2.0) > (width / 2.0) + width * 0.03):
+            continue
+
+        mark_red_rectangle = cv2.rectangle(image_cpy, (x, y), (x + w, y + h), (0, 0, 255), 3)
+
+        diff = color_factor(image_rgb[y:y + h, x:x + w]) # [y:y + h, x:x + w]
+        if diff < mindiff:
+            mindiff=diff
+            x_min = x
+            y_min = y
+            w_min = w
+            h_min = h
+   
+    #Extension of rectangle 
+    tol = 10
+    try:
+        while abs(int(image_hsv[y_min + h_min, x_min][1]) - int(image_hsv[y_min + h_min +1, x_min][1])) < tol and (image_hsv[y_min + h_min, x_min][2]<25 or image_hsv[y_min + h_min, x_min][2]>240) :
+            h_min = h_min + 1
+    except:
+        pass
+    
+    try:
+        while abs(int(image_hsv[y_min + h_min, x_min][1]) - int(image_hsv[y_min + h_min, x_min - 1][1])) < tol and (image_hsv[y_min + h_min, x_min][2]<25 or image_hsv[y_min + h_min, x_min][2]>240) :
+            x_min = x_min - 1
+    except:
+        pass
+    
+    try:
+        while abs(int(image_hsv[y_min, x_min + w_min][1]) - int(image_hsv[y_min, x_min + w_min + 1][1])) < tol and (image_hsv[y_min, x_min + w_min][2]<25 or image_hsv[y_min, x_min + w_min][2]>240):
+            w_min = w_min + 1
+    except:
+        pass
+    
+    try:
+        while abs(int(image_hsv[y_min, x_min + w_min][1]) - int(image_hsv[y_min - 1 , x_min + w_min][1])) < tol and (image_hsv[y_min, x_min + w_min][2]<25 or image_hsv[y_min, x_min + w_min][2]>240):
+            y_min = y_min - 1
+    except:
+        pass
+
+        
+    #print(mindiff)
+    mark_green_rectangle = cv2.rectangle(image_cpy, (x_min, y_min), (x_min + w_min, y_min + h_min), (0, 255, 0), 3)
+    
+    if printbox:
+        cv2.imwrite(f'{global_variables.dir_query_aux}{f_name}_bin.png', bin_image)
+        cv2.imwrite(f'{global_variables.dir_query_aux}{f_name}_bin_close.png', bin_image_close)
+        cv2.imwrite(f'{global_variables.dir_query_aux}{f_name}_bin_close_close.png', bin_image_close_close)
+        cv2.imwrite(f'{global_variables.dir_query_aux}{f_name}_rectangle_exten.png', image_cpy)
+    
+    text_mask = np.zeros((height, width), dtype=np.uint8)
+    for i in range(height - 1):
+        for j in range(width - 1):
+            if j > x_min and i > y_min and j < (x_min + w_min) and i < (y_min + h_min):
+                text_mask[i][j] = 0
+            else:
+                text_mask[i][j] = 255
+    #th, box_mask_bi = cv2.threshold(box_mask, 128, 255, cv2.THRESH_BINARY)
+    cv2.imwrite(f'{global_variables.dir_query_aux}{f_name}_bin_box.png', text_mask)
+
+    # if(is_part):
+    #     aux_result.append([x_min, y_min, x_min+w_min, y_min+h_min])
+    #     aux_bbox_output.append([np.array([x_min, y_min]),np.array([x_min, y_min + h_min]),np.array([x_min + w_min, y_min + h_min]),np.array([x_min + w_min, y_min])])
+    #     if f_name.endswith('2'):
+    #         result.append(aux_result)   
+    #         bbox_output.append(aux_bbox_output)
+    #         aux_result = []
+    #         aux_bbox_output = []
+    # else:
+    result = [(x_min, y_min, x_min+w_min, y_min+h_min)]   
+    bbox_output = [[np.array([x_min, y_min]),np.array([x_min, y_min + h_min]),np.array([x_min + w_min, y_min + h_min]),np.array([x_min + w_min, y_min])]]
+          
+    return bbox_output, result, text_mask
+
+
+
+
+
+
 
 
 #  ? For format of qsd1_w2 text box solutions
