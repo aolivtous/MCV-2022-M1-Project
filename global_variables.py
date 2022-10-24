@@ -31,7 +31,7 @@ def init(name_query):
     methods_search = {
         1: {
             'color_code': 'LAB',
-            'distance_type': 'chisq'
+            'distance_type': 'eucli'
         },
         2: {
             'color_code': 'LAB',

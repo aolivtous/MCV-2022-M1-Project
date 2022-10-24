@@ -78,7 +78,7 @@ def main():
             pass
     
     ### PIPELINE
-    
+
     # DB Descriptors extraction
     db_descriptors = {}
     if recompute_db:
@@ -89,7 +89,7 @@ def main():
             if f.endswith('.jpg'):
                 f_name = filename.name.split('.')[0].split('_')[1]
                 image = cv2.imread(f)
-                db_descriptors[f_name] = histograms.get_block_histograms(image, 7, 40, has_boundingbox, is_query = False, text_mask = None, descriptor='color')
+                db_descriptors[f_name] = histograms.get_block_histograms(image, 7, 40, has_boundingbox, is_query = False, text_mask = None, descriptors= ['color','texture'])
         with open(f'{global_variables.dir_db_aux}precomputed_descriptors.pkl', 'wb') as handle:
             pickle.dump(db_descriptors, handle, protocol=pickle.HIGHEST_PROTOCOL)
     else:
@@ -107,7 +107,6 @@ def main():
     textbox_coords = {}
     to_be_denoised = {}
 
-    count = 0
     print(f'Start of processing fo the query: {global_variables.dir_query}')
     for filename in tqdm(os.scandir(global_variables.dir_query)):
         f = os.path.join(global_variables.dir_query, filename)
@@ -153,21 +152,22 @@ def main():
                       
                         coord_results,text_mask = find_boxes.find_boxes(p, f_name, printbox = True)
                         coords.append([mask_coords[f_name][count][0]+coord_results[0],mask_coords[f_name][count][1]+coord_results[1],mask_coords[f_name][count][2]+coord_results[2],mask_coords[f_name][count][3]+coord_results[3]])
-                        hist_image = histograms.get_block_histograms(p, 7, 40, has_boundingbox, is_query = True, text_mask = text_mask, descriptor = 'color')
-                        dists[str(f_name)+"_part"+str(count+1)] = distances.query_measures_colour(hist_image, db_descriptors, distance_type, descriptor = 'color')
+                        hist_image = histograms.get_block_histograms(p, 7, 40, has_boundingbox, is_query = True, text_mask = text_mask, descriptors = 'color')
+                        dists[str(f_name)+"_part"+str(count+1)] = distances.query_measures_colour(hist_image, db_descriptors, distance_type, descriptors = 'color')
                 else:
                     coords,text_mask = find_boxes.find_boxes(image, f_name, printbox = True)
                     #format for qsd1_w3
                     coords = [(coords[0],coords[1],coords[2],coords[3])] 
-                    hist_image = histograms.get_block_histograms(painting[0], 7, 40, has_boundingbox, is_query = True, text_mask = text_mask, descriptor = 'color')
-                    dists[f_name] = distances.query_measures_colour(hist_image, db_descriptors, distance_type, descriptor = 'color')
+                    hist_image = histograms.get_block_histograms(painting[0], 7, 40, has_boundingbox, is_query = True, text_mask = text_mask, descriptors = ['texture'])
+                    dists[f_name] = distances.query_measures_colour(hist_image, db_descriptors, distance_type, descriptors = ['texture'])
 
                 # ! Change this in case of neccessity (inestability of expected text box output)
                 textbox_coords[f_name] = coords
-        """count += 1
-        if(count ==3 ):
-            break"""
-           
+            
+            else:
+                hist_image = histograms.get_block_histograms(painting[0], 7, 40, has_boundingbox, is_query = True, text_mask = None, descriptors = ['color','texture'])
+                dists[f_name] = distances.query_measures_colour(hist_image, db_descriptors, distance_type, descriptors = ['color','texture'])
+          
     ## Results processing
 
     # Results sorting
