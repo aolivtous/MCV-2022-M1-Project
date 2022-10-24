@@ -3,6 +3,7 @@ import cv2
 def init(name_query):
     global argument_relations
     global methods_search
+    global descriptors
 
     global name_db
     global dir_base
@@ -18,6 +19,7 @@ def init(name_query):
 
     global test_image
 
+
     argument_relations = { 
     'corr': cv2.HISTCMP_CORREL,
     'chisq': cv2.HISTCMP_CHISQR,
@@ -31,13 +33,15 @@ def init(name_query):
     methods_search = {
         1: {
             'color_code': 'LAB',
-            'distance_type': 'eucli'
+            'distance_type': 'hellin'
         },
         2: {
             'color_code': 'LAB',
             'distance_type': 'intersect'
         }
     }
+
+    descriptors = ['color']
 
     # Constant arguments
     name_db = 'BBDD'

@@ -45,16 +45,16 @@ def query_measures_colour(hist_image, db_descriptors, distance_type, descriptors
 
         to_delete = True
 
-    elif len(descriptors) == 1 and "texture" in descriptors and np.isnan(hist_image.hist_lbp).any():
-        idx_gray = np.argwhere(np.isnan(hist_image.hist_lbp))
+    elif len(descriptors) == 1 and "texture" in descriptors and np.isnan(hist_image.coeffs_dct).any():
+        idx_gray = np.argwhere(np.isnan(hist_image.coeffs_dct))
             
-        hist_image.hist_lbp = np.delete(hist_image.hist_lbp, idx_gray)
+        hist_image.coeffs_dct = np.delete(hist_image.coeffs_dct, idx_gray)
 
         to_delete = True
 
-    elif len(descriptors) == 2 and (np.isnan(hist_image.hist_ch1).any() or np.isnan(hist_image.hist_ch2).any() or np.isnan(hist_image.hist_ch3).any() or np.isnan(hist_image.hist_lbp).any()):
-        idx_gray = np.argwhere(np.isnan(hist_image.hist_lbp)) 
-        hist_image.hist_lbp = np.delete(hist_image.hist_lbp, idx_gray)
+    elif len(descriptors) == 2 and (np.isnan(hist_image.hist_ch1).any() or np.isnan(hist_image.hist_ch2).any() or np.isnan(hist_image.hist_ch3).any() or np.isnan(hist_image.coeffs_dct).any()):
+        idx_gray = np.argwhere(np.isnan(hist_image.coeffs_dct)) 
+        hist_image.coeffs_dct = np.delete(hist_image.coeffs_dct, idx_gray)
 
         idx_1 = np.argwhere(np.isnan(hist_image.hist_ch1))
         idx_2 = np.argwhere(np.isnan(hist_image.hist_ch2))
@@ -78,9 +78,9 @@ def query_measures_colour(hist_image, db_descriptors, distance_type, descriptors
                 hist_ch3_db = np.delete(hist_ch3_db, idx_3)
         
         if 'texture' in descriptors:
-            hist_lbp = np.array(img_db.hist_lbp)
+            hist_lbp_db = np.array(img_db.coeffs_dct)
             if to_delete:
-                hist_lbp_db = np.delete(hist_lbp, idx_gray)
+                hist_lbp_db = np.delete(hist_lbp_db, idx_gray)
 
 
         if len(descriptors) == 1 and "color" in descriptors:
@@ -101,21 +101,28 @@ def query_measures_colour(hist_image, db_descriptors, distance_type, descriptors
                 dist_gray = cv2.norm(hist_image.hist_lbp, hist_lbp_db, normType=cv2.NORM_L2)
             else:
                 dist_gray = cv2.compareHist(hist_image.hist_lbp, hist_lbp_db, global_variables.argument_relations[distance_type])'''
+
             dists[key_db] = distances(np.linalg.norm(hist_image.coeffs_dct-img_db.coeffs_dct))#distances(dist_gray))
 
         else:
             if distance_type == 'eucli':
+                '''concatenation_array_image = np.concatenate([hist_image.coeffs_dct, hist_image.hist_ch1,hist_image.hist_ch2,hist_image.hist_ch3])
+                concatenation_array_db = np.concatenate([hist_lbp_db,hist_ch1_db,hist_ch2_db,hist_ch3_db])
+
+                dist = np.linalg.norm(concatenation_array_image-concatenation_array_db)'''
+
+                #dist = cv2.compareHist(concatenation_array_image, concatenation_array_db, global_variables.argument_relations[distance_type])
                 #dist_gray = cv2.norm(hist_image.hist_lbp, hist_lbp_db, normType=cv2.NORM_L2)
-                dist_gray = np.linalg.norm(hist_image.coeffs_dct-img_db.coeffs_dct)
+                weight_texture = 0.5
+                weight_color = 0.5
+                dist_texture = np.linalg.norm(hist_image.coeffs_dct-img_db.coeffs_dct)
                 dist_ch1 = cv2.norm(hist_image.hist_ch1, hist_ch1_db, normType=cv2.NORM_L2)
                 dist_ch2 = cv2.norm(hist_image.hist_ch2, hist_ch2_db, normType=cv2.NORM_L2)
                 dist_ch3 = cv2.norm(hist_image.hist_ch3, hist_ch3_db, normType=cv2.NORM_L2)
-                dist = np.mean(np.array([dist_gray,dist_ch1, dist_ch2, dist_ch3]))
+                dist_color = np.mean(np.array([dist_ch1, dist_ch2, dist_ch3]))
+                dist = dist_texture*weight_texture + dist_color*weight_color
             else:
-                concatenation_array_image = np.concatenate(hist_image.hist_lbp, hist_image.hist_ch1,hist_image.hist_ch2,hist_image.hist_ch3)
-                concatenation_array_db = np.concatenate(hist_lbp_db,hist_ch1_db,hist_ch2_db,hist_ch3_db)
-
-                dist = cv2.compareHist(concatenation_array_image, concatenation_array_db, global_variables.argument_relations[distance_type])
+                
                 '''dist_gray = cv2.compareHist(hist_image.hist_lbp, hist_lbp_db, global_variables.argument_relations[distance_type])
                 dist_ch1 = cv2.compareHist(hist_image.hist_ch1, hist_ch1_db, global_variables.argument_relations[distance_type])
                 dist_ch2 = cv2.compareHist(hist_image.hist_ch2, hist_ch2_db, global_variables.argument_relations[distance_type])

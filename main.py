@@ -152,21 +152,20 @@ def main():
                       
                         coord_results,text_mask = find_boxes.find_boxes(p, f_name, printbox = True)
                         coords.append([mask_coords[f_name][count][0]+coord_results[0],mask_coords[f_name][count][1]+coord_results[1],mask_coords[f_name][count][2]+coord_results[2],mask_coords[f_name][count][3]+coord_results[3]])
-                        hist_image = histograms.get_block_histograms(p, 7, 40, has_boundingbox, is_query = True, text_mask = text_mask, descriptors = 'color')
-                        dists[str(f_name)+"_part"+str(count+1)] = distances.query_measures_colour(hist_image, db_descriptors, distance_type, descriptors = 'color')
-                else:
+                        hist_image = histograms.get_block_histograms(p, 7, 40, has_boundingbox, is_query = True, text_mask = text_mask, descriptors = global_variables.descriptors)
+                        dists[str(f_name)+"_part"+str(count+1)] = distances.query_measures_colour(hist_image, db_descriptors, distance_type, descriptors = global_variables.descriptors)
                     coords,text_mask = find_boxes.find_boxes(image, f_name, printbox = True)
                     #format for qsd1_w3
                     coords = [(coords[0],coords[1],coords[2],coords[3])] 
-                    hist_image = histograms.get_block_histograms(painting[0], 7, 40, has_boundingbox, is_query = True, text_mask = text_mask, descriptors = ['texture'])
-                    dists[f_name] = distances.query_measures_colour(hist_image, db_descriptors, distance_type, descriptors = ['texture'])
+                    hist_image = histograms.get_block_histograms(painting[0], 7, 40, has_boundingbox, is_query = True, text_mask = text_mask, descriptors = global_variables.descriptors)
+                    dists[f_name] = distances.query_measures_colour(hist_image, db_descriptors, distance_type, global_variables.descriptors)
 
                 # ! Change this in case of neccessity (inestability of expected text box output)
                 textbox_coords[f_name] = coords
             
             else:
-                hist_image = histograms.get_block_histograms(painting[0], 7, 40, has_boundingbox, is_query = True, text_mask = None, descriptors = ['color','texture'])
-                dists[f_name] = distances.query_measures_colour(hist_image, db_descriptors, distance_type, descriptors = ['color','texture'])
+                hist_image = histograms.get_block_histograms(painting[0], 7, 40, has_boundingbox, is_query = True, text_mask = None, descriptors = global_variables.descriptors)
+                dists[f_name] = distances.query_measures_colour(hist_image, db_descriptors, distance_type, global_variables.descriptors)
           
     ## Results processing
 

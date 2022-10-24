@@ -34,7 +34,8 @@ def get_block_histograms(image, n_patches, bins, has_boundingbox, is_query, text
         if 'texture' in descriptors:
             image_texture = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
             tiles_texture = [image_texture[x:x+M,y:y+N] for x in range(0,image_texture.shape[0]-image_texture.shape[0]%n_patches,M) for y in range(0,image_texture.shape[1]-image_texture.shape[1]%n_patches,N)]  
-           
+
+
         if(is_query and has_boundingbox): 
             th, text_mask = cv2.threshold(text_mask, 128, 255, cv2.THRESH_BINARY)      
 
@@ -47,6 +48,7 @@ def get_block_histograms(image, n_patches, bins, has_boundingbox, is_query, text
         
         concat_hist_lbp = np.float32(np.array([]))
         concat_coeffs_dct = np.float32(np.array([]))
+        concat_coeffs_dct_norm = np.float32(np.array([]))
         concat_hist_ch1 = np.float32(np.array([]))
         concat_hist_ch2 = np.float32(np.array([]))
         concat_hist_ch3 = np.float32(np.array([]))
@@ -78,9 +80,11 @@ def get_block_histograms(image, n_patches, bins, has_boundingbox, is_query, text
             if 'texture' in descriptors:
                 #lbp
                 if(is_query and has_boundingbox):
-                    hist_lbp = cv2.calcHist([tiles_texture[idx]], [0], tiles_mask[idx], [bins], [0, 255])
+                    tiles_texture_lbp = feature.local_binary_pattern(tiles_texture[idx],8,2,method='uniform').astype(np.uint8)
+                    hist_lbp = cv2.calcHist([tiles_texture_lbp], [0], tiles_mask[idx], [bins], [0, 255])
                 else:
-                    hist_lbp = cv2.calcHist([tiles_texture[idx]], [0], None, [bins], [0, 255])
+                    tiles_texture_lbp = feature.local_binary_pattern(tiles_texture[idx],8,2,method='uniform').astype(np.uint8)
+                    hist_lbp = cv2.calcHist([tiles_texture_lbp], [0], None, [bins], [0, 255])
 
                 with np.errstate(divide='ignore',invalid='ignore'):
                     hist_lbp/=hist_lbp.sum()
@@ -99,20 +103,24 @@ def get_block_histograms(image, n_patches, bins, has_boundingbox, is_query, text
                     patch_texture = np.append(patch_texture, np.zeros((m,1)), axis=1)
                 
 
-                patch_float = np.float64(patch_texture)/255.0  # float conversion/scale
-                patch_texture_dct_rang1 = cv2.dct(patch_float)
-                patch_texture_dct = np.uint8(patch_texture_dct_rang1*255.0) 
+                patch_float = np.float64(patch_texture)/255.0  
+                patch_texture_dct = cv2.dct(patch_float)
 
-                N=100 #number of coefficients to consider
+                N=400 #number of coefficients to consider
                 zigzag_vector = np.concatenate([np.diagonal(patch_texture_dct[::-1,:], i)[::(2*(i % 2)-1)] for i in range(1-patch_texture_dct.shape[0], patch_texture_dct.shape[0])])
 
                 concat_coeffs_dct = np.append(concat_coeffs_dct,zigzag_vector[:N])
+
+                
+
 
                 if 'color' not in descriptors:
                     concat_hist_ch1 = None
                     concat_hist_ch2 = None
                     concat_hist_ch3 = None
 
-
+        if 'texture' in descriptors:
+            concat_coeffs_dct_norm = (concat_coeffs_dct - concat_coeffs_dct.min()) / (concat_coeffs_dct.max() - concat_coeffs_dct.min())
+                
     
-    return (histograms(concat_hist_lbp, concat_coeffs_dct, concat_hist_ch1, concat_hist_ch2, concat_hist_ch3))
+    return (histograms(concat_hist_lbp, concat_coeffs_dct_norm, concat_hist_ch1, concat_hist_ch2, concat_hist_ch3))
