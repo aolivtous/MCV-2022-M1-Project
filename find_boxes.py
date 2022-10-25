@@ -166,68 +166,114 @@ def find_boxes_lapl(image, f_name, printbox=False):
     image_cpy = image.copy()
     width, height, _ = image.shape
 
+    rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
 
     # remove noise
-    image_blur = cv2.GaussianBlur(image,(7,7),0)
+    image_blur = cv2.GaussianBlur(image,(11,11),0)
 
-
+    
     gray_image = cv2.cvtColor(image_blur, cv2.COLOR_BGR2GRAY)
-    #gray_image = bin_image
+    gray_image_inv = 255 - gray_image
 
     # convolute with proper kernels
     lap = cv2.Laplacian(gray_image,cv2.CV_32F, ksize = 3)
-
-    th, laplacian = cv2.threshold(lap, 5,255,cv2.THRESH_BINARY)
+    lap_inv = cv2.Laplacian(gray_image_inv,cv2.CV_32F, ksize = 3)
 
     
-    cv2.imshow("Laplacian",laplacian)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    size_thresh_lapl = 8
+    th, laplacian = cv2.threshold(lap, size_thresh_lapl,255,cv2.THRESH_BINARY)
+    th, laplacian_inv = cv2.threshold(lap_inv, size_thresh_lapl,255,cv2.THRESH_BINARY)
 
-    laplacian = (laplacian * pixels_saturated).astype(np.uint8)
+    # cv2.imshow("Laplacian",laplacian)
+    # cv2.waitKey(0)
+
+    # cv2.imshow("Laplacian_inv",laplacian_inv)
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
+
+
+    hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    height, width, channels = image.shape
+    pixels_saturated = np.zeros((height, width), dtype=np.uint8)
+    
+    size_thresh_s = 30
+    for i in range(height - 1):
+        for j in range(width - 1):
+            if hsv_image[i][j][1] > size_thresh_s: # ! Provar sense or
+                pixels_saturated[i][j] = 0
+            else:
+                pixels_saturated[i][j] = 255
+
+    # cv2.imshow("saturated5",pixels_saturated)
+    # cv2.waitKey(0) 
+    
+    
+    pixels_saturated=abs((hsv_image[:,:,1]>size_thresh_s)-1)
+    
+    laplacian_wtht_sat = (laplacian * pixels_saturated).astype(np.uint8)
+    laplacian_inv_wtht_sat = (laplacian_inv * pixels_saturated).astype(np.uint8)
 
  
-    cv2.imshow("Laplacian", laplacian)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    # cv2.imshow("Laplacian_wtht_sat", laplacian_wtht_sat)
+    # cv2.waitKey(0)
+
+    # cv2.imshow("Laplacian_inv_wtht_sat",laplacian_inv_wtht_sat)
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
+
+
     # Apply close morphology operator
 
 
     #element = cv2.getStructuringElement(cv2.MORPH_RECT, (11, 11))
 
+
     #laplacian_close = cv2.morphologyEx(laplacian, cv2.MORPH_CLOSE, element)
-    
-    element = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
+    element = cv2.getStructuringElement(cv2.MORPH_RECT, (int(width*0.1), 3))
+    laplacian_close = cv2.morphologyEx(laplacian_wtht_sat,cv2.MORPH_CLOSE,element)
 
-    mask_open = cv2.morphologyEx(laplacian, cv2.MORPH_OPEN, element)
+    element = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
+    laplacian_open = cv2.morphologyEx(laplacian_close, cv2.MORPH_OPEN, element)
 
-    element_dil = cv2.getStructuringElement(cv2.MORPH_RECT, (3,3))
-    dilation = cv2.dilate(mask_open,element_dil)
+    element = cv2.getStructuringElement(cv2.MORPH_RECT, (int(width*0.1), 3))
+    laplacian_close_inv = cv2.morphologyEx(laplacian_inv_wtht_sat,cv2.MORPH_CLOSE,element)
 
-
-    
-
-    cv2.imshow("Laplacian", mask_open)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    element = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
+    laplacian_open_inv = cv2.morphologyEx(laplacian_close_inv, cv2.MORPH_OPEN, element)
 
 
-    cv2.imshow("Laplacian", dilation)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    # cv2.imshow("Laplacian closing", laplacian_close)
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
 
+    # cv2.imshow("Laplacian opening", laplacian_open)
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
 
+    # cv2.imshow("Laplacian closing", laplacian_close_inv)
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
+
+    # cv2.imshow("Laplacian opening", laplacian_open_inv)
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
+
+    """
     element2 = cv2.getStructuringElement(cv2.MORPH_RECT, (30, 30))
     mask_open2 = cv2.morphologyEx(dilation, cv2.MORPH_CLOSE, element2)
 
     cv2.imshow("Laplacian", mask_open2)
     cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    cv2.destroyAllWindows()"""
 
-    contours, hierarchy = cv2.findContours(np.uint8(mask_open2), cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+    contours1, hierarchy = cv2.findContours(laplacian_open, cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+    contours2, hierarchy = cv2.findContours(laplacian_open_inv, cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
 
+    contours = contours1 + contours2
     print(len(contours))
 
+    """
     areaArray = []
     for i, c in enumerate(contours):
         area = cv2.contourArea(c)
@@ -241,12 +287,44 @@ def find_boxes_lapl(image, f_name, printbox=False):
     firstgestcontour = sorteddata[0][1]
     x, y, w, h = cv2.boundingRect(firstgestcontour)
     mark_red_rectangle = cv2.rectangle(image_cpy, (x, y), (x + w, y + h), (0, 0, 255), 3)
-    text_box = [x, y, x+w, y+h]
+    text_box = [x, y, x+w, y+h]"""
 
-    cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_text_laplacian.png', laplacian)
+    image_cpy = image.copy()
+    mindiff = 1000000000
+    x_min = y_min = w_min = h_min = 0
+    for idx, cnt in enumerate(contours):
+        x, y, w, h = cv2.boundingRect(cnt)
+        
+        if w < int(width * 0.05) or h < int(height * 0.01) or h > int(height*0.5):
+            continue
+        if h*w < (height*width)*0.0005:
+            continue
+        if h > w:
+            continue
+        if (x + (w / 2.0) < (width /2.0) - width * 0.03) or (x + (w / 2.0) > (width / 2.0) + width * 0.03):
+            continue
+
+        mark_red_rectangle = cv2.rectangle(image_cpy, (x, y), (x + w, y + h), (0, 0, 255), 3)
+
+        diff = color_factor(rgb_image[y:y + h, x:x + w]) # [y:y + h, x:x + w]
+        if diff < mindiff:
+            mindiff=diff
+            x_min = x
+            y_min = y
+            w_min = w
+            h_min = h
+
+    mark_green_rectangle = cv2.rectangle(image_cpy, (x_min, y_min), (x_min + w_min, y_min + h_min), (0, 255, 0), 3)
+    # cv2.imshow("Final", image_cpy)
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
+
+    text_box = [x_min, y_min, x_min+w_min, y_min+h_min]
+
+    """cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_text_laplacian.png', laplacian)
     cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_text_laplacian_open.png', np.uint8(mask_open))
     cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_text_laplaian_open_dilate.png', np.uint8(dilation))
-    cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_text_laplaian_open_dilate_open.png', np.uint8(mask_open2))
+    cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_text_laplaian_open_dilate_open.png', np.uint8(mask_open2))"""
     cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_text_laplacian_boxes.png', image_cpy)
 
     text_mask = np.zeros((height, width), dtype=np.uint8)
@@ -280,7 +358,21 @@ def find_boxes2(image, f_name, printbox=False):
         cv2.imshow('test', image)
         cv2.waitKey(0)
 
-    # image_blur = cv2.medianBlur(image,3)
+    cv2.imshow('image', image)
+    cv2.waitKey(0)
+
+    image_blur = cv2.medianBlur(image,3)
+    gray_image = cv2.cvtColor(image_blur, cv2.COLOR_BGR2GRAY)
+    lap = cv2.Laplacian(gray_image,cv2.CV_32F, ksize = 3)
+    th, laplacian = cv2.threshold(lap, 5,255,cv2.THRESH_BINARY)
+
+    cv2.imshow('laplacian', laplacian)
+    cv2.waitKey(0)
+
+    
+
+
+    
 
     image_hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
     image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -299,15 +391,26 @@ def find_boxes2(image, f_name, printbox=False):
     element = cv2.getStructuringElement(cv2.MORPH_RECT, (int(width*0.1),2))
     top_hat_x = cv2.morphologyEx(bin_image, cv2.MORPH_TOPHAT, element)
 
+    cv2.imshow('top_hat_x', top_hat_x)
+    cv2.waitKey(0)
+
     element = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
     top_hat_x = cv2.morphologyEx(top_hat_x, cv2.MORPH_OPEN, element)
 
+    cv2.imshow('top_hat_x_opening', top_hat_x)
+    cv2.waitKey(0)
+
     element = cv2.getStructuringElement(cv2.MORPH_RECT, (int(width*0.1),2))
     black_hat_x = cv2.morphologyEx(bin_image, cv2.MORPH_BLACKHAT, element)
+    
+    cv2.imshow('black_hat_x', black_hat_x)
+    cv2.waitKey(0)
 
-    element = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
-    black_hat_x = cv2.morphologyEx(black_hat_x, cv2.MORPH_OPEN, element)
+    element = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2))
+    black_hat_x = cv2.morphologyEx(black_hat_x, cv2.MORPH_CLOSE, element)
 
+    cv2.imshow('black_hat_x_close', black_hat_x)
+    cv2.waitKey(0)
 
     element = cv2.getStructuringElement(cv2.MORPH_RECT, (int(width*0.05), 2))
     bin_image_close = cv2.morphologyEx(bin_image, cv2.MORPH_CLOSE, element)
