@@ -39,25 +39,19 @@ def main():
     # If there are not enough arguments, exit the program.
     try:
         name_query = sys.argv[1]
-        method_search = int(sys.argv[2])
-        has_backgrounds = bool(utils.str_to_bool(sys.argv[3]))
-        has_boundingbox = bool(utils.str_to_bool(sys.argv[4]))
-        may_have_split = bool(utils.str_to_bool(sys.argv[5]))
-        may_have_noise = bool(utils.str_to_bool(sys.argv[6]))
-        solutions = bool(utils.str_to_bool(sys.argv[7]))
-        recompute_db = bool(utils.str_to_bool(sys.argv[8]))
+        has_backgrounds = bool(utils.str_to_bool(sys.argv[2]))
+        has_boundingbox = bool(utils.str_to_bool(sys.argv[3]))
+        may_have_split = bool(utils.str_to_bool(sys.argv[4]))
+        may_have_noise = bool(utils.str_to_bool(sys.argv[5]))
+        solutions = bool(utils.str_to_bool(sys.argv[6]))
+        recompute_db = bool(utils.str_to_bool(sys.argv[7]))
     except:
         print(f'Exiting. Not enough arguments ({len(sys.argv) - 1} of 8)')
         exit(1)
 
     global_variables.init(name_query)
     # Arguments bound checking
-    if(method_search == 1 or method_search == 2):
-        color_code = global_variables.methods_search[method_search]['color_code']
-        distance_type = global_variables.methods_search[method_search]['distance_type']
-    else:
-        print('Exiting. Method search must be 1 or 2')
-        exit(1)
+    distance_type = global_variables.methods_search['default']['distance_type']
 
     query_solutions = boxes_solutions = None
     if(solutions):
@@ -177,17 +171,15 @@ def main():
 
                     if(count == 0):
                         with open(f'{global_variables.dir_results}{f_name}.txt', 'w') as f:
-                            if(text ==""):
+                            if(text == ""):
                                 f.write('\n')
                             else:
-                                f.write(text)
+                                f.write(f"('{text}',)")
                     else:
                         with open(f'{global_variables.dir_results}{f_name}.txt', 'a') as f:
-                            f.write(text)
+                            f.write(f"('{text}',)")
 
                     hist_image = histograms.get_block_histograms(painting, 7, 40, has_boundingbox, is_query = True, text_mask = text_mask, descriptors = global_variables.descriptors)
-                
-     
                 else:
                     hist_image = histograms.get_block_histograms(painting, 7, 40, has_boundingbox, is_query = True, text_mask = None, descriptors = global_variables.descriptors)
 

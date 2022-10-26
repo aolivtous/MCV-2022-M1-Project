@@ -15,7 +15,7 @@ def getText (box,painting):
         cv2.waitKey(0)
         cv2.destroyAllWindows()
     
-        pytesseract.pytesseract.tesseract_cmd = 'C:\\Program Files\\Tesseract-OCR\\tesseract.exe'
+        # pytesseract.pytesseract.tesseract_cmd = 'C:\\Program Files\\Tesseract-OCR\\tesseract.exe'
                                                 
         extractedText = pytesseract.image_to_string(textFieldBin)
     

@@ -31,13 +31,9 @@ def init(name_query):
     # color_code = ["RGB", "HSV", "LAB", "YCrCb"]
     # Possible arguments of distance_type at argument_relations
     methods_search = {
-        1: {
+        'default': {
             'color_code': 'LAB',
             'distance_type': 'hellin'
-        },
-        2: {
-            'color_code': 'LAB',
-            'distance_type': 'intersect'
         }
     }
 
