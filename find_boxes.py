@@ -271,7 +271,7 @@ def find_boxes_lapl(image, f_name, printbox=False):
     contours2, hierarchy = cv2.findContours(laplacian_open_inv, cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
 
     contours = contours1 + contours2
-    print(len(contours))
+    #print(len(contours))
 
     """
     areaArray = []
@@ -320,6 +320,7 @@ def find_boxes_lapl(image, f_name, printbox=False):
     # cv2.destroyAllWindows()
 
     text_box = [x_min, y_min, x_min+w_min, y_min+h_min]
+    print (text_box)
 
     """cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_text_laplacian.png', laplacian)
     cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_text_laplacian_open.png', np.uint8(mask_open))
@@ -368,11 +369,6 @@ def find_boxes2(image, f_name, printbox=False):
 
     cv2.imshow('laplacian', laplacian)
     cv2.waitKey(0)
-
-    
-
-
-    
 
     image_hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
     image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)

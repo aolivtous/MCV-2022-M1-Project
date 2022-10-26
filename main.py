@@ -25,6 +25,7 @@ import masks
 import mask_evaluation
 import find_boxes
 import noise
+import findText
 
 def main():
     """
@@ -105,6 +106,7 @@ def main():
     mask_coords = {}
     dists = {}
     textbox_coords = {}
+    texts = {}
     to_be_denoised = {}
     coords = []
 
@@ -155,19 +157,41 @@ def main():
      
             print('Searching boxes at:', f_name)                                       
             for count, painting in enumerate(paintings):
-                if has_boundingbox and has_backgrounds:
-                    coord_results, text_mask = find_boxes.find_boxes(painting, f_names[count], printbox = True)
-                    coords.append([ 
-                                    mask_coords[f_names[count]][0] + coord_results[0],
-                                    mask_coords[f_names[count]][1] + coord_results[1],
-                                    mask_coords[f_names[count]][2] + coord_results[2],
-                                    mask_coords[f_names[count]][3] + coord_results[3]
-                                ])
-                
+                print('SubParts ', f_names[count])   
+                if has_boundingbox:
+                    coord_results, text_mask = find_boxes.find_boxes_lapl(painting, f_names[count], printbox = True)
+                   
+
+                    if(has_backgrounds):
+                        coords.append([ 
+                                        mask_coords[f_names[count]][0] + coord_results[0],
+                                        mask_coords[f_names[count]][1] + coord_results[1],
+                                        mask_coords[f_names[count]][2] + coord_results[2],
+                                        mask_coords[f_names[count]][3] + coord_results[3]
+                                    ])
+                        
+                    # save the text in the dictionary and in the txt file
+                    
+                    text = findText.getText(coord_results,painting)
+                    texts[f_names[count]] = text
+
+                    if(count == 0):
+                        with open(f'{global_variables.dir_results}{f_name}.txt', 'w') as f:
+                            if(text ==""):
+                                f.write('\n')
+                            else:
+                                f.write(text)
+                    else:
+                        with open(f'{global_variables.dir_results}{f_name}.txt', 'a') as f:
+                            f.write(text)
+
                     hist_image = histograms.get_block_histograms(painting, 7, 40, has_boundingbox, is_query = True, text_mask = text_mask, descriptors = global_variables.descriptors)
+                
+     
                 else:
                     hist_image = histograms.get_block_histograms(painting, 7, 40, has_boundingbox, is_query = True, text_mask = None, descriptors = global_variables.descriptors)
-                dists[f_names[count]] = distances.query_measures_colour(hist_image, db_descriptors, distance_type, descriptors = global_variables.descriptors)
+
+                #dists[f_names[count]] = distances.query_measures_colour(hist_image, db_descriptors, distance_type, descriptors = global_variables.descriptors)
 
             # ! Change this in case of neccessity (inestability of expected text box output)
             if has_boundingbox and has_backgrounds:
