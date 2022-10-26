@@ -11,9 +11,9 @@ def getText (box,painting):
         textGray = cv2.cvtColor(textField, cv2.COLOR_BGR2GRAY)
         th, textFieldBin = cv2.threshold(textGray, 0,255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
 
-        cv2.imshow("text",textFieldBin)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
+        # cv2.imshow("text",textFieldBin)
+        # cv2.waitKey(0)
+        # cv2.destroyAllWindows()
     
         # pytesseract.pytesseract.tesseract_cmd = 'C:\\Program Files\\Tesseract-OCR\\tesseract.exe'
                                                 

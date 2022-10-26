@@ -3,7 +3,7 @@ import cv2
 def init(name_query):
     global argument_relations
     global methods_search
-    global descriptors
+    global weights
 
     global name_db
     global dir_base
@@ -37,7 +37,11 @@ def init(name_query):
         }
     }
 
-    descriptors = ['color']
+    weights = {
+        'color': 0.0,
+        'texture': 1.0,
+        'text': 0.0
+    }
 
     # Constant arguments
     name_db = 'BBDD'

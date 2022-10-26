@@ -84,7 +84,7 @@ def main():
             if f.endswith('.jpg'):
                 f_name = filename.name.split('.')[0].split('_')[1]
                 image = cv2.imread(f)
-                db_descriptors[f_name] = histograms.get_block_histograms(image, 7, 40, has_boundingbox, is_query = False, text_mask = None, descriptors= ['color','texture'])
+                db_descriptors[f_name] = histograms.get_block_histograms(image, 7, 40, has_boundingbox, is_query = False, text_mask = None)
         with open(f'{global_variables.dir_db_aux}precomputed_descriptors.pkl', 'wb') as handle:
             pickle.dump(db_descriptors, handle, protocol=pickle.HIGHEST_PROTOCOL)
     else:
@@ -148,12 +148,11 @@ def main():
                                 ] 
                     for count, painting in enumerate(paintings):
                         cv2.imwrite(f'{global_variables.dir_query_aux}{f_names[count]}.png', painting)
-     
-            print('Searching boxes at:', f_name)                                       
+                                     
             for count, painting in enumerate(paintings):
-                print('SubParts ', f_names[count])   
+                print('\nSearching boxes at:', f_names[count])   
                 if has_boundingbox:
-                    coord_results, text_mask = find_boxes.find_boxes_lapl(painting, f_names[count], printbox = True)
+                    coord_results, text_mask, bbox_output = find_boxes.find_boxes_lapl(painting, f_names[count], printbox = True)
                    
 
                     if(has_backgrounds):
@@ -163,7 +162,11 @@ def main():
                                         mask_coords[f_names[count]][2] + coord_results[2],
                                         mask_coords[f_names[count]][3] + coord_results[3]
                                     ])
-                        
+                    else:
+                        # coords.append(coord_results)
+                        coords.append(bbox_output)
+                    
+                    print('image coords:', coords)
                     # save the text in the dictionary and in the txt file
                     
                     text = findText.getText(coord_results,painting)
@@ -179,30 +182,32 @@ def main():
                         with open(f'{global_variables.dir_results}{f_name}.txt', 'a') as f:
                             f.write(f"('{text}',)")
 
-                    hist_image = histograms.get_block_histograms(painting, 7, 40, has_boundingbox, is_query = True, text_mask = text_mask, descriptors = global_variables.descriptors)
+                    hist_image = histograms.get_block_histograms(painting, 7, 40, has_boundingbox, is_query = True, text_mask = text_mask)
                 else:
-                    hist_image = histograms.get_block_histograms(painting, 7, 40, has_boundingbox, is_query = True, text_mask = None, descriptors = global_variables.descriptors)
+                    hist_image = histograms.get_block_histograms(painting, 7, 40, has_boundingbox, is_query = True, text_mask = None)
 
-                dists[f_names[count]] = distances.query_measures_colour(hist_image, db_descriptors, distance_type, descriptors = global_variables.descriptors)
+                dists[f_names[count]] = distances.query_measures_colour(hist_image, db_descriptors, distance_type)
 
             # ! Change this in case of neccessity (inestability of expected text box output)
-            if has_boundingbox and has_backgrounds:
+            if has_boundingbox:
                 textbox_coords[f_name] = coords
                 coords = []
           
     ## Results processing
 
+
     # Results sorting
     results_sorted = utils.get_sorted_list_of_lists_from_dict_of_dicts(dists, distance_type, two_level = may_have_split)
     boxes_predictions = utils.get_simple_list_of_lists_from_dict_of_dicts(textbox_coords, two_level = may_have_split)
- 
-    # Results printing
     
+    print('\n-----RESULTS-----')
+    # Results printing
     for idx, l in enumerate(results_sorted):
         print(f'For image {idx}:')
-        print(f'Search result: {l}')
-        if(has_boundingbox): print(f'Boxes: {boxes_predictions[idx]}')
+        print(f'\tSearch result: {l}')
+        if(has_boundingbox): print(f'\tBoxes: {boxes_predictions[idx]}')
 
+    print('\n-----EVALUATION-----')
     # Results evaluation
     if(solutions):
         # Algorithm evaluation
@@ -213,8 +218,8 @@ def main():
         # if(has_backgrounds):
         #     mask_evaluation.mask_eval_avg(directory_output, dir_query, print_each = False, print_avg = True)
         if(has_boundingbox):
-            iou = find_boxes.find_boxes_eval2(boxes_predictions, boxes_solutions)
-            print(f'Mean IoU: {sum(iou)/len(iou)}')
+            iou = find_boxes.find_boxes_eval(boxes_predictions, boxes_solutions)
+            print(f'Mean IoU: {round(sum(iou)/len(iou), 2)}')
 
     else:
         print('No solutions given --> Evaluation not avaliable.')

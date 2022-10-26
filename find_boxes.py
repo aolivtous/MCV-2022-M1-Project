@@ -336,7 +336,9 @@ def find_boxes_lapl(image, f_name, printbox=False):
             else:
                 text_mask[i][j] = 255
 
-    return text_box, text_mask
+    bbox_output = [np.array([x_min, y_min]),np.array([x_min, y_min + h_min]),np.array([x_min + w_min, y_min + h_min]),np.array([x_min + w_min, y_min])]
+
+    return text_box, text_mask, bbox_output
 
 
 def find_boxes2(image, f_name, printbox=False):

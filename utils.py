@@ -56,7 +56,8 @@ def get_simple_list_of_lists_from_dict_of_dicts(dictionary, two_level = True):
                     list_of_lists.append(aux_list)
                     aux_list = []
             else:
-                list_of_lists.append(coords)
+                # list_of_lists.append([coords]) # qsd1_w2
+                list_of_lists.append(coords) # qsd2_w2
         else:
             list_of_lists.append(coords)
 
