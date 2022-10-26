@@ -191,7 +191,7 @@ def main():
                 else:
                     hist_image = histograms.get_block_histograms(painting, 7, 40, has_boundingbox, is_query = True, text_mask = None, descriptors = global_variables.descriptors)
 
-                #dists[f_names[count]] = distances.query_measures_colour(hist_image, db_descriptors, distance_type, descriptors = global_variables.descriptors)
+                dists[f_names[count]] = distances.query_measures_colour(hist_image, db_descriptors, distance_type, descriptors = global_variables.descriptors)
 
             # ! Change this in case of neccessity (inestability of expected text box output)
             if has_boundingbox and has_backgrounds:
