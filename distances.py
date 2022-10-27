@@ -33,12 +33,13 @@ def query_measures(hist_image, db_descriptors, distance_type,  text):
     """
     weights = global_variables.weights
     dists = {}
-    idx_1 = idx_2 = idx_3 = idx_gray = []
-    hist_ch1_db = hist_ch2_db = hist_ch3_db = np.array([])
+    idx_1 = idx_2 = idx_3 = idx_dct = []
+    hist_ch1_db = hist_ch2_db = hist_ch3_db = coeffs_dct_db = np.array([])
     to_delete = False
 
     # NaN deletion for color histograms
     if weights["color"] and (np.isnan(hist_image.hist_ch1).any() or np.isnan(hist_image.hist_ch2).any() or np.isnan(hist_image.hist_ch3).any()):
+        print('Found NaN in hist -------------')
         idx_1 = np.argwhere(np.isnan(hist_image.hist_ch1))
         idx_2 = np.argwhere(np.isnan(hist_image.hist_ch2))
         idx_3 = np.argwhere(np.isnan(hist_image.hist_ch3))
@@ -51,9 +52,9 @@ def query_measures(hist_image, db_descriptors, distance_type,  text):
 
     # NaN deletion for texture coefficients
     elif weights["texture"] and np.isnan(hist_image.coeffs_dct).any():
-        idx_gray = np.argwhere(np.isnan(hist_image.coeffs_dct))
-            
-        hist_image.coeffs_dct = np.delete(hist_image.coeffs_dct, idx_gray)
+        idx_dct = np.argwhere(np.isnan(hist_image.coeffs_dct))
+        
+        hist_image.coeffs_dct = np.delete(hist_image.coeffs_dct, idx_dct)
 
         to_delete = True
        
@@ -69,9 +70,9 @@ def query_measures(hist_image, db_descriptors, distance_type,  text):
         
         if weights["texture"]:
             
-            hist_lbp_db = np.array(img_db.coeffs_dct)
+            coeffs_dct_db = np.array(img_db.coeffs_dct)
             if to_delete:
-                hist_lbp_db = np.delete(hist_lbp_db, idx_gray)
+                coeffs_dct_db = np.delete(coeffs_dct_db, idx_dct)
 
 
         dist_color = dist_texture = dist_text = 0
@@ -83,7 +84,10 @@ def query_measures(hist_image, db_descriptors, distance_type,  text):
             dist_color = np.mean(np.array([dist_ch1, dist_ch2, dist_ch3]))
 
         if weights["texture"]:
-            dist_texture = np.linalg.norm(hist_image.coeffs_dct - img_db.coeffs_dct)
+            # MinMax normalisation of the coefficients before calculating the distance
+            norm_hist_image_coeffs_dct = (hist_image.coeffs_dct - hist_image.coeffs_dct.min()) / (hist_image.coeffs_dct.max() - hist_image.coeffs_dct.min())
+            norm_coeffs_dct_db = (coeffs_dct_db - coeffs_dct_db.min()) / (coeffs_dct_db.max() - coeffs_dct_db.min())
+            dist_texture = np.linalg.norm(norm_hist_image_coeffs_dct - norm_coeffs_dct_db)
            
         if weights["text"]:
             

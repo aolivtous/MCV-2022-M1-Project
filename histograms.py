@@ -85,8 +85,21 @@ def get_block_histograms(image, n_patches, bins, has_boundingbox, is_query, text
             concat_hist_lbp = np.append(concat_hist_lbp,hist_lbp)"""
             
             #dct
-
+            # If all pixels at tiles_mask (array of arrays) are 0 (black), then we append to concat_coeffs_dct a vector of Nans
             patch_texture = tiles_texture[idx]
+            X = 400 # Number of coefficients to consider
+
+            if(is_query and has_boundingbox):
+                # Get a flattened 1D view of 2D numpy array
+                flatten_tiles_mask = np.ravel(tiles_mask)
+                # print(flatten_tiles_mask)
+                # Check if all value in 2D array are zero
+                if np.all(flatten_tiles_mask == 0):
+                    print('Found NaN in coeffs_dct -------------')
+                    # Append a vector of X Nans to concat_coeffs_dct and continue to next iteration
+                    concat_coeffs_dct = np.append(concat_coeffs_dct, np.full(X, np.nan))
+                    continue
+
             m,n=patch_texture.shape
             if (m % 2) != 0:
                 patch_texture = np.append(patch_texture, [np.zeros(n)], axis=0)
@@ -96,16 +109,15 @@ def get_block_histograms(image, n_patches, bins, has_boundingbox, is_query, text
 
             patch_float = np.float64(patch_texture)/255.0  
             patch_texture_dct = cv2.dct(patch_float)
-
-            X = 400 # Number of coefficients to consider
+            
             zigzag_vector = np.concatenate([np.diagonal(patch_texture_dct[::-1,:], i)[::(2*(i % 2)-1)] for i in range(1-patch_texture_dct.shape[0], patch_texture_dct.shape[0])])
 
-            concat_coeffs_dct = np.append(concat_coeffs_dct,zigzag_vector[:X])
+            concat_coeffs_dct = np.append(concat_coeffs_dct, zigzag_vector[:X])
 
-    if weights['texture']:
-        concat_coeffs_dct_norm = (concat_coeffs_dct - concat_coeffs_dct.min()) / (concat_coeffs_dct.max() - concat_coeffs_dct.min())
+    # if weights['texture']:
+    #     concat_coeffs_dct_norm = (concat_coeffs_dct - concat_coeffs_dct.min()) / (concat_coeffs_dct.max() - concat_coeffs_dct.min())
         #concat_hist_lbp = (concat_hist_lbp - concat_hist_lbp.min()) / (concat_hist_lbp.max() - concat_hist_lbp.min())
 
                 
-    return (histograms(concat_coeffs_dct_norm, concat_hist_ch1, concat_hist_ch2, concat_hist_ch3))
+    return (histograms(concat_coeffs_dct, concat_hist_ch1, concat_hist_ch2, concat_hist_ch3))
     #return (histograms(concat_hist_lbp, concat_coeffs_dct_norm, concat_hist_ch1, concat_hist_ch2, concat_hist_ch3))

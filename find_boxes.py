@@ -160,35 +160,6 @@ def find_boxes(image, f_name, printbox=False):
     #return bbox_output, result
     return result, text_mask
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 def find_boxes_lapl(image, f_name, printbox=False):
 
     image_cpy = image.copy()
@@ -415,9 +386,9 @@ def find_boxes_lapl(image, f_name, printbox=False):
     mark_red_rectangle = cv2.rectangle(image_cpy, (x_min1, y_min1), (x_min1 + w_min1, y_min1 + h_min1), (0, 0, 255), 3)
     mark_blue_rectangle = cv2.rectangle(image_cpy, (x_min2, y_min2), (x_min2 + w_min2, y_min2 + h_min2), (255, 0, 0), 3)
     mark_green_rectangle = cv2.rectangle(image_cpy, (x_min, y_min), (x_min + w_min, y_min + h_min), (0, 255, 0), 3)
-    cv2.imshow("Final", image_cpy)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    # cv2.imshow("Final", image_cpy)
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
 
     text_box = [x_min, y_min, x_min+w_min, y_min+h_min]
     print (text_box)

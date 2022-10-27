@@ -38,8 +38,8 @@ def init(name_query):
     }
 
     weights = {
-        'color': 0.0,
-        'texture': 1.0,
+        'color': 0.5,
+        'texture': 0.5,
         'text': 0.0
     }
 
