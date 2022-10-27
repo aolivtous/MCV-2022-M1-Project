@@ -46,7 +46,7 @@ def main():
         solutions = bool(utils.str_to_bool(sys.argv[6]))
         recompute_db = bool(utils.str_to_bool(sys.argv[7]))
     except:
-        print(f'Exiting. Not enough arguments ({len(sys.argv) - 1} of 8)')
+        print(f'Exiting. Not enough arguments ({len(sys.argv) - 1} of 7)')
         exit(1)
 
     global_variables.init(name_query)
@@ -164,8 +164,10 @@ def main():
                                         mask_coords[f_names[count]][3] + coord_results[3]
                                     ])
                     else:
-                        # coords.append(coord_results)
-                        coords.append(bbox_output)
+                        if (name_query=="qsd1_w2"):
+                            coords.append(bbox_output)
+                        else:
+                            coords.append(coord_results)
                     
                     print('image coords:', coords)
                     # save the text in the dictionary and in the txt file
@@ -220,7 +222,10 @@ def main():
         # if(has_backgrounds):
         #     mask_evaluation.mask_eval_avg(directory_output, dir_query, print_each = False, print_avg = True)
         if(has_boundingbox):
-            iou = find_boxes.find_boxes_eval(boxes_predictions, boxes_solutions)
+            if(name_query=="qsd1_w2"):
+                iou = find_boxes.find_boxes_eval(boxes_predictions, boxes_solutions)
+            else:
+                iou = find_boxes.find_boxes_eval2(boxes_predictions, boxes_solutions)
             print(f'Mean IoU: {round(sum(iou)/len(iou), 2)}')
 
     else:

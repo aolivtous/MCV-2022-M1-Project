@@ -161,6 +161,34 @@ def find_boxes(image, f_name, printbox=False):
     return result, text_mask
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 def find_boxes_lapl(image, f_name, printbox=False):
 
     image_cpy = image.copy()
@@ -190,7 +218,23 @@ def find_boxes_lapl(image, f_name, printbox=False):
 
     # cv2.imshow("Laplacian_inv",laplacian_inv)
     # cv2.waitKey(0)
-    # cv2.destroyAllWindows()
+
+
+    # element = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
+    # laplacian = cv2.morphologyEx(laplacian, cv2.MORPH_CLOSE, element)
+    element = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
+    laplacian = cv2.morphologyEx(laplacian, cv2.MORPH_OPEN, element)
+
+    # element = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
+    # laplacian_inv = cv2.morphologyEx(laplacian_inv, cv2.MORPH_CLOSE, element)
+    element = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
+    laplacian_inv = cv2.morphologyEx(laplacian_inv, cv2.MORPH_OPEN, element)
+
+    # cv2.imshow("Laplacian",laplacian)
+    # cv2.waitKey(0)
+
+    # cv2.imshow("Laplacian_inv",laplacian_inv)
+    # cv2.waitKey(0)
 
 
     hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
@@ -198,12 +242,12 @@ def find_boxes_lapl(image, f_name, printbox=False):
     pixels_saturated = np.zeros((height, width), dtype=np.uint8)
     
     size_thresh_s = 30
-    for i in range(height - 1):
-        for j in range(width - 1):
-            if hsv_image[i][j][1] > size_thresh_s: # ! Provar sense or
-                pixels_saturated[i][j] = 0
-            else:
-                pixels_saturated[i][j] = 255
+    # for i in range(height - 1):
+    #     for j in range(width - 1):
+    #         if hsv_image[i][j][1] > size_thresh_s: # ! Provar sense or
+    #             pixels_saturated[i][j] = 0
+    #         else:
+    #             pixels_saturated[i][j] = 255
 
     # cv2.imshow("saturated5",pixels_saturated)
     # cv2.waitKey(0) 
@@ -230,13 +274,13 @@ def find_boxes_lapl(image, f_name, printbox=False):
 
 
     #laplacian_close = cv2.morphologyEx(laplacian, cv2.MORPH_CLOSE, element)
-    element = cv2.getStructuringElement(cv2.MORPH_RECT, (int(width*0.1), 3))
+    element = cv2.getStructuringElement(cv2.MORPH_RECT, (int(width*0.10), 3))
     laplacian_close = cv2.morphologyEx(laplacian_wtht_sat,cv2.MORPH_CLOSE,element)
 
     element = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
     laplacian_open = cv2.morphologyEx(laplacian_close, cv2.MORPH_OPEN, element)
 
-    element = cv2.getStructuringElement(cv2.MORPH_RECT, (int(width*0.1), 3))
+    element = cv2.getStructuringElement(cv2.MORPH_RECT, (int(width*0.10), 3))
     laplacian_close_inv = cv2.morphologyEx(laplacian_inv_wtht_sat,cv2.MORPH_CLOSE,element)
 
     element = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
@@ -270,6 +314,7 @@ def find_boxes_lapl(image, f_name, printbox=False):
     contours1, hierarchy = cv2.findContours(laplacian_open, cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
     contours2, hierarchy = cv2.findContours(laplacian_open_inv, cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
 
+
     contours = contours1 + contours2
     #print(len(contours))
 
@@ -291,33 +336,88 @@ def find_boxes_lapl(image, f_name, printbox=False):
 
     image_cpy = image.copy()
     mindiff = 1000000000
-    x_min = y_min = w_min = h_min = 0
+    x_min1 = y_min1 = w_min1 = h_min1 = 0
+    x_min2 = y_min2 = w_min2 = h_min2 = 0
+
     for idx, cnt in enumerate(contours):
         x, y, w, h = cv2.boundingRect(cnt)
-        
         if w < int(width * 0.05) or h < int(height * 0.01) or h > int(height*0.5):
             continue
-        if h*w < (height*width)*0.0005:
+        if h*w < (height*width)*0.005:
             continue
         if h > w:
             continue
         if (x + (w / 2.0) < (width /2.0) - width * 0.03) or (x + (w / 2.0) > (width / 2.0) + width * 0.03):
             continue
 
-        mark_red_rectangle = cv2.rectangle(image_cpy, (x, y), (x + w, y + h), (0, 0, 255), 3)
+        #mark_red_rectangle = cv2.rectangle(image_cpy, (x, y), (x + w, y + h), (0, 0, 255), 3)
 
         diff = color_factor(rgb_image[y:y + h, x:x + w]) # [y:y + h, x:x + w]
         if diff < mindiff:
             mindiff=diff
-            x_min = x
-            y_min = y
-            w_min = w
-            h_min = h
+            x_min1 = x
+            y_min1 = y
+            w_min1 = w
+            h_min1 = h
 
+    mindiff = 1000000000
+    for idx, cnt in enumerate(contours):
+        x, y, w, h = cv2.boundingRect(cnt)
+        if (x==x_min1 and y==y_min1) and (w==w_min1 and h==h_min1):
+            continue
+        if w < int(width * 0.05) or h < int(height * 0.01) or h > int(height*0.5):
+            continue
+        if h*w < (height*width)*0.005:
+            continue
+        if h > w:
+            continue
+        if (x + (w / 2.0) < (width /2.0) - width * 0.03) or (x + (w / 2.0) > (width / 2.0) + width * 0.03):
+            continue
+
+        diff = color_factor(rgb_image[y:y + h, x:x + w]) # [y:y + h, x:x + w]
+        if diff < mindiff:
+            mindiff=diff
+            x_min2 = x
+            y_min2 = y
+            w_min2 = w
+            h_min2 = h
+
+    x_min = x_min1
+    y_min = y_min1
+    w_min = w_min1
+    h_min = h_min1
+    area1 = w_min1  * h_min1
+    area2 = w_min2 * h_min2
+    if area2 > area1 and abs(y_min1 - y_min2) < 20 and abs(x_min1 - x_min2) < 20:
+        x_min = x_min2
+        y_min = y_min2
+        w_min = w_min2
+        h_min = h_min2
+
+
+
+    # Extension & reduction of the rectangle
+    # tol = 10
+    # try:
+    #     while abs(gray_image[y_min + h_min, int(x_min/2)][1] - gray_image[y_min + h_min +1, int(x_min/2)][1]) < tol :
+    #         h_min = h_min + 1
+    #         print('Extension')
+    # except:
+    #     pass
+    # tol = 10
+    # try:
+    #     while abs(gray_image[y_min + h_min, int(x_min/2)][1] - gray_image[y_min - 1, int(x_min/2)][1]) < tol :
+    #         y_min = y_min -1
+    #         print('Extension')
+    # except:
+    #     pass
+
+    mark_red_rectangle = cv2.rectangle(image_cpy, (x_min1, y_min1), (x_min1 + w_min1, y_min1 + h_min1), (0, 0, 255), 3)
+    mark_blue_rectangle = cv2.rectangle(image_cpy, (x_min2, y_min2), (x_min2 + w_min2, y_min2 + h_min2), (255, 0, 0), 3)
     mark_green_rectangle = cv2.rectangle(image_cpy, (x_min, y_min), (x_min + w_min, y_min + h_min), (0, 255, 0), 3)
-    # cv2.imshow("Final", image_cpy)
-    # cv2.waitKey(0)
-    # cv2.destroyAllWindows()
+    cv2.imshow("Final", image_cpy)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
 
     text_box = [x_min, y_min, x_min+w_min, y_min+h_min]
     print (text_box)
@@ -339,6 +439,15 @@ def find_boxes_lapl(image, f_name, printbox=False):
     bbox_output = [np.array([x_min, y_min]),np.array([x_min, y_min + h_min]),np.array([x_min + w_min, y_min + h_min]),np.array([x_min + w_min, y_min])]
 
     return text_box, text_mask, bbox_output
+
+
+
+
+
+
+
+
+
 
 
 def find_boxes2(image, f_name, printbox=False):
@@ -434,7 +543,10 @@ def find_boxes2(image, f_name, printbox=False):
 
     image_cpy = image.copy()
     mindiff = 1000000000
+    mindiff2 = 1000000000
+   
     x_min = y_min = w_min = h_min = 0
+    x_min2 = y_min2 = w_min2 = h_min2 = 0
     for idx, cnt in enumerate(contours):
         x, y, w, h = cv2.boundingRect(cnt)
         
@@ -456,36 +568,62 @@ def find_boxes2(image, f_name, printbox=False):
             y_min = y
             w_min = w
             h_min = h
-   
+    
+    for idx, cnt in enumerate(contours):
+        x, y, w, h = cv2.boundingRect(cnt)
+        if (x==x_min and y==y_min) and (w == w_min and z==z_min):
+            continue
+        if w < int(width * 0.05) or h < int(height * 0.01) or h > int(height*0.5):
+            continue
+        if h*w < (height*width)*0.0005:
+            continue
+        if h > w:
+            continue
+        if (x + (w / 2.0) < (width /2.0) - width * 0.03) or (x + (w / 2.0) > (width / 2.0) + width * 0.03):
+            continue
+        
+        # mark_red_rectangle = cv2.rectangle(image_cpy, (x, y), (x + w, y + h), (0, 0, 255), 3)
+
+        diff = color_factor(image_rgb[y:y + h, x:x + w]) # [y:y + h, x:x + w]
+        if diff < mindiff2:
+            mindiff=diff
+            x_min2 = x
+            y_min2= y
+            w_min2 = w
+            h_min2 = h
+
+    mark_green_rectangle = cv2.rectangle(image_cpy, (x_min, y_min), (x_min + w_min, y_min + h_min), (0, 255, 0), 3)
+    mark_blue_rectangle = cv2.rectangle(image_cpy, (x_min2, y_min2), (x_min2 + w_min2, y_min2 + h_min2), (255, 0, 0), 3)
+
     #Extension of rectangle 
-    tol = 10
-    try:
-        while abs(int(image_hsv[y_min + h_min, x_min][1]) - int(image_hsv[y_min + h_min +1, x_min][1])) < tol and (image_hsv[y_min + h_min, x_min][2]<25 or image_hsv[y_min + h_min, x_min][2]>240) :
-            h_min = h_min + 1
-    except:
-        pass
+    # tol = 10
+    # try:
+    #     while abs(int(image_hsv[y_min + h_min, x_min][1]) - int(image_hsv[y_min + h_min +1, x_min][1])) < tol and (image_hsv[y_min + h_min, x_min][2]<25 or image_hsv[y_min + h_min, x_min][2]>240) :
+    #         h_min = h_min + 1
+    # except:
+    #     pass
     
-    try:
-        while abs(int(image_hsv[y_min + h_min, x_min][1]) - int(image_hsv[y_min + h_min, x_min - 1][1])) < tol and (image_hsv[y_min + h_min, x_min][2]<25 or image_hsv[y_min + h_min, x_min][2]>240) :
-            x_min = x_min - 1
-    except:
-        pass
+    # try:
+    #     while abs(int(image_hsv[y_min + h_min, x_min][1]) - int(image_hsv[y_min + h_min, x_min - 1][1])) < tol and (image_hsv[y_min + h_min, x_min][2]<25 or image_hsv[y_min + h_min, x_min][2]>240) :
+    #         x_min = x_min - 1
+    # except:
+    #     pass
     
-    try:
-        while abs(int(image_hsv[y_min, x_min + w_min][1]) - int(image_hsv[y_min, x_min + w_min + 1][1])) < tol and (image_hsv[y_min, x_min + w_min][2]<25 or image_hsv[y_min, x_min + w_min][2]>240):
-            w_min = w_min + 1
-    except:
-        pass
+    # try:
+    #     while abs(int(image_hsv[y_min, x_min + w_min][1]) - int(image_hsv[y_min, x_min + w_min + 1][1])) < tol and (image_hsv[y_min, x_min + w_min][2]<25 or image_hsv[y_min, x_min + w_min][2]>240):
+    #         w_min = w_min + 1
+    # except:
+    #     pass
     
-    try:
-        while abs(int(image_hsv[y_min, x_min + w_min][1]) - int(image_hsv[y_min - 1 , x_min + w_min][1])) < tol and (image_hsv[y_min, x_min + w_min][2]<25 or image_hsv[y_min, x_min + w_min][2]>240):
-            y_min = y_min - 1
-    except:
-        pass
+    # try:
+    #     while abs(int(image_hsv[y_min, x_min + w_min][1]) - int(image_hsv[y_min - 1 , x_min + w_min][1])) < tol and (image_hsv[y_min, x_min + w_min][2]<25 or image_hsv[y_min, x_min + w_min][2]>240):
+    #         y_min = y_min - 1
+    # except:
+    #     pass
 
         
     #print(mindiff)
-    mark_green_rectangle = cv2.rectangle(image_cpy, (x_min, y_min), (x_min + w_min, y_min + h_min), (0, 255, 0), 3)
+    # mark_green_rectangle = cv2.rectangle(image_cpy, (x_min, y_min), (x_min + w_min, y_min + h_min), (0, 255, 0), 3)
     
     if printbox:
         cv2.imwrite(f'{global_variables.dir_query_aux}{f_name}_bin.png', bin_image)
