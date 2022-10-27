@@ -368,18 +368,32 @@ def find_boxes_lapl(image, f_name, printbox=False):
 
 
     # Extension & reduction of the rectangle
-    # tol = 10
+    # tol = 2
     # try:
-    #     while abs(gray_image[y_min + h_min, int(x_min/2)][1] - gray_image[y_min + h_min +1, int(x_min/2)][1]) < tol :
+    #     while abs(gray_image[y_min + h_min, x_min + int(w_min/2)] - gray_image[y_min + h_min +1, x_min + int(w_min/2)]) < tol :
     #         h_min = h_min + 1
-    #         print('Extension')
+    #         print('Extension down')
     # except:
     #     pass
-    # tol = 10
+    # tol = 2
     # try:
-    #     while abs(gray_image[y_min + h_min, int(x_min/2)][1] - gray_image[y_min - 1, int(x_min/2)][1]) < tol :
+    #     while abs(gray_image[y_min + h_min, x_min + int(w_min/2)] - gray_image[y_min - 1, x_min + int(w_min/2)]) < tol :
     #         y_min = y_min -1
-    #         print('Extension')
+    #         print('Extension up')
+    # except:
+    #     pass
+    # tol = 2
+    # try:
+    #     while abs(gray_image[y_min+ int(h_min/2), x_min] - gray_image[y_min+ int(h_min/2), x_min -1 ]) < tol :
+    #         x_min = x_min - 1
+    #         print('Extension left')
+    # except:
+    #     pass
+    # tol = 2
+    # try:
+    #     while abs(gray_image[y_min+ int(h_min/2), x_min+w_min] - gray_image[y_min+ int(h_min/2), x_min+w_min+1 ]) < tol :
+    #         w_min = w_min +1
+    #         print('Extension right')
     # except:
     #     pass
 
