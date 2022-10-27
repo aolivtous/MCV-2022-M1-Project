@@ -82,12 +82,21 @@ def query_measures(hist_image, db_descriptors, distance_type,  text):
             dist_ch2 = cv2.compareHist(hist_image.hist_ch2, hist_ch2_db, global_variables.argument_relations[distance_type])
             dist_ch3 = cv2.compareHist(hist_image.hist_ch3, hist_ch3_db, global_variables.argument_relations[distance_type])
             dist_color = np.mean(np.array([dist_ch1, dist_ch2, dist_ch3]))
+            if(dist_color > 1):
+                print("dist_color > 1")
+                print(dist_color)
 
         if weights["texture"]:
             # MinMax normalisation of the coefficients before calculating the distance
-            norm_hist_image_coeffs_dct = (hist_image.coeffs_dct - hist_image.coeffs_dct.min()) / (hist_image.coeffs_dct.max() - hist_image.coeffs_dct.min())
-            norm_coeffs_dct_db = (coeffs_dct_db - coeffs_dct_db.min()) / (coeffs_dct_db.max() - coeffs_dct_db.min())
+            # norm_hist_image_coeffs_dct = (hist_image.coeffs_dct - hist_image.coeffs_dct.min()) / (hist_image.coeffs_dct.max() - hist_image.coeffs_dct.min())
+            # norm_coeffs_dct_db = (coeffs_dct_db - coeffs_dct_db.min()) / (coeffs_dct_db.max() - coeffs_dct_db.min())
+            # Standard normalisation of the coefficients before calculating the distance
+            norm_hist_image_coeffs_dct = (hist_image.coeffs_dct - hist_image.coeffs_dct.mean()) / hist_image.coeffs_dct.std()
+            norm_coeffs_dct_db = (coeffs_dct_db - coeffs_dct_db.mean()) / coeffs_dct_db.std()
             dist_texture = np.linalg.norm(norm_hist_image_coeffs_dct - norm_coeffs_dct_db)
+            if(dist_texture > 1):
+                print("dist_texture > 1")
+                print(dist_texture)
            
         if weights["text"]:
             

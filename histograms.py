@@ -48,6 +48,8 @@ def get_block_histograms(image, n_patches, bins, has_boundingbox, is_query, text
     concat_hist_ch2 = np.float32(np.array([]))
     concat_hist_ch3 = np.float32(np.array([]))
 
+    first_time = True
+
     for idx in range((n_patches**2)-1):
         
         if weights['color']:
@@ -91,11 +93,12 @@ def get_block_histograms(image, n_patches, bins, has_boundingbox, is_query, text
 
             if(is_query and has_boundingbox):
                 # Get a flattened 1D view of 2D numpy array
-                flatten_tiles_mask = np.ravel(tiles_mask)
-                # print(flatten_tiles_mask)
+                flatten_tiles_mask = np.ravel(tiles_mask[idx])
                 # Check if all value in 2D array are zero
                 if np.all(flatten_tiles_mask == 0):
-                    print('Found NaN in coeffs_dct -------------')
+                    if(first_time):
+                        first_time = False
+                        print('Found NaN in coeffs_dct -------------')
                     # Append a vector of X Nans to concat_coeffs_dct and continue to next iteration
                     concat_coeffs_dct = np.append(concat_coeffs_dct, np.full(X, np.nan))
                     continue
