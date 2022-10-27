@@ -2,6 +2,7 @@ from pydoc import describe
 import global_variables
 import cv2
 import numpy as np
+import textdistance
 
 class distances: 
     instances = {}
@@ -19,7 +20,7 @@ class distances:
 #     }
 # }
 
-def query_measures_colour(hist_image, db_descriptors, distance_type):
+def query_measures(hist_image, db_descriptors, distance_type,  text):
     """
     It calculates the distance between the histograms of the query images and the database images
     
@@ -67,21 +68,33 @@ def query_measures_colour(hist_image, db_descriptors, distance_type):
                 hist_ch3_db = np.delete(hist_ch3_db, idx_3)
         
         if weights["texture"]:
+            
             hist_lbp_db = np.array(img_db.coeffs_dct)
             if to_delete:
                 hist_lbp_db = np.delete(hist_lbp_db, idx_gray)
 
+
         dist_color = dist_texture = dist_text = 0
-        if weights["color"]:
+
+        if weights["color"]: #hellinger distance --> 0 distance --> most similarity
             dist_ch1 = cv2.compareHist(hist_image.hist_ch1, hist_ch1_db, global_variables.argument_relations[distance_type])
             dist_ch2 = cv2.compareHist(hist_image.hist_ch2, hist_ch2_db, global_variables.argument_relations[distance_type])
             dist_ch3 = cv2.compareHist(hist_image.hist_ch3, hist_ch3_db, global_variables.argument_relations[distance_type])
             dist_color = np.mean(np.array([dist_ch1, dist_ch2, dist_ch3]))
+
         if weights["texture"]:
             dist_texture = np.linalg.norm(hist_image.coeffs_dct - img_db.coeffs_dct)
-        # if weight_text > 0:
+           
+        if weights["text"]:
+            
+            with open(global_variables.dir_db + 'bbdd_' + key_db + '.txt') as f:
+                first_line = f.readline()
 
-        dist = dist_color*weights["color"] + dist_texture*weights["texture"]
+            db_text =  first_line.split(",")[0].replace("'","").replace("(","")
+
+            dist_text = textdistance.Levenshtein.normalized_distance(text, db_text)
+
+        dist = dist_color*weights["color"] + dist_texture*weights["texture"]+dist_text*weights["text"]
         dists[key_db] = distances(dist)
 
     return dists

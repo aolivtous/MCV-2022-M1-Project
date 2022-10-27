@@ -74,7 +74,7 @@ def main():
     
     ### PIPELINE
 
-    # DB Descriptors extraction
+    # DB Descriptors and text extraction
     db_descriptors = {}
     if recompute_db:
         print(f'Exctracting descriptors from DB directory: {global_variables.dir_db}')
@@ -85,6 +85,7 @@ def main():
                 f_name = filename.name.split('.')[0].split('_')[1]
                 image = cv2.imread(f)
                 db_descriptors[f_name] = histograms.get_block_histograms(image, 7, 40, has_boundingbox, is_query = False, text_mask = None)
+
         with open(f'{global_variables.dir_db_aux}precomputed_descriptors.pkl', 'wb') as handle:
             pickle.dump(db_descriptors, handle, protocol=pickle.HIGHEST_PROTOCOL)
     else:
@@ -184,9 +185,10 @@ def main():
 
                     hist_image = histograms.get_block_histograms(painting, 7, 40, has_boundingbox, is_query = True, text_mask = text_mask)
                 else:
+                    text = ""
                     hist_image = histograms.get_block_histograms(painting, 7, 40, has_boundingbox, is_query = True, text_mask = None)
 
-                dists[f_names[count]] = distances.query_measures_colour(hist_image, db_descriptors, distance_type)
+                dists[f_names[count]] = distances.query_measures(hist_image, db_descriptors, distance_type, text)
 
             # ! Change this in case of neccessity (inestability of expected text box output)
             if has_boundingbox:

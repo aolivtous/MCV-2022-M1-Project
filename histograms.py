@@ -4,7 +4,7 @@ import global_variables
 
 class histograms: 
     def __init__(self, coeffs_dct, hist_ch1, hist_ch2, hist_ch3): 
-        # self.hist_lbp = hist_lbp
+        #self.hist_lbp = hist_lbp
         self.coeffs_dct = coeffs_dct
         self.hist_ch1 = hist_ch1
         self.hist_ch2 = hist_ch2
@@ -21,7 +21,7 @@ def get_block_histograms(image, n_patches, bins, has_boundingbox, is_query, text
     :text_mask: binary mask that contains the text box
     :return: A dictionary of histograms."""
     weights = global_variables.weights
-
+    
     n_patches = int(n_patches)
     
     M = image.shape[0]//n_patches
@@ -41,7 +41,7 @@ def get_block_histograms(image, n_patches, bins, has_boundingbox, is_query, text
         _, text_mask = cv2.threshold(text_mask, 128, 255, cv2.THRESH_BINARY)      
         tiles_mask = [text_mask[x:x+M,y:y+N] for x in range(0,text_mask.shape[0]-text_mask.shape[0]%n_patches,M) for y in range(0,text_mask.shape[1]-text_mask.shape[1]%n_patches,N)]
     
-    # concat_hist_lbp = np.float32(np.array([]))
+    concat_hist_lbp = np.float32(np.array([]))
     concat_coeffs_dct = np.float32(np.array([]))
     concat_coeffs_dct_norm = np.float32(np.array([]))
     concat_hist_ch1 = np.float32(np.array([]))
@@ -71,20 +71,21 @@ def get_block_histograms(image, n_patches, bins, has_boundingbox, is_query, text
             concat_hist_ch3 = np.append(concat_hist_ch3,hist_ch3)
         
         if weights['texture']:
-            #lbp
-            # if(is_query and has_boundingbox):
-            #     tiles_texture_lbp = feature.local_binary_pattern(tiles_texture[idx],8,2,method='uniform').astype(np.uint8)
-            #     hist_lbp = cv2.calcHist([tiles_texture_lbp], [0], tiles_mask[idx], [bins], [0, 255])
-            # else:
-            #     tiles_texture_lbp = feature.local_binary_pattern(tiles_texture[idx],8,2,method='uniform').astype(np.uint8)
-            #     hist_lbp = cv2.calcHist([tiles_texture_lbp], [0], None, [bins], [0, 255])
+            """#lbp
+            if(is_query and has_boundingbox):
+                tiles_texture_lbp = feature.local_binary_pattern(tiles_texture[idx],8,2,method='uniform').astype(np.uint8)
+                hist_lbp = cv2.calcHist([tiles_texture_lbp], [0], tiles_mask[idx], [bins], [0, 255])
+            else:
+                tiles_texture_lbp = feature.local_binary_pattern(tiles_texture[idx],8,2,method='uniform').astype(np.uint8)
+                hist_lbp = cv2.calcHist([tiles_texture_lbp], [0], None, [bins], [0, 255])
 
-            # with np.errstate(divide='ignore',invalid='ignore'):
-            #     hist_lbp/=hist_lbp.sum()
+            with np.errstate(divide='ignore',invalid='ignore'):
+                hist_lbp/=hist_lbp.sum()
 
-            # concat_hist_lbp = np.append(concat_hist_lbp,hist_lbp)
+            concat_hist_lbp = np.append(concat_hist_lbp,hist_lbp)"""
             
             #dct
+
             patch_texture = tiles_texture[idx]
             m,n=patch_texture.shape
             if (m % 2) != 0:
@@ -103,6 +104,8 @@ def get_block_histograms(image, n_patches, bins, has_boundingbox, is_query, text
 
     if weights['texture']:
         concat_coeffs_dct_norm = (concat_coeffs_dct - concat_coeffs_dct.min()) / (concat_coeffs_dct.max() - concat_coeffs_dct.min())
+        #concat_hist_lbp = (concat_hist_lbp - concat_hist_lbp.min()) / (concat_hist_lbp.max() - concat_hist_lbp.min())
+
                 
     return (histograms(concat_coeffs_dct_norm, concat_hist_ch1, concat_hist_ch2, concat_hist_ch3))
-    # return (histograms(concat_hist_lbp, concat_coeffs_dct_norm, concat_hist_ch1, concat_hist_ch2, concat_hist_ch3))
+    #return (histograms(concat_hist_lbp, concat_coeffs_dct_norm, concat_hist_ch1, concat_hist_ch2, concat_hist_ch3))
