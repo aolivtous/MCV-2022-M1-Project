@@ -17,7 +17,7 @@ def getText (box,painting):
     
         # pytesseract.pytesseract.tesseract_cmd = 'C:\\Program Files\\Tesseract-OCR\\tesseract.exe'
                                                 
-        extractedText = pytesseract.image_to_string(textFieldBin)
+        extractedText = pytesseract.image_to_string(textFieldBin, lang='cat+spa+eng')
     
     print("text: " + extractedText)
 
