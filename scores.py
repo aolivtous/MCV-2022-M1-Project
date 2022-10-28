@@ -36,6 +36,10 @@ def apk(actual, predicted, k):
 
     return score / min(len(actual), k)
 
+    
+
+
+
 def mapk(actual, predicted, k):
     """
     Computes the mean average precision at k.
@@ -57,3 +61,49 @@ def mapk(actual, predicted, k):
             The mean average precision at k over the input lists
     """
     return np.mean([apk(a,p,k) for a,p in zip(actual, predicted)])
+
+
+
+
+
+def mapk2(actual, predicted, k):
+    """
+    Computes the mean average precision at k.
+    This function computes the mean average prescision at k between two lists
+    of lists of items.
+    Parameters
+    ----------
+    actual : list
+             A list of lists of elements that are to be predicted 
+             (order doesn't matter in the lists)
+    predicted : list
+                A list of lists of predicted elements
+                (order matters in the lists)
+    k : int, optional
+        The maximum number of predicted elements
+    Returns
+    -------
+    score : double
+            The mean average precision at k over the input lists
+    """
+
+    # predicted2=[]
+    # for i in range(len(predicted)):
+    #     predicted2.append([])
+    #     for j in range(len(predicted[i])):
+    #         predicted2[i].append([predicted[i][j]])
+
+    count = 0
+    result = 0
+    for i in range(len(predicted)):
+        image = predicted[i]
+        for j in range(len(image)):
+            count+=1
+            painting = predicted[i][j]
+            solution = [actual[i][j]]
+            apk_res = apk(solution,painting,k)
+            result +=apk_res
+    
+    average = result / count
+
+    return average

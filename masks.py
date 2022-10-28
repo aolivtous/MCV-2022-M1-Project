@@ -48,7 +48,7 @@ def generate_masks(image, f_name, mayhave_split): #NOVA FUNCIO PER DETECTAR ELS 
     # No van be: 10,2,7,20 / 10,2,7,25 / 10,3,5,20 /  10,2,5,25
 
     image_cpy = image.copy()
-    width, height, _ = image.shape
+    height,width,channels = image.shape
    
 
     # remove noise
@@ -120,7 +120,7 @@ def generate_masks(image, f_name, mayhave_split): #NOVA FUNCIO PER DETECTAR ELS 
         secondlargestcontour = sorteddata[1][1]
         x2, y2, w2, h2 = cv2.boundingRect(secondlargestcontour)
 
-        if(w2*h2 > 0.06*width*height):
+        if(w2*h2 > 0.06*width*height and w2 < 0.95*width):
             mark_red_rectangle = cv2.rectangle(image_cpy, (x2, y2), (x2 + w2, y2 + h2), (0, 0, 255), 3)
             num_paintings = 2
             if(y+h < y2):
