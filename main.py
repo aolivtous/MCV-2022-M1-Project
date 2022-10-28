@@ -160,8 +160,8 @@ def main():
                         coords.append([ 
                                         mask_coords[f_names[count]][0] + coord_results[0],
                                         mask_coords[f_names[count]][1] + coord_results[1],
-                                        mask_coords[f_names[count]][2] + coord_results[2],
-                                        mask_coords[f_names[count]][3] + coord_results[3]
+                                        mask_coords[f_names[count]][0] + coord_results[2],
+                                        mask_coords[f_names[count]][1] + coord_results[3]
                                     ])
                     else:
                         if (name_query=="qsd1_w2"):
