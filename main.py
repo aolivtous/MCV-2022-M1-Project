@@ -24,6 +24,7 @@ import scores
 import masks
 import mask_evaluation
 import find_boxes
+import box_evaluation
 import noise
 import findText
 
@@ -210,6 +211,9 @@ def main():
         print(f'For image {idx}:')
         print(f'\tSearch result: {l}')
         if(has_boundingbox): print(f'\tBoxes: {boxes_predictions[idx]}')
+    
+    print(f'Retrieval solutions format pkl {query_solutions}')
+    print(f'Box solutions format pkl {boxes_solutions}')
 
     print('\n-----EVALUATION-----')
     # Results evaluation
@@ -223,9 +227,9 @@ def main():
         #     mask_evaluation.mask_eval_avg(directory_output, dir_query, print_each = False, print_avg = True)
         if(has_boundingbox):
             if(name_query=="qsd1_w2"):
-                iou = find_boxes.find_boxes_eval(boxes_predictions, boxes_solutions)
+                iou = box_evaluation.find_boxes_eval(boxes_predictions, boxes_solutions)
             else:
-                iou = find_boxes.find_boxes_eval2(boxes_predictions, boxes_solutions)
+                iou = box_evaluation.find_boxes_eval2(boxes_predictions, boxes_solutions)
             print(f'Mean IoU: {round(sum(iou)/len(iou), 2)}')
 
     else:
