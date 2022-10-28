@@ -97,7 +97,7 @@ def query_measures(hist_image, db_descriptors, distance_type,  text):
             if(dist_texture > 1):
                 print("dist_texture > 1")
                 print(dist_texture)
-           
+            
         if weights["text"]:
             
             with open(global_variables.dir_db + 'bbdd_' + key_db + '.txt') as f:
@@ -107,7 +107,9 @@ def query_measures(hist_image, db_descriptors, distance_type,  text):
 
             dist_text = textdistance.Levenshtein.normalized_distance(text, db_text)
 
-        dist = dist_color*weights["color"] + dist_texture*weights["texture"]+dist_text*weights["text"]
+        dist = dist_color*dist_texture
+        #dist = dits_color*weights["color"] + dist_texture*weights["texture"]+dist_text*weights["text"]
         dists[key_db] = distances(dist)
 
     return dists
+

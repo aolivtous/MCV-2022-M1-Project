@@ -23,7 +23,7 @@ def get_sorted_list_of_lists_from_dict_of_dicts(dictionary, dict_type, two_level
     if dict_type in ("eucli", "hellin", "chisq"):
         reverse = False
     else:
-        reverse = True
+        reverse = True 
     
     # Sort dict to assure the order
     dictionary = dict(sorted(dictionary.items(),key=lambda x:x[0]))

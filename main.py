@@ -217,12 +217,18 @@ def main():
 
     print('\n-----EVALUATION-----')
     # Results evaluation
-    if(solutions):
+    if(solutions): 
         # Algorithm evaluation
-        mapk1 = scores.mapk(query_solutions, results_sorted, k = 1)
-        print(f'The map-1 score is: {round(mapk1, 2)}')
-        mapk5 = scores.mapk(query_solutions, results_sorted, k = 5)
-        print(f'The map-5 score is: {round(mapk5, 2)}')
+        if name_query.split('_')[0][-1] == '1':
+            mapk1 = scores.mapk(query_solutions, results_sorted, k = 1)
+            print(f'The map-1 score is: {round(mapk1, 2)}')
+            mapk5 = scores.mapk(query_solutions, results_sorted, k = 5)
+            print(f'The map-5 score is: {round(mapk5, 2)}')
+        else:
+            mapk1 = scores.mapk2(query_solutions, results_sorted, k = 1)
+            print(f'The map-1 score is: {round(mapk1, 2)}')
+            mapk5 = scores.mapk2(query_solutions, results_sorted, k = 5)
+            print(f'The map-5 score is: {round(mapk5, 2)}')
         # if(has_backgrounds):
         #     mask_evaluation.mask_eval_avg(directory_output, dir_query, print_each = False, print_avg = True)
         if(has_boundingbox):

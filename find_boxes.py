@@ -424,12 +424,3 @@ def find_boxes_lapl(image, f_name, printbox=False):
     bbox_output = [np.array([x_min, y_min]),np.array([x_min, y_min + h_min]),np.array([x_min + w_min, y_min + h_min]),np.array([x_min + w_min, y_min])]
 
     return text_box, text_mask, bbox_output
-
-
-
-
-
-
-
-
-
