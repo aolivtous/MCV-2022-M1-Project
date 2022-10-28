@@ -123,7 +123,18 @@ def generate_masks(image, f_name, mayhave_split): #NOVA FUNCIO PER DETECTAR ELS 
         if(w2*h2 > 0.06*width*height):
             mark_red_rectangle = cv2.rectangle(image_cpy, (x2, y2), (x2 + w2, y2 + h2), (0, 0, 255), 3)
             num_paintings = 2
-            painting_box = [[x, y, x+w, y+h],[x2, y2, x2+w2, y2+h2]]
+            if(y+h < y2):
+                painting_box = [[x, y, x+w, y+h],[x2, y2, x2+w2, y2+h2]]
+            elif(y2+h2 < y):
+                painting_box = [[x2, y2, x2+w2, y2+h2],[x, y, x+w, y+h]]
+            else:
+                if (x+w < x2):
+                    painting_box = [[x, y, x+w, y+h],[x2, y2, x2+w2, y2+h2]]
+                else:
+                    painting_box = [[x2, y2, x2+w2, y2+h2],[x, y, x+w, y+h]]
+
+            
+
             #part2 = im.crop(x2, y2, x2+w2, y2+h2)
 
     """cv2.imshow("Laplacian", image_cpy)
