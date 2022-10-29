@@ -11,7 +11,7 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "justMyCode": true,
-            "args": "qsd1_w3 0 1 0 1 1 1"
+            "args": "qsd1_w3 0 1 0 1 1 0"
         }
     ]
 
