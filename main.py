@@ -97,6 +97,8 @@ def main():
             print('Exiting. No precomputed pickle found')
             exit(1)
     
+
+
     ## Query processing 
     num_paintings = {}
     mask_coords = {}
@@ -113,6 +115,8 @@ def main():
         if f.endswith(f'{global_variables.test_image}.jpg'): 
             f_name = filename.name.split('.')[0]
             image = cv2.imread(f)
+            # cv2.imshow('Image',image)
+            # cv2.waitKey()
 
             if(may_have_noise):
                 to_be_denoised[f_name], image_denoised = noise.noise_ckeck_removal(image,f_name)
@@ -212,22 +216,22 @@ def main():
         print(f'\tSearch result: {l}')
         if(has_boundingbox): print(f'\tBoxes: {boxes_predictions[idx]}')
     
-    print(f'Retrieval solutions format pkl {query_solutions}')
-    print(f'Box solutions format pkl {boxes_solutions}')
 
-    print('\n-----EVALUATION-----')
+
+    print(f'\n-----EVALUATION of {name_query} using COLOR={global_variables.weights["color"]} / TEXTURE={global_variables.weights["texture"]} / COLOR={global_variables.weights["text"]}-----')
     # Results evaluation
-    if(solutions): 
-        # Algorithm evaluation
-        if name_query.split('_')[0][-1] == '1':
-            mapk1 = scores.mapk(query_solutions, results_sorted, k = 1)
-            print(f'The map-1 score is: {round(mapk1, 2)}')
-            mapk5 = scores.mapk(query_solutions, results_sorted, k = 5)
-            print(f'The map-5 score is: {round(mapk5, 2)}')
-        else:
+    if(solutions):
+        if(name_query=="qsd2_w2" or name_query=="qsd2_w3"):
+            # Algorithm evaluation
             mapk1 = scores.mapk2(query_solutions, results_sorted, k = 1)
             print(f'The map-1 score is: {round(mapk1, 2)}')
             mapk5 = scores.mapk2(query_solutions, results_sorted, k = 5)
+            print(f'The map-5 score is: {round(mapk5, 2)}')
+        else:
+            # Algorithm evaluation
+            mapk1 = scores.mapk(query_solutions, results_sorted, k = 1)
+            print(f'The map-1 score is: {round(mapk1, 2)}')
+            mapk5 = scores.mapk(query_solutions, results_sorted, k = 5)
             print(f'The map-5 score is: {round(mapk5, 2)}')
         # if(has_backgrounds):
         #     mask_evaluation.mask_eval_avg(directory_output, dir_query, print_each = False, print_avg = True)
