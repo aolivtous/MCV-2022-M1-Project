@@ -217,11 +217,17 @@ def main():
         if(has_boundingbox): print(f'\tBoxes: {boxes_predictions[idx]}')
         if(solutions):
             if(name_query=="qsd2_w2" or name_query=="qsd2_w3"):
-                mapk5 = scores.apk(query_solutions[idx], results_sorted[idx], k = 5)
-                print(f'\tMap-5 score is: {round(mapk5, 2)}')
+                apk5 = scores.apk2(query_solutions[idx], results_sorted[idx], k = 5)
             else:
-                mapk5 = scores.apk(query_solutions[idx], results_sorted[idx], k = 5)
-                print(f'\tMap-5 score is: {round(mapk5, 2)}')
+                apk5 = scores.apk(query_solutions[idx], results_sorted[idx], k = 5)
+            color = ''
+            if apk5 == 1:
+                color = global_variables.bcolors.OKGREEN
+            elif apk5 > 0:
+                color = global_variables.bcolors.WARNING
+            else:
+                color = global_variables.bcolors.FAIL
+            print(f'\t{color}Apk5 score is: {round(apk5, 2)}{global_variables.bcolors.ENDC}')
                 
     
 
@@ -232,15 +238,13 @@ def main():
         if(name_query=="qsd2_w2" or name_query=="qsd2_w3"):
             # Algorithm evaluation
             mapk1 = scores.mapk2(query_solutions, results_sorted, k = 1)
-            print(f'The map-1 score is: {round(mapk1, 2)}')
             mapk5 = scores.mapk2(query_solutions, results_sorted, k = 5)
-            print(f'The map-5 score is: {round(mapk5, 2)}')
         else:
             # Algorithm evaluation
             mapk1 = scores.mapk(query_solutions, results_sorted, k = 1)
-            print(f'The map-1 score is: {round(mapk1, 3)}')
             mapk5 = scores.mapk(query_solutions, results_sorted, k = 5)
-            print(f'The map-5 score is: {round(mapk5, 3)}')
+        print(f'The map-1 score is: {round(mapk1, 3)}')
+        print(f'The map-5 score is: {round(mapk5, 3)}')
         # if(has_backgrounds):
         #     mask_evaluation.mask_eval_avg(directory_output, dir_query, print_each = False, print_avg = True)
         if(has_boundingbox):

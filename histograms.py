@@ -52,7 +52,11 @@ def get_block_histograms(image, has_boundingbox, is_query, text_mask):
 
     first_time = True
 
-    for idx in range((n_patches**2)-1):
+    for idx in range((n_patches**2)):
+        
+        # Not considering the borders of the (cropped) image
+        # if idx < n_patches or idx % n_patches == 0 or idx % n_patches == n_patches-1 or idx >= (n_patches**2)-n_patches:
+        #     continue
         
         if weights['color']:
             if(is_query and has_boundingbox):

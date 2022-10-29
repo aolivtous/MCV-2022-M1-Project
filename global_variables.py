@@ -1,5 +1,15 @@
-from glob import glob
 import cv2
+
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKCYAN = '\033[96m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
 
 def init(name_query):
     global argument_relations
@@ -44,9 +54,9 @@ def init(name_query):
     n_bins = 40
 
     weights = {
-        'color': 0.5,
-        'texture': 0.5,
-        'text': 0.0
+        'color': 0.25,
+        'texture': 0.25,
+        'text': 0.5
     }
  
     # Constant arguments
