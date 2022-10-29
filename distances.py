@@ -94,9 +94,9 @@ def query_measures(hist_image, db_descriptors, distance_type,  text):
             norm_hist_image_coeffs_dct = (hist_image.coeffs_dct - hist_image.coeffs_dct.mean()) / hist_image.coeffs_dct.std()
             norm_coeffs_dct_db = (coeffs_dct_db - coeffs_dct_db.mean()) / coeffs_dct_db.std()
             dist_texture = np.linalg.norm(norm_hist_image_coeffs_dct - norm_coeffs_dct_db)
-            if(dist_texture > 1):
-                print("dist_texture > 1")
-                print(dist_texture)
+            # if(dist_texture > 1):
+            #     print("dist_texture > 1")
+            #     print(dist_texture)
             
         if weights["text"]:
             

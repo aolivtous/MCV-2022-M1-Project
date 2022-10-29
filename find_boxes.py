@@ -160,6 +160,12 @@ def find_boxes(image, f_name, printbox=False):
     #return bbox_output, result
     return result, text_mask
 
+
+
+
+
+
+
 def find_boxes_lapl(image, f_name, printbox=False):
 
     image_cpy = image.copy()
@@ -316,12 +322,17 @@ def find_boxes_lapl(image, f_name, printbox=False):
             continue
         if h*w < (height*width)*0.005:
             continue
-        if h > w:
+        if h > w*0.75:
             continue
-        if (x + (w / 2.0) < (width /2.0) - width * 0.03) or (x + (w / 2.0) > (width / 2.0) + width * 0.03):
+        if (x + (w / 2.0) < (width /2.0) - width * 0.07) or (x + (w / 2.0) > (width / 2.0) + width * 0.07):
             continue
+        # if (y > height * 0.2):
+        #     if (y + h > height*0.85):
+        #         continue
+        # else:
+        #     continue
 
-        #mark_red_rectangle = cv2.rectangle(image_cpy, (x, y), (x + w, y + h), (0, 0, 255), 3)
+        mark_white_rectangle = cv2.rectangle(image_cpy, (x, y), (x + w, y + h), (255, 255, 255), 3)
 
         diff = color_factor(rgb_image[y:y + h, x:x + w]) # [y:y + h, x:x + w]
         if diff < mindiff:
@@ -340,10 +351,15 @@ def find_boxes_lapl(image, f_name, printbox=False):
             continue
         if h*w < (height*width)*0.005:
             continue
-        if h > w:
+        if h > w*0.75:
             continue
-        if (x + (w / 2.0) < (width /2.0) - width * 0.03) or (x + (w / 2.0) > (width / 2.0) + width * 0.03):
+        if (x + (w / 2.0) < (width /2.0) - width * 0.07) or (x + (w / 2.0) > (width / 2.0) + width * 0.07):
             continue
+        # if (y > height * 0.2):
+        #     if (y + h > height*0.85):
+        #         continue
+        # else:
+        #     continue
 
         diff = color_factor(rgb_image[y:y + h, x:x + w]) # [y:y + h, x:x + w]
         if diff < mindiff:
