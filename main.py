@@ -218,7 +218,7 @@ def main():
     
 
 
-    print(f'\n-----EVALUATION of {name_query} using COLOR={global_variables.weights["color"]} / TEXTURE={global_variables.weights["texture"]} / COLOR={global_variables.weights["text"]}-----')
+    print(f'\n-----EVALUATION of {name_query} using COLOR={global_variables.weights["color"]} / TEXTURE={global_variables.weights["texture"]} / TEXT={global_variables.weights["text"]}-----')
     # Results evaluation
     if(solutions):
         if(name_query=="qsd2_w2" or name_query=="qsd2_w3"):
