@@ -324,6 +324,8 @@ def find_boxes_lapl(image, f_name, printbox=False):
             continue
         if h > w*0.75:
             continue
+        if h < w*0.05:
+            continue
         if (x + (w / 2.0) < (width /2.0) - width * 0.03) or (x + (w / 2.0) > (width / 2.0) + width * 0.03):
             continue
         # if (y > height * 0.2):
@@ -353,6 +355,8 @@ def find_boxes_lapl(image, f_name, printbox=False):
             continue
         if h > w*0.75:
             continue
+        if h < w*0.05:
+            continue
         if (x + (w / 2.0) < (width /2.0) - width * 0.03) or (x + (w / 2.0) > (width / 2.0) + width * 0.03):
             continue
         # if (y > height * 0.2):
@@ -373,7 +377,7 @@ def find_boxes_lapl(image, f_name, printbox=False):
     y_min = y_min1
     w_min = w_min1
     h_min = h_min1
-    area1 = w_min1  * h_min1
+    area1 = w_min1 * h_min1
     area2 = w_min2 * h_min2
     if area2 > area1 and abs(y_min1 - y_min2) < 20 and abs(x_min1 - x_min2) < 20:
         x_min = x_min2
@@ -421,7 +425,7 @@ def find_boxes_lapl(image, f_name, printbox=False):
     # cv2.destroyAllWindows()
 
     text_box = [x_min, y_min, x_min+w_min, y_min+h_min]
-    print (text_box)
+    #print (text_box)
 
     """cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_text_laplacian.png', laplacian)
     cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_text_laplacian_open.png', np.uint8(mask_open))
@@ -432,10 +436,13 @@ def find_boxes_lapl(image, f_name, printbox=False):
     text_mask = np.zeros((height, width), dtype=np.uint8)
     for i in range(height - 1):
         for j in range(width - 1):
-            if j > x and i > y and j < (x + w) and i < (y + h):
+            if j > x_min and i > y_min and j < (x_min + w_min) and i < (y_min + h_min):
                 text_mask[i][j] = 0
             else:
                 text_mask[i][j] = 255
+    
+    # Write the text mask
+    cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_text_mask.png', text_mask)
 
     bbox_output = [np.array([x_min, y_min]),np.array([x_min, y_min + h_min]),np.array([x_min + w_min, y_min + h_min]),np.array([x_min + w_min, y_min])]
 

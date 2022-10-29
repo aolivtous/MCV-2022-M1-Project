@@ -85,7 +85,7 @@ def main():
             if f.endswith('.jpg'):
                 f_name = filename.name.split('.')[0].split('_')[1]
                 image = cv2.imread(f)
-                db_descriptors[f_name] = histograms.get_block_histograms(image, 7, 40, has_boundingbox, is_query = False, text_mask = None)
+                db_descriptors[f_name] = histograms.get_block_histograms(image, has_boundingbox, is_query = False, text_mask = None)
 
         with open(f'{global_variables.dir_db_aux}precomputed_descriptors.pkl', 'wb') as handle:
             pickle.dump(db_descriptors, handle, protocol=pickle.HIGHEST_PROTOCOL)
@@ -174,7 +174,7 @@ def main():
                         else:
                             coords.append(coord_results)
                     
-                    print('image coords:', coords)
+                    print('Bounding box coordinates:', coords)
                     # save the text in the dictionary and in the txt file
                     
                     text = findText.getText(coord_results,painting)
@@ -190,10 +190,10 @@ def main():
                         with open(f'{global_variables.dir_results}{f_name}.txt', 'a') as f:
                             f.write(f"('{text}',)")
 
-                    hist_image = histograms.get_block_histograms(painting, 7, 40, has_boundingbox, is_query = True, text_mask = text_mask)
+                    hist_image = histograms.get_block_histograms(painting, has_boundingbox, is_query = True, text_mask = text_mask)
                 else:
                     text = ""
-                    hist_image = histograms.get_block_histograms(painting, 7, 40, has_boundingbox, is_query = True, text_mask = None)
+                    hist_image = histograms.get_block_histograms(painting, has_boundingbox, is_query = True, text_mask = None)
 
                 dists[f_names[count]] = distances.query_measures(hist_image, db_descriptors, distance_type, text)
 
@@ -215,6 +215,14 @@ def main():
         print(f'For image {idx}:')
         print(f'\tSearch result: {l}')
         if(has_boundingbox): print(f'\tBoxes: {boxes_predictions[idx]}')
+        if(solutions):
+            if(name_query=="qsd2_w2" or name_query=="qsd2_w3"):
+                mapk5 = scores.apk(query_solutions[idx], results_sorted[idx], k = 5)
+                print(f'\tMap-5 score is: {round(mapk5, 2)}')
+            else:
+                mapk5 = scores.apk(query_solutions[idx], results_sorted[idx], k = 5)
+                print(f'\tMap-5 score is: {round(mapk5, 2)}')
+                
     
 
 
@@ -230,9 +238,9 @@ def main():
         else:
             # Algorithm evaluation
             mapk1 = scores.mapk(query_solutions, results_sorted, k = 1)
-            print(f'The map-1 score is: {round(mapk1, 2)}')
+            print(f'The map-1 score is: {round(mapk1, 3)}')
             mapk5 = scores.mapk(query_solutions, results_sorted, k = 5)
-            print(f'The map-5 score is: {round(mapk5, 2)}')
+            print(f'The map-5 score is: {round(mapk5, 3)}')
         # if(has_backgrounds):
         #     mask_evaluation.mask_eval_avg(directory_output, dir_query, print_each = False, print_avg = True)
         if(has_boundingbox):

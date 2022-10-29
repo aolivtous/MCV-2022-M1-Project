@@ -1,9 +1,12 @@
+from glob import glob
 import cv2
 
 def init(name_query):
     global argument_relations
     global methods_search
     global weights
+    global n_patches
+    global n_bins
 
     global name_db
     global dir_base
@@ -36,6 +39,9 @@ def init(name_query):
             'distance_type': 'hellin'
         }
     }
+
+    n_patches = 5
+    n_bins = 40
 
     weights = {
         'color': 0.5,

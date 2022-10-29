@@ -34,9 +34,7 @@ def query_measures(hist_image, db_descriptors, distance_type,  text):
     """
     weights = global_variables.weights
 
-    dists_color = {}
-    dists_texture = {}
-    dists_text = {} 
+    dists_color, dists_texture, dists_text = {}, {}, {}
     dists_db = {}
 
     idx_1 = idx_2 = idx_3 = idx_dct = []
@@ -45,7 +43,6 @@ def query_measures(hist_image, db_descriptors, distance_type,  text):
 
     # NaN deletion for color histograms
     if weights["color"] and (np.isnan(hist_image.hist_ch1).any() or np.isnan(hist_image.hist_ch2).any() or np.isnan(hist_image.hist_ch3).any()):
-        print('Found NaN in hist -------------')
         idx_1 = np.argwhere(np.isnan(hist_image.hist_ch1))
         idx_2 = np.argwhere(np.isnan(hist_image.hist_ch2))
         idx_3 = np.argwhere(np.isnan(hist_image.hist_ch3))

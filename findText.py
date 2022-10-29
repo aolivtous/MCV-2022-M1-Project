@@ -19,6 +19,6 @@ def getText (box,painting):
                                                 
         extractedText = pytesseract.image_to_string(textFieldBin, lang='cat+spa+eng')
     
-    print("text: " + extractedText)
+    print(f'Text in bounding box: {extractedText}')
 
     return extractedText

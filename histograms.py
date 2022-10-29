@@ -11,7 +11,7 @@ class histograms:
         self.hist_ch3 = hist_ch3
         #self.concatenation = concatenation
 
-def get_block_histograms(image, n_patches, bins, has_boundingbox, is_query, text_mask):
+def get_block_histograms(image, has_boundingbox, is_query, text_mask):
     
     """Calculate and concatenate histograms made from parts of the image of a particular block level
 
@@ -22,8 +22,8 @@ def get_block_histograms(image, n_patches, bins, has_boundingbox, is_query, text
     :text_mask: binary mask that contains the text box
     :return: A dictionary of histograms."""
     weights = global_variables.weights
-    
-    n_patches = int(n_patches)
+    n_patches = int(global_variables.n_patches)
+    n_bins = int(global_variables.n_bins)
     
     M = image.shape[0]//n_patches
     N = image.shape[1]//n_patches
@@ -56,13 +56,13 @@ def get_block_histograms(image, n_patches, bins, has_boundingbox, is_query, text
         
         if weights['color']:
             if(is_query and has_boundingbox):
-                hist_ch1 = cv2.calcHist([tiles_color[idx]], [0], tiles_mask[idx], [bins], [0, 255])
-                hist_ch2 = cv2.calcHist([tiles_color[idx]], [1], tiles_mask[idx], [bins], [0, 255])
-                hist_ch3 = cv2.calcHist([tiles_color[idx]], [2], tiles_mask[idx], [bins], [0, 255])
+                hist_ch1 = cv2.calcHist([tiles_color[idx]], [0], tiles_mask[idx], [n_bins], [0, 255])
+                hist_ch2 = cv2.calcHist([tiles_color[idx]], [1], tiles_mask[idx], [n_bins], [0, 255])
+                hist_ch3 = cv2.calcHist([tiles_color[idx]], [2], tiles_mask[idx], [n_bins], [0, 255])
             else:
-                hist_ch1 = cv2.calcHist([tiles_color[idx]], [0], None, [bins], [0, 255])
-                hist_ch2 = cv2.calcHist([tiles_color[idx]], [1], None, [bins], [0, 255])
-                hist_ch3 = cv2.calcHist([tiles_color[idx]], [2], None, [bins], [0, 255])
+                hist_ch1 = cv2.calcHist([tiles_color[idx]], [0], None, [n_bins], [0, 255])
+                hist_ch2 = cv2.calcHist([tiles_color[idx]], [1], None, [n_bins], [0, 255])
+                hist_ch3 = cv2.calcHist([tiles_color[idx]], [2], None, [n_bins], [0, 255])
 
             # We know we are producing some NaNs with this operation, we clean them later
             with np.errstate(divide='ignore',invalid='ignore'):
@@ -100,10 +100,12 @@ def get_block_histograms(image, n_patches, bins, has_boundingbox, is_query, text
                 # Get a flattened 1D view of 2D numpy array
                 flatten_tiles_mask = np.ravel(tiles_mask[idx])
                 # Check if all value in 2D array are zero
-                if np.all(flatten_tiles_mask == 0):
+                # Percentage of zero values in flatten_tiles_mask
+                percentage_mask = np.count_nonzero(flatten_tiles_mask == 0) / flatten_tiles_mask.size
+                # if np.all(flatten_tiles_mask == 0):
+                if percentage_mask > 0.5:
                     if(first_time):
                         first_time = False
-                        print('Found NaN in coeffs_dct -------------')
                     # Append a vector of X Nans to concat_coeffs_dct and continue to next iteration
                     concat_coeffs_dct = np.append(concat_coeffs_dct, np.full(X, np.nan))
                     continue
