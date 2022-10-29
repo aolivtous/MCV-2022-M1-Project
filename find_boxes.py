@@ -324,7 +324,7 @@ def find_boxes_lapl(image, f_name, printbox=False):
             continue
         if h > w*0.75:
             continue
-        if (x + (w / 2.0) < (width /2.0) - width * 0.07) or (x + (w / 2.0) > (width / 2.0) + width * 0.07):
+        if (x + (w / 2.0) < (width /2.0) - width * 0.03) or (x + (w / 2.0) > (width / 2.0) + width * 0.03):
             continue
         # if (y > height * 0.2):
         #     if (y + h > height*0.85):
@@ -440,3 +440,22 @@ def find_boxes_lapl(image, f_name, printbox=False):
     bbox_output = [np.array([x_min, y_min]),np.array([x_min, y_min + h_min]),np.array([x_min + w_min, y_min + h_min]),np.array([x_min + w_min, y_min])]
 
     return text_box, text_mask, bbox_output
+
+
+
+
+# import cv2
+# import pytesseract
+
+# def find_box_ocr(img, f_name, printbox=False):
+
+#     h, w, c = img.shape
+#     boxes = pytesseract.image_to_boxes(img) 
+#     for b in boxes.splitlines():
+#         b = b.split(' ')
+#         img = cv2.rectangle(img, (int(b[1]), h - int(b[2])), (int(b[3]), h - int(b[4])), (0, 255, 0), 2)
+
+#     cv2.imshow('img', img)
+#     cv2.waitKey(0)
+    
+#     return 
