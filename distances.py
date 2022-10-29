@@ -105,10 +105,10 @@ def query_measures(hist_image, db_descriptors, distance_type,  text):
 
             db_text =  first_line.split(",")[0].replace("'","").replace("(","")
 
-            dist_text = textdistance.Levenshtein.normalized_distance(text, db_text)
+            dist_text = textdistance.levenshtein.normalized_distance(text, db_text)
 
-        dist = dist_color*dist_texture
-        #dist = dits_color*weights["color"] + dist_texture*weights["texture"]+dist_text*weights["text"]
+        #dist = dist_color*dist_texture
+        dist = dist_color*weights["color"] + dist_texture*weights["texture"]+dist_text*weights["text"]
         dists[key_db] = distances(dist)
 
     return dists
