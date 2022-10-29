@@ -353,7 +353,7 @@ def find_boxes_lapl(image, f_name, printbox=False):
             continue
         if h > w*0.75:
             continue
-        if (x + (w / 2.0) < (width /2.0) - width * 0.07) or (x + (w / 2.0) > (width / 2.0) + width * 0.07):
+        if (x + (w / 2.0) < (width /2.0) - width * 0.03) or (x + (w / 2.0) > (width / 2.0) + width * 0.03):
             continue
         # if (y > height * 0.2):
         #     if (y + h > height*0.85):
