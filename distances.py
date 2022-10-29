@@ -97,6 +97,23 @@ def query_measures(hist_image, db_descriptors, distance_type,  text):
             if(dist_texture > 1):
                 print("dist_texture > 1")
                 print(dist_texture)
+
+        if weights['color'] and weights['texture']:
+            concatenation_features_query = np.float32(np.array([]))
+            concatenation_features_query = np.append(concatenation_features_query, hist_image.hist_ch1)
+            concatenation_features_query = np.append(concatenation_features_query, hist_image.hist_ch2)
+            concatenation_features_query = np.append(concatenation_features_query, hist_image.hist_ch3)
+            concatenation_features_query = np.append(concatenation_features_query, norm_hist_image_coeffs_dct)
+
+            concatenation_features_bd = np.float32(np.array([]))
+            concatenation_features_bd = np.append(concatenation_features_bd, hist_ch1_db)
+            concatenation_features_bd = np.append(concatenation_features_bd, hist_ch2_db)
+            concatenation_features_bd = np.append(concatenation_features_bd, hist_ch3_db)
+            concatenation_features_bd = np.append(concatenation_features_bd, norm_coeffs_dct_db)
+            #concatenation_features = np.append(concatenation_features, hist_ch2)
+            #concatenation_features = np.append(concatenation_features, hist_ch3)
+            dist_concat = np.linalg.norm(concatenation_features_query - concatenation_features_bd )
+
             
         if weights["text"]:
             
@@ -107,8 +124,9 @@ def query_measures(hist_image, db_descriptors, distance_type,  text):
 
             dist_text = textdistance.Levenshtein.normalized_distance(text, db_text)
 
-        dist = dist_color*dist_texture
+        #dist = dist_color*dist_texture
         #dist = dits_color*weights["color"] + dist_texture*weights["texture"]+dist_text*weights["text"]
+        dist = dist_concat
         dists[key_db] = distances(dist)
 
     return dists

@@ -9,6 +9,7 @@ class histograms:
         self.hist_ch1 = hist_ch1
         self.hist_ch2 = hist_ch2
         self.hist_ch3 = hist_ch3
+        #self.concatenation = concatenation
 
 def get_block_histograms(image, n_patches, bins, has_boundingbox, is_query, text_mask):
     
@@ -47,6 +48,7 @@ def get_block_histograms(image, n_patches, bins, has_boundingbox, is_query, text
     concat_hist_ch1 = np.float32(np.array([]))
     concat_hist_ch2 = np.float32(np.array([]))
     concat_hist_ch3 = np.float32(np.array([]))
+    #concatenation_features = np.float32(np.array([]))
 
     first_time = True
 
@@ -71,6 +73,9 @@ def get_block_histograms(image, n_patches, bins, has_boundingbox, is_query, text
             concat_hist_ch1 = np.append(concat_hist_ch1,hist_ch1)
             concat_hist_ch2 = np.append(concat_hist_ch2,hist_ch2)
             concat_hist_ch3 = np.append(concat_hist_ch3,hist_ch3)
+            #concatenation_features = np.append(concatenation_features, hist_ch1)
+            #concatenation_features = np.append(concatenation_features, hist_ch2)
+            #concatenation_features = np.append(concatenation_features, hist_ch3)
         
         if weights['texture']:
             """#lbp
@@ -116,6 +121,9 @@ def get_block_histograms(image, n_patches, bins, has_boundingbox, is_query, text
             zigzag_vector = np.concatenate([np.diagonal(patch_texture_dct[::-1,:], i)[::(2*(i % 2)-1)] for i in range(1-patch_texture_dct.shape[0], patch_texture_dct.shape[0])])
 
             concat_coeffs_dct = np.append(concat_coeffs_dct, zigzag_vector[:X])
+
+            #norm_hist_image_coeffs_dct = (concat_coeffs_dct - concat_coeffs_dct.mean()) / concat_coeffs_dct.std()
+            #concatenation_features = np.append(concatenation_features, norm_hist_image_coeffs_dct)
 
     # if weights['texture']:
     #     concat_coeffs_dct_norm = (concat_coeffs_dct - concat_coeffs_dct.min()) / (concat_coeffs_dct.max() - concat_coeffs_dct.min())
