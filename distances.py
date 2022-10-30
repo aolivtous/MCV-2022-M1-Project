@@ -104,6 +104,14 @@ def query_measures(hist_image, db_descriptors, distance_type,  text):
 
             db_text =  first_line.split(",")[0].replace("'","").replace("(","")
 
+            #for qsd1_w2
+            """if(len(db_text)>1):
+                db_text =  first_line.split(",")[1].replace("'","").replace(")","").replace("\n","")
+            else :
+                db_text = ""
+            print(db_text)"""
+            
+
             # Clean db_text and text to remove special characters
             db_text = re.sub(r'[^\w\s]','',db_text)
             text = re.sub(r'[^\w\s]','',text)
