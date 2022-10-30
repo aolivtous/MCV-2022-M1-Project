@@ -429,14 +429,14 @@ def find_boxes_lapl(image, f_name, printbox=False):
     text_box = [x_min, y_min, x_min+w_min, y_min+h_min]
     #print (text_box)
 
-
+    """
     cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_find_box_blur1.png', image_blur)
     cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_find_box_laplace_bin_open2.png', laplacian)
     cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_find_box_laplace_inv_bin_open2.png', laplacian_inv)
     cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_find_box_laplace_wtht_saturated3.png', laplacian_wtht_sat)
     cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_find_box_laplace_inv_wtht_saturated3.png', laplacian_inv_wtht_sat)
     cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_find_box_laplace_close-open4.png', laplacian_open)
-    cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_find_box_laplace_inv_close-open4.png', laplacian_open_inv)
+    cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_find_box_laplace_inv_close-open4.png', laplacian_open_inv)"""
     cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_find_box_final.png', image_cpy)
 
     text_mask = np.zeros((height, width), dtype=np.uint8)
