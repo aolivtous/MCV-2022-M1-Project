@@ -182,13 +182,12 @@ def main():
 
                     if(count == 0):
                         with open(f'{global_variables.dir_results}{f_name}.txt', 'w') as f:
-                            if(text == ""):
-                                f.write('\n')
-                            else:
-                                f.write(f"('{text}',)")
+                            text = text.replace("\n","")
+                            f.write(f"('{text}',)")
                     else:
                         with open(f'{global_variables.dir_results}{f_name}.txt', 'a') as f:
-                            f.write(f"('{text}',)")
+                            text = text.replace("\n","")
+                            f.write(f"\n('{text}',)")
 
                     hist_image = histograms.get_block_histograms(painting, has_boundingbox, is_query = True, text_mask = text_mask)
                 else:
