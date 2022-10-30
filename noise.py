@@ -126,7 +126,7 @@ def noise_ckeck_removal(image,f_name):
     if(ssim < 0.65):
         to_be_denoised = True
         image_denoised = median
-    
+        cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_denoised.png', image_denoised)
     return to_be_denoised, image_denoised
 
 
