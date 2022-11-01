@@ -138,3 +138,39 @@ def get_block_histograms(image, has_boundingbox, is_query, text_mask):
                 
     return (histograms(concat_coeffs_dct, concat_hist_ch1, concat_hist_ch2, concat_hist_ch3))
     #return (histograms(concat_hist_lbp, concat_coeffs_dct_norm, concat_hist_ch1, concat_hist_ch2, concat_hist_ch3))
+
+
+
+
+def get_key_points(image, has_boundingbox=False, is_query=False, text_mask=None):
+    image_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+    image_gray = np.float32(image_gray)
+
+    # Compute the corners using cornerHarris() 
+    blockSize = 2 # it's the size of neighbourhood considered for corner detection
+    ksize = 3     # it's the aperture parameter of the Sobel derivative used
+    k = 0.04      # Harris detector free parameter in the equation
+    dst = cv2.cornerHarris(image_gray, blockSize, ksize, k)
+    
+    #result is dilated for marking the corners, not important
+    dst = cv2.dilate(dst,None)
+
+    points=np.unravel_index(dst.argmax(),dst.shape)
+
+    print(list(points))
+
+    cv2.imshow('dst', image)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
+
+    # Threshold for an optimal value, it may vary depending on the image.
+    image[dst>0.01*dst.max()]=[0,0,255]
+
+    return points
+
+
+
+
+

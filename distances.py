@@ -129,3 +129,34 @@ def query_measures(hist_image, db_descriptors, distance_type,  text):
         dists_db[key_db] =  distances(weights["color"] * dists_color[key_db] + weights["texture"] * dists_texture[key_db] + weights["text"] * dists_text[key_db])
 
     return dists_db
+
+
+
+
+
+def key_point_match(image, has_boundingbox, is_query, text_mask):
+    image_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+    image_gray = np.float32(image_gray)
+
+    # Compute the corners using cornerHarris() 
+    blockSize = 2 # it's the size of neighbourhood considered for corner detection
+    ksize = 3     # it's the aperture parameter of the Sobel derivative used
+    k = 0.04      # Harris detector free parameter in the equation
+    dst = cv2.cornerHarris(image_gray, blockSize, ksize, k)
+    
+    #result is dilated for marking the corners, not important
+    dst = cv2.dilate(dst,None)
+
+    points=np.unravel_index(dst.argmax(),dst.shape)
+
+    print(list(points))
+
+    cv2.imshow('dst', image)
+    if(cv2.waitKey(0) & 0xff==27):
+        cv2.destroyAllWindows()
+
+    # Threshold for an optimal value, it may vary depending on the image.
+    image[dst>0.01*dst.max()]=[0,0,255]
+
+    return points
