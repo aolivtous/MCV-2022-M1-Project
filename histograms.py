@@ -3,8 +3,9 @@ from main import *
 import global_variables
 
 class histograms: 
-    def __init__(self, coeffs_dct, hist_ch1, hist_ch2, hist_ch3): 
+    def __init__(self, feature, coeffs_dct, hist_ch1, hist_ch2, hist_ch3): 
         #self.hist_lbp = hist_lbp
+        self.feature = feature
         self.coeffs_dct = coeffs_dct
         self.hist_ch1 = hist_ch1
         self.hist_ch2 = hist_ch2
@@ -48,9 +49,30 @@ def get_block_histograms(image, has_boundingbox, is_query, text_mask):
     concat_hist_ch1 = np.float32(np.array([]))
     concat_hist_ch2 = np.float32(np.array([]))
     concat_hist_ch3 = np.float32(np.array([]))
-    #concatenation_features = np.float32(np.array([]))
+    #concat_features = np.float32(np.array([]))
 
     first_time = True
+
+
+    # sift.detectAndCompute() function finds the keypoints and the descriptors of an image. You can pass a mask if you want to search only a part of image. 
+    # Each keypoint is a special structure which has many attributes 
+    # like its (x,y) coordinates, size of the meaningful neighbourhood, 
+    # angle which specifies its orientation, response that specifies strength of keypoints etc.
+    #concat_feature = ()
+
+    if weights['feature']==1:  
+        image_feature = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        sift = cv2.SIFT_create()
+        if (is_query and has_boundingbox):
+            kp, descrip = sift.detectAndCompute(image_feature, None)
+        else:
+            kp, descrip = sift.detectAndCompute(image_feature, None)
+        
+        # Cal fer aquest pas per poder guardar en el pickle els resultats de la db
+        # concat_feature = (kp.pt, kp.size, kp.angle, kp.response, kp.octave, kp.class_id, descrip)
+        concat_feature = descrip
+
+        
 
     for idx in range((n_patches**2)):
         
@@ -136,40 +158,8 @@ def get_block_histograms(image, has_boundingbox, is_query, text_mask):
         #concat_hist_lbp = (concat_hist_lbp - concat_hist_lbp.min()) / (concat_hist_lbp.max() - concat_hist_lbp.min())
 
                 
-    return (histograms(concat_coeffs_dct, concat_hist_ch1, concat_hist_ch2, concat_hist_ch3))
+    return (histograms(concat_feature, concat_coeffs_dct, concat_hist_ch1, concat_hist_ch2, concat_hist_ch3))
     #return (histograms(concat_hist_lbp, concat_coeffs_dct_norm, concat_hist_ch1, concat_hist_ch2, concat_hist_ch3))
-
-
-
-
-def get_key_points(image, has_boundingbox=False, is_query=False, text_mask=None):
-    image_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-
-    image_gray = np.float32(image_gray)
-
-    # Compute the corners using cornerHarris() 
-    blockSize = 2 # it's the size of neighbourhood considered for corner detection
-    ksize = 3     # it's the aperture parameter of the Sobel derivative used
-    k = 0.04      # Harris detector free parameter in the equation
-    dst = cv2.cornerHarris(image_gray, blockSize, ksize, k)
-    
-    #result is dilated for marking the corners, not important
-    dst = cv2.dilate(dst,None)
-
-    points=np.unravel_index(dst.argmax(),dst.shape)
-
-    print(list(points))
-
-    cv2.imshow('dst', image)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
-
-
-    # Threshold for an optimal value, it may vary depending on the image.
-    image[dst>0.01*dst.max()]=[0,0,255]
-
-    return points
-
 
 
 

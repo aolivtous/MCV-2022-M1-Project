@@ -77,7 +77,6 @@ def main():
 
     # DB Descriptors and text extraction
     db_descriptors = {}
-    db_keypoints = {}
     if recompute_db:
         print(f'Exctracting descriptors from DB directory: {global_variables.dir_db}')
         for filename in tqdm(os.scandir(global_variables.dir_db)):
@@ -87,7 +86,6 @@ def main():
                 f_name = filename.name.split('.')[0].split('_')[1]
                 image = cv2.imread(f)
                 db_descriptors[f_name] = histograms.get_block_histograms(image, has_boundingbox, is_query = False, text_mask = None)
-                db_keypoints[f_name]   = histograms.get_key_points(image, has_boundingbox=False, is_query=False, text_mask=None)
 
         with open(f'{global_variables.dir_db_aux}precomputed_descriptors.pkl', 'wb') as handle:
             pickle.dump(db_descriptors, handle, protocol=pickle.HIGHEST_PROTOCOL)
@@ -195,8 +193,10 @@ def main():
                 else:
                     text = ""
                     hist_image = histograms.get_block_histograms(painting, has_boundingbox, is_query = True, text_mask = None)
+                    
 
                 dists[f_names[count]] = distances.query_measures(hist_image, db_descriptors, distance_type, text)
+
 
             # ! Change this in case of neccessity (inestability of expected text box output)
             if has_boundingbox:

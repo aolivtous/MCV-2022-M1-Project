@@ -34,7 +34,7 @@ def query_measures(hist_image, db_descriptors, distance_type,  text):
     """
     weights = global_variables.weights
 
-    dists_color, dists_texture, dists_text = {}, {}, {}
+    dists_color, dists_texture, dists_text, match_feature= {}, {}, {}, {}
     dists_db = {}
 
     idx_1 = idx_2 = idx_3 = idx_dct = []
@@ -60,6 +60,8 @@ def query_measures(hist_image, db_descriptors, distance_type,  text):
         hist_image.coeffs_dct = np.delete(hist_image.coeffs_dct, idx_dct)
 
         to_delete = True
+
+    
        
     for key_db, img_db in db_descriptors.items():
         if weights["color"]:
@@ -119,6 +121,23 @@ def query_measures(hist_image, db_descriptors, distance_type,  text):
             dists_text[key_db] = textdistance.levenshtein.normalized_distance(text, db_text)
         else:
             dists_text[key_db] = 0
+
+        if weights["feature"]:
+            # query_feature_kp = cv2.KeyPoint(x=hist_image.feature[0][0],y=hist_image.feature[0][1],_size=hist_image.feature[1], _angle=hist_image.feature[2], _response=hist_image.feature[3], _octave=hist_image.feature[4], _class_id=hist_image.feature[5]) 
+            query_feature_des = hist_image.feature
+            # db_feature_kp = cv2.KeyPoint(x=img_db.feature[0][0],y=img_db.feature[0][1],_size=img_db.feature[1], _angle=img_db.feature[2], _response=img_db.feature[3], _octave=img_db.feature[4], _class_id=img_db.feature[5]) 
+            db_feature_des = img_db.feature
+            # print(f'num_matches for {key_db} = {db_feature_des}')
+
+
+            if db_feature_des is None:
+                match_feature[key_db] = 0
+            else:
+                match_feature[key_db] = match_features(query_feature_des, db_feature_des)
+
+            print(f'num_matches for {key_db} = {match_feature[key_db]}')
+
+
     
     # Normalize values of dists_texture euclidean distances
     if weights["texture"]:
@@ -128,35 +147,34 @@ def query_measures(hist_image, db_descriptors, distance_type,  text):
     for key_db, img_db in db_descriptors.items():
         dists_db[key_db] =  distances(weights["color"] * dists_color[key_db] + weights["texture"] * dists_texture[key_db] + weights["text"] * dists_text[key_db])
 
+
+    if weights["feature"]==1.0:
+        # Invert the matches using max-value (in order to have "distance" meaning)
+        match_feature = { k: (np.max(np.array(list(match_feature.values())))-v) for k, v in match_feature.items() }
+        return match_feature
+
     return dists_db
 
 
 
 
-
-def key_point_match(image, has_boundingbox, is_query, text_mask):
-    image_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-
-    image_gray = np.float32(image_gray)
-
-    # Compute the corners using cornerHarris() 
-    blockSize = 2 # it's the size of neighbourhood considered for corner detection
-    ksize = 3     # it's the aperture parameter of the Sobel derivative used
-    k = 0.04      # Harris detector free parameter in the equation
-    dst = cv2.cornerHarris(image_gray, blockSize, ksize, k)
+def match_features(des1, des2, kp1=None, kp2=None):
     
-    #result is dilated for marking the corners, not important
-    dst = cv2.dilate(dst,None)
+    # BFMatcher with default params
+    bf = cv2.BFMatcher()
+    matches = bf.knnMatch(des1,des2,k=2)
 
-    points=np.unravel_index(dst.argmax(),dst.shape)
+    # Apply ratio test
+    good = []
+    for m,n in matches:
+        if m.distance < 0.75*n.distance:
+            good.append([m])
+        
+    num_matches = len(good)
 
-    print(list(points))
 
-    cv2.imshow('dst', image)
-    if(cv2.waitKey(0) & 0xff==27):
-        cv2.destroyAllWindows()
+    return num_matches
 
-    # Threshold for an optimal value, it may vary depending on the image.
-    image[dst>0.01*dst.max()]=[0,0,255]
+    
+        
 
-    return points
