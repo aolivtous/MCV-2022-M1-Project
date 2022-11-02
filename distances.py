@@ -160,17 +160,37 @@ def query_measures(hist_image, db_descriptors, distance_type,  text):
 
 def match_features(des1, des2, kp1=None, kp2=None):
     
-    # BFMatcher with default params
-    bf = cv2.BFMatcher()
-    matches = bf.knnMatch(des1,des2,k=2)
+    if global_variables.methods_search['default']['match_algorithm'] == 'BF':
+        # BFMatcher with default params
+        bf = cv2.BFMatcher()
+        matches = bf.knnMatch(des1,des2,k=2)
 
-    # Apply ratio test
-    good = []
-    for m,n in matches:
-        if m.distance < 0.75*n.distance:
-            good.append([m])
-        
-    num_matches = len(good)
+        # Apply ratio test
+        good = []
+        for m,n in matches:
+            if m.distance < 0.75*n.distance:
+                good.append([m])
+            
+        num_matches = len(good)
+
+    elif global_variables.methods_search['default']['match_algorithm'] == 'FLANN':
+        FLANN_INDEX_KDTREE = 1
+        index_params = dict(algorithm = FLANN_INDEX_KDTREE, trees = 5)
+        search_params = dict(checks=50)   # or pass empty dictionary
+
+        flann = cv2.FlannBasedMatcher(index_params, search_params)
+        matches = flann.knnMatch(des1,des2,k=2)
+
+        # Apply ratio test
+        good = []
+        for m,n in matches:
+            if m.distance < 0.75*n.distance:
+                good.append([m])
+            
+        num_matches = len(good)
+
+    else:
+        print('Match algorithm not found')
 
 
     return num_matches

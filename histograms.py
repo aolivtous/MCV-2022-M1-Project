@@ -62,11 +62,25 @@ def get_block_histograms(image, has_boundingbox, is_query, text_mask):
 
     if weights['feature']==1:  
         image_feature = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        sift = cv2.SIFT_create()
-        if (is_query and has_boundingbox):
-            kp, descrip = sift.detectAndCompute(image_feature, None)
+
+        if global_variables.methods_search['default']['feature_algorithm'] == 'SIFT':
+            sift = cv2.SIFT_create()
+            if (is_query and has_boundingbox):
+                kp, descrip = sift.detectAndCompute(image_feature, text_mask)
+            else:
+                kp, descrip = sift.detectAndCompute(image_feature, None)
+        elif global_variables.methods_search['default']['feature_algorithm'] == 'SURF':
+            # Here we set the Hessian threshold to 400
+            hess_thr=400
+            surf = cv2.SURF_create(hess_thr)
+            if (is_query and has_boundingbox): 
+                kp, descrip = surf.detectAndCompute(image_feature, text_mask)
+            else:
+                kp, descrip = surf.detectAndCompute(image_feature, None)
         else:
-            kp, descrip = sift.detectAndCompute(image_feature, None)
+            print('Feature method not found')
+            exit(1)
+
         
         # Cal fer aquest pas per poder guardar en el pickle els resultats de la db
         # concat_feature = (kp.pt, kp.size, kp.angle, kp.response, kp.octave, kp.class_id, descrip)

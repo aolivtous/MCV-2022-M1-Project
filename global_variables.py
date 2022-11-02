@@ -46,7 +46,9 @@ def init(name_query):
     methods_search = {
         'default': {
             'color_code': 'LAB',
-            'distance_type': 'hellin'
+            'distance_type': 'hellin',
+            'feature_algorithm': 'SIFT',   # SIFT, SURF (faster)
+            'match_algorithm': 'FLANN'        # BF (very slow), FLANN (faster)
         }
     }
 

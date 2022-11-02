@@ -108,6 +108,7 @@ def main():
     to_be_denoised = {}
     coords = []
 
+
     print(f'Start of processing fo the query: {global_variables.dir_query}')
     for filename in tqdm(os.scandir(global_variables.dir_query)):
         f = os.path.join(global_variables.dir_query, filename)
@@ -196,15 +197,18 @@ def main():
                     
 
                 dists[f_names[count]] = distances.query_measures(hist_image, db_descriptors, distance_type, text)
+                print(f'distances of image query {f_name} = {dists[f_names[count]]}')
 
 
             # ! Change this in case of neccessity (inestability of expected text box output)
             if has_boundingbox:
                 textbox_coords[f_name] = coords
                 coords = []
-          
+           
+
     ## Results processing
 
+    # print(dists)
 
     # Results sorting
     results_sorted = utils.get_sorted_list_of_lists_from_dict_of_dicts(dists, distance_type, two_level = may_have_split)
@@ -229,7 +233,8 @@ def main():
             else:
                 color = global_variables.bcolors.FAIL
             print(f'\t{color}Apk5 score is: {round(apk5, 2)}{global_variables.bcolors.ENDC}')
-                
+
+           
     
 
 
