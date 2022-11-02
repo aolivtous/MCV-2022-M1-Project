@@ -56,8 +56,8 @@ def init(name_query):
     n_bins = 40
 
     weights = {
-        'color': 0.0,
-        'texture': 1.0,
+        'color': 1.0,
+        'texture': 0.0,
         'text': 0.0,
         'feature': 0.0
     }

@@ -125,20 +125,21 @@ def main():
                 if(to_be_denoised[f_name]):
                     image = image_denoised
 
-
-            # paintings = [image]
-            # f_names = [f_name]
+            # In case of no backgrounds (no multiple paintings)
+            paintings = [image]
+            f_names = [f_name]
       
             # BG removal and croping images in paintings
             if(has_backgrounds):
+                f_names = []
+                paintings = []
+
                 # Idea Guillem: query_descriptors[f_name].num_paint, query_descriptors[f_name].mask_coords = mask_v1.generate_masks_otsu(image, f_name, dir_results, may_have_split)
                 num_paintings[f_name], painting_box = masks.generate_masks(image, f_name, may_have_split)
                 
                 # print(f'num painting image {f_name}: {num_paintings[f_name]}')
                 # print(f'top left x ={mask_coords[f_name][0][0]}, top left y ={mask_coords[f_name][0][1]},bottom right x ={mask_coords[f_name][0][2]},bottom right y ={mask_coords[f_name][0][3]}')
                 
-                f_names = []
-                paintings = []
                 for paint in range(num_paintings[f_name]):
                     f_names.append(f'{f_name}_part{paint + 1}')
                     mask_coords[f_names[paint]] = painting_box[paint]
@@ -184,13 +185,11 @@ def main():
                 #                 ] 
                 #     for count, painting in enumerate(paintings):
                 #         cv2.imwrite(f'{global_variables.dir_query_aux}{f_names[count]}.png', painting)
-                
-                                     
+                                          
             for count, painting in enumerate(paintings):
                 print('\nSearching boxes at:', f_names[count])   
                 if has_boundingbox:
                     coord_results, text_mask, bbox_output = find_boxes.find_boxes_lapl(painting, f_names[count], printbox = True)
-                   
 
                     if(has_backgrounds):
                         coords.append([ 
@@ -231,7 +230,6 @@ def main():
                 dists[f_names[count]] = distances.query_measures(hist_image, db_descriptors, distance_type, text)
                 #print(f'distances of image query {f_name} = {dists[f_names[count]]}')
 
-
             # ! Change this in case of neccessity (inestability of expected text box output)
             if has_boundingbox:
                 textbox_coords[f_name] = coords
@@ -242,9 +240,9 @@ def main():
 
     # print(dists)
 
-    # Results sorting
-    results_sorted = utils.get_sorted_list_of_lists_from_dict_of_dicts(dists, distance_type, two_level = may_have_split)
-    boxes_predictions = utils.get_simple_list_of_lists_from_dict_of_dicts(textbox_coords, two_level = may_have_split)
+    # Results sorting, if not two_level num_paintings is {}
+    results_sorted = utils.get_sorted_list_of_lists_from_dict_of_dicts(dists, distance_type, num_paintings, two_level = may_have_split)
+    boxes_predictions = utils.get_simple_list_of_lists_from_dict_of_dicts(textbox_coords)
     
     print('\n-----RESULTS-----')
     # Results printing
