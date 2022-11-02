@@ -7,7 +7,7 @@ def str_to_bool(v):
     """
     return str(v).lower() in ("yes", "true", "t", "1")
 
-def get_sorted_list_of_lists_from_dict_of_dicts(dictionary, dict_type, two_level = True, k = 10):
+def get_sorted_list_of_lists_from_dict_of_dicts(dictionary, dict_type, num_paintings, two_level = True, k = 10):
     """
     It takes a dictionary of dictionaries and returns a list of lists, where each list is a sorted list
     of the keys of the inner dictionaries
@@ -28,47 +28,26 @@ def get_sorted_list_of_lists_from_dict_of_dicts(dictionary, dict_type, two_level
     # Sort dict to assure the order
     dictionary = dict(sorted(dictionary.items(),key=lambda x:x[0]))
     aux_result = []
-    count = 0
     for key_query, _ in dictionary.items():
         sorted_list = [int(key) for key, _ in sorted(dictionary[key_query].items(), key=lambda item: item[1].dist, reverse=reverse)][:k]
         if(two_level):
-            if 'part' in key_query:
-                aux_key == key_query[:5]
-                aux_result.append(sorted_list)
-                if key_query[:5] != aux_key and aux_key != None:
-                    list_of_lists.append(aux_result)
-                    aux_result = []
-                if count == len(dictionary)-1:
-                    list_of_lists.append(aux_result)
-                    aux_result = []
-
-            else:
-                list_of_lists.append([sorted_list])
-            
-            aux_key = key_query[:5]
+            # Check number of keys with the same 5 characters as key_query
+            # parts = str(len([key for key in dictionary.keys() if key[:5] == key_query[:5]]))
+            parts = str(num_paintings[key_query.split('_')[0]]) # Get the number of the painting without the part
+            aux_result.append(sorted_list)
+            if key_query.endswith(parts):
+                list_of_lists.append(aux_result)
+                aux_result = []  
         else:
             list_of_lists.append(sorted_list)
-            aux_key = key_query
 
-        count+=1
     return list_of_lists
 
-def get_simple_list_of_lists_from_dict_of_dicts(dictionary, two_level = True):
+def get_simple_list_from_dict(dictionary):
     # Sort dict to assure the order
-    list_of_lists = []
+    list_ = []
     dictionary = dict(sorted(dictionary.items(),key=lambda x:x[0]))
-    aux_list = []
-    for key_query, coords in dictionary.items():
-        if(two_level):
-            if 'part' in key_query:
-                aux_list.append(coords)
-                if key_query.endswith('2'):
-                    list_of_lists.append(aux_list)
-                    aux_list = []
-            else:
-                # list_of_lists.append([coords]) # qsd1_w2
-                list_of_lists.append(coords) # qsd2_w2
-        else:
-            list_of_lists.append(coords)
+    for _, coords in dictionary.items():
+        list_.append(coords)
 
-    return list_of_lists
+    return list_

@@ -55,7 +55,7 @@ def main():
     # Arguments bound checking
     distance_type = global_variables.methods_search['default']['distance_type']
 
-    query_solutions = boxes_solutions = None
+    query_solutions = boxes_solutions = []
     if(solutions):
         try:
             with open(f'{global_variables.dir_query}gt_corresps.pkl', "rb" ) as f:
@@ -97,8 +97,6 @@ def main():
         except:
             print('Exiting. No precomputed pickle found')
             exit(1)
-    
-
 
     ## Query processing 
     num_paintings = {}
@@ -109,7 +107,6 @@ def main():
     to_be_denoised = {}
     coords = []
 
-
     print(f'Start of processing fo the query: {global_variables.dir_query}')
     for filename in tqdm(os.scandir(global_variables.dir_query)):
         f = os.path.join(global_variables.dir_query, filename)
@@ -117,80 +114,35 @@ def main():
         if f.endswith(f'{global_variables.test_image}.jpg'): 
             f_name = filename.name.split('.')[0]
             image = cv2.imread(f)
-            # cv2.imshow('Image',image)
-            # cv2.waitKey()
 
             if(may_have_noise):
                 to_be_denoised[f_name], image_denoised = noise.noise_ckeck_removal(image,f_name)
                 if(to_be_denoised[f_name]):
                     image = image_denoised
 
-
-            # paintings = [image]
-            # f_names = [f_name]
+            # In case of no backgrounds (no multiple paintings)
+            paintings = [image]
+            f_names = [f_name]
       
             # BG removal and croping images in paintings
             if(has_backgrounds):
+                f_names = []
+                paintings = []
+
                 # Idea Guillem: query_descriptors[f_name].num_paint, query_descriptors[f_name].mask_coords = mask_v1.generate_masks_otsu(image, f_name, dir_results, may_have_split)
                 num_paintings[f_name], painting_box = masks.generate_masks(image, f_name, may_have_split)
                 
-                # print(f'num painting image {f_name}: {num_paintings[f_name]}')
-                # print(f'top left x ={mask_coords[f_name][0][0]}, top left y ={mask_coords[f_name][0][1]},bottom right x ={mask_coords[f_name][0][2]},bottom right y ={mask_coords[f_name][0][3]}')
-                
-                f_names = []
-                paintings = []
                 for paint in range(num_paintings[f_name]):
                     f_names.append(f'{f_name}_part{paint + 1}')
                     mask_coords[f_names[paint]] = painting_box[paint]
                     painting = image[painting_box[paint][1]:painting_box[paint][3], painting_box[paint][0]:painting_box[paint][2]]
                     paintings.append(painting)
                     cv2.imwrite(f'{global_variables.dir_query_aux}{f_names[paint]}.png', painting)
-
-                # if(num_paintings[f_names[0]] == 1):
-                #     mask_coords[f_names[0]] = painting_box[0]
-                #     paintings = [image[mask_coords[f_names[0]][1]:mask_coords[f_names[0]][3],mask_coords[f_names[0]][0]:mask_coords[f_names[0]][2]]]
-                #     cv2.imwrite(f'{global_variables.dir_query_aux}{f_names[0]}.png', paintings[0])   
-                   
-                # elif(num_paintings[f_names[0]] == 2):
-                #     f_names = [f'{f_names[0]}_part1', f'{f_names[0]}_part2']
-                #     mask_coords[f_names[0]] = painting_box[0]
-                #     mask_coords[f_names[1]] = painting_box[1]
-                #     paintings = [   
-                #                     image[  mask_coords[f_names[0]][1]:mask_coords[f_names[0]][3],
-                #                             mask_coords[f_names[0]][0]:mask_coords[f_names[0]][2]
-                #                         ],
-                #                     image[  mask_coords[f_names[1]][1]:mask_coords[f_names[1]][3],
-                #                             mask_coords[f_names[1]][0]:mask_coords[f_names[1]][2]
-                #                         ]
-                #                 ] 
-                #     for count, painting in enumerate(paintings):
-                #         cv2.imwrite(f'{global_variables.dir_query_aux}{f_names[count]}.png', painting)
-                
-                # elif num_paintings[f_names[0]] == 3:
-                #     f_names = [f'{f_names[0]}_part1', f'{f_names[0]}_part2',f'{f_names[0]}_part3']
-                #     mask_coords[f_names[0]] = painting_box[0]
-                #     mask_coords[f_names[1]] = painting_box[1]
-                #     mask_coords[f_names[2]] = painting_box[2]
-                #     paintings = [   
-                #                     image[  mask_coords[f_names[0]][1]:mask_coords[f_names[0]][3],
-                #                             mask_coords[f_names[0]][0]:mask_coords[f_names[0]][2]
-                #                         ],
-                #                     image[  mask_coords[f_names[1]][1]:mask_coords[f_names[1]][3],
-                #                             mask_coords[f_names[1]][0]:mask_coords[f_names[1]][2]
-                #                         ],
-                #                     image[  mask_coords[f_names[2]][1]:mask_coords[f_names[2]][3],
-                #                             mask_coords[f_names[2]][0]:mask_coords[f_names[2]][2]
-                #                         ]
-                #                 ] 
-                #     for count, painting in enumerate(paintings):
-                #         cv2.imwrite(f'{global_variables.dir_query_aux}{f_names[count]}.png', painting)
-                
-                                     
+                                          
             for count, painting in enumerate(paintings):
                 print('\nSearching boxes at:', f_names[count])   
                 if has_boundingbox:
                     coord_results, text_mask, bbox_output = find_boxes.find_boxes_lapl(painting, f_names[count], printbox = True)
-                   
 
                     if(has_backgrounds):
                         coords.append([ 
@@ -217,8 +169,6 @@ def main():
                             f.write(f"{text}")
                     else:
                         with open(f'{global_variables.dir_results}{f_name}.txt', 'a') as f:
-                            # text = text.replace("\n","")
-                            # f.write(f"\n('{text}',)")
                             text = re.sub(r'[^\w\s\n]','',text)
                             f.write(f"{text}")
 
@@ -226,25 +176,17 @@ def main():
                 else:
                     text = ""
                     hist_image = histograms.get_block_histograms(painting, has_boundingbox, is_query = True, text_mask = None)
-                    
 
                 dists[f_names[count]] = distances.query_measures(hist_image, db_descriptors, distance_type, text)
-                #print(f'distances of image query {f_name} = {dists[f_names[count]]}')
 
-
-            # ! Change this in case of neccessity (inestability of expected text box output)
             if has_boundingbox:
                 textbox_coords[f_name] = coords
                 coords = []
            
-
     ## Results processing
-
-    # print(dists)
-
-    # Results sorting
-    results_sorted = utils.get_sorted_list_of_lists_from_dict_of_dicts(dists, distance_type, two_level = may_have_split)
-    boxes_predictions = utils.get_simple_list_of_lists_from_dict_of_dicts(textbox_coords, two_level = may_have_split)
+    # Results sorting, if not two_level num_paintings is {}
+    results_sorted = utils.get_sorted_list_of_lists_from_dict_of_dicts(dists, distance_type, num_paintings, two_level = may_have_split)
+    boxes_predictions = utils.get_simple_list_from_dict(textbox_coords)
     
     print('\n-----RESULTS-----')
     # Results printing
@@ -265,10 +207,6 @@ def main():
             else:
                 color = global_variables.bcolors.FAIL
             print(f'\t{color}Apk5 score is: {round(apk5, 2)}{global_variables.bcolors.ENDC}')
-
-           
-    
-
 
     print(f'\n-----EVALUATION of {name_query} using COLOR={global_variables.weights["color"]} / TEXTURE={global_variables.weights["texture"]} / TEXT={global_variables.weights["text"]}-----')
     # Results evaluation
@@ -294,7 +232,6 @@ def main():
 
     else:
         print('No solutions given --> Evaluation not avaliable.')
-    
     
     # Results writing to Pickle file
     with open(f'{global_variables.dir_results}result.pkl', 'wb') as handle:
