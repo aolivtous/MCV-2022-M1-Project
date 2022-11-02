@@ -43,12 +43,11 @@ def get_sorted_list_of_lists_from_dict_of_dicts(dictionary, dict_type, num_paint
 
     return list_of_lists
 
-def get_simple_list_of_lists_from_dict_of_dicts(dictionary):
+def get_simple_list_from_dict(dictionary):
     # Sort dict to assure the order
-    list_of_lists = []
+    list_ = []
     dictionary = dict(sorted(dictionary.items(),key=lambda x:x[0]))
-    aux_list = []
-    for key_query, coords in dictionary.items():
-        list_of_lists.append(coords)
+    for _, coords in dictionary.items():
+        list_.append(coords)
 
-    return list_of_lists
+    return list_

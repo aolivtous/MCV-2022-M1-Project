@@ -147,20 +147,17 @@ def query_measures(hist_image, db_descriptors, distance_type,  text):
     for key_db, img_db in db_descriptors.items():
         dists_db[key_db] =  distances(weights["color"] * dists_color[key_db] + weights["texture"] * dists_texture[key_db] + weights["text"] * dists_text[key_db])
 
-
+    # Refining of the feature distance
     if weights["feature"]:
         # Invert the matches using max-value (in order to have "distance" meaning)
-        match_feature = { k: (np.max(np.array(list(match_feature.values())))-v) for k, v in match_feature.items() }
-        dists_db[key_db] = distances(match_feature)
-        
+        match_feature = { k: distances(np.max(np.array(list(match_feature.values())))-v) for k, v in match_feature.items() }
         
     return dists_db
 
-
-
-
-def match_features(des1, des2, kp1=None, kp2=None):
+def match_features(des1, des2):#, kp1=None, kp2=None):
     
+    num_matches = 0
+
     if global_variables.methods_search['default']['match_algorithm'] == 'BF':
         # BFMatcher with default params
         bf = cv2.BFMatcher()
