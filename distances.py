@@ -148,11 +148,12 @@ def query_measures(hist_image, db_descriptors, distance_type,  text):
         dists_db[key_db] =  distances(weights["color"] * dists_color[key_db] + weights["texture"] * dists_texture[key_db] + weights["text"] * dists_text[key_db])
 
 
-    if weights["feature"]==1.0:
+    if weights["feature"]:
         # Invert the matches using max-value (in order to have "distance" meaning)
         match_feature = { k: (np.max(np.array(list(match_feature.values())))-v) for k, v in match_feature.items() }
-        return match_feature
-
+        dists_db[key_db] = distances(match_feature)
+        
+        
     return dists_db
 
 

@@ -50,7 +50,7 @@ def find_boxes(image, f_name, printbox=False):
             else:
                 bin_image[i][j] = 255
     
-
+ 
     element = cv2.getStructuringElement(cv2.MORPH_RECT, (int(width*0.05), 2))
     bin_image_close = cv2.morphologyEx(bin_image, cv2.MORPH_CLOSE, element)
 

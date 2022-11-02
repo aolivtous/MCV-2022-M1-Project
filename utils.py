@@ -28,19 +28,29 @@ def get_sorted_list_of_lists_from_dict_of_dicts(dictionary, dict_type, two_level
     # Sort dict to assure the order
     dictionary = dict(sorted(dictionary.items(),key=lambda x:x[0]))
     aux_result = []
+    count = 0
     for key_query, _ in dictionary.items():
         sorted_list = [int(key) for key, _ in sorted(dictionary[key_query].items(), key=lambda item: item[1].dist, reverse=reverse)][:k]
         if(two_level):
             if 'part' in key_query:
+                aux_key == key_query[:5]
                 aux_result.append(sorted_list)
-                if key_query.endswith('2'):
+                if key_query[:5] != aux_key and aux_key != None:
                     list_of_lists.append(aux_result)
                     aux_result = []
+                if count == len(dictionary)-1:
+                    list_of_lists.append(aux_result)
+                    aux_result = []
+
             else:
                 list_of_lists.append([sorted_list])
+            
+            aux_key = key_query[:5]
         else:
             list_of_lists.append(sorted_list)
+            aux_key = key_query
 
+        count+=1
     return list_of_lists
 
 def get_simple_list_of_lists_from_dict_of_dicts(dictionary, two_level = True):

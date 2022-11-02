@@ -60,14 +60,11 @@ def generate_masks(image, f_name, mayhave_split): #NOVA FUNCIO PER DETECTAR ELS 
     lap = cv2.Laplacian(gray_image,cv2.CV_32F, ksize = 3)
 
     th, laplacian = cv2.threshold(lap, 10,255,cv2.THRESH_BINARY)
-    
-    """cv2.imshow("Laplacian", abs_dst)
+    #a,laplacian = cv2.threshold(lap, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+        
+    '''cv2.imshow("Laplacian", lap)
     cv2.waitKey(0)
-    cv2.destroyAllWindows()
-    
-    cv2.imshow("Laplacian", lap)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()"""
+    cv2.destroyAllWindows()'''
     # Apply close morphology operator
   
     element = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2))
@@ -76,26 +73,26 @@ def generate_masks(image, f_name, mayhave_split): #NOVA FUNCIO PER DETECTAR ELS 
     element_dil = cv2.getStructuringElement(cv2.MORPH_RECT, (3,3))
     dilation = cv2.dilate(mask_open,element_dil)
 
-    """cv2.imshow("Laplacian", mask_open)
+    '''cv2.imshow("Laplacian", mask_open)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
 
     cv2.imshow("Laplacian", dilation)
     cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    cv2.destroyAllWindows()'''
 
-    cv2.imshow("Laplacian", mask_open2)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()"""
+    
 
 
     element2 = cv2.getStructuringElement(cv2.MORPH_RECT, (25, 25))
     mask_open2 = cv2.morphologyEx(dilation, cv2.MORPH_CLOSE, element2)
 
-    contours, hierarchy = cv2.findContours(np.uint8(mask_open2), cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+    '''cv2.imshow("Laplacian", mask_open2)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()'''
 
-    print(len(contours))
+    contours, hierarchy = cv2.findContours(np.uint8(mask_open2), cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
 
     areaArray = []
     for i, c in enumerate(contours):
@@ -132,6 +129,32 @@ def generate_masks(image, f_name, mayhave_split): #NOVA FUNCIO PER DETECTAR ELS 
                     painting_box = [[x, y, x+w, y+h],[x2, y2, x2+w2, y2+h2]]
                 else:
                     painting_box = [[x2, y2, x2+w2, y2+h2],[x, y, x+w, y+h]]
+
+        if len(contours) > 2:
+            thirdlargestcontour = sorteddata[2][1]
+            x3, y3, w3, h3 = cv2.boundingRect(thirdlargestcontour)
+
+            if(w3*h3 > 0.06*width*height and w3 < 0.95*width):
+                mark_red_rectangle = cv2.rectangle(image_cpy, (x3, y3), (x3 + w3, y3 + h3), (0, 0, 255), 3)
+                num_paintings = 3
+                
+                if (x+w < x2 and x+w < x3):
+                    if x2+w2 < x3:
+                        painting_box = [[x, y, x+w, y+h],[x2, y2, x2+w2, y2+h2],[x3, y3, x3+w3, y3+h3]]
+                    else:
+                        painting_box = [[x, y, x+w, y+h],[x3, y3, x3+w3, y3+h3],[x2, y2, x2+w2, y2+h2]]
+
+                elif (x2+w2 < x and x2+w2 < x3):
+                    if x+w < x3:
+                        painting_box = [[x2, y2, x2+w2, y2+h2],[x, y, x+w, y+h],[x3, y3, x3+w3, y3+h3]]
+                    else:
+                        painting_box = [[x2, y2, x2+w2, y2+h2],[x3, y3, x3+w3, y3+h3],[x, y, x+w, y+h]]
+                elif (x3+w3 < x and x3+w3 < x2):
+                    if x+w < x2:
+                        painting_box = [[x3, y3, x3+w3, y3+h3],[x, y, x+w, y+h],[x2, y2, x2+w2, y2+h2]]
+                    else:
+                        painting_box = [[x3, y3, x3+w3, y3+h3],[x2, y2, x2+w2, y2+h2],[x, y, x+w, y+h]]
+            
 
             
 

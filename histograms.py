@@ -43,7 +43,7 @@ def get_block_histograms(image, has_boundingbox, is_query, text_mask):
         _, text_mask = cv2.threshold(text_mask, 128, 255, cv2.THRESH_BINARY)      
         tiles_mask = [text_mask[x:x+M,y:y+N] for x in range(0,text_mask.shape[0]-text_mask.shape[0]%n_patches,M) for y in range(0,text_mask.shape[1]-text_mask.shape[1]%n_patches,N)]
     
-    concat_hist_lbp = np.float32(np.array([]))
+    concat_feature = np.float32(np.array([]))
     concat_coeffs_dct = np.float32(np.array([]))
     concat_coeffs_dct_norm = np.float32(np.array([]))
     concat_hist_ch1 = np.float32(np.array([]))
@@ -60,7 +60,7 @@ def get_block_histograms(image, has_boundingbox, is_query, text_mask):
     # angle which specifies its orientation, response that specifies strength of keypoints etc.
     #concat_feature = ()
 
-    if weights['feature']==1:  
+    if weights['feature']:  
         image_feature = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
         if global_variables.methods_search['default']['feature_algorithm'] == 'SIFT':

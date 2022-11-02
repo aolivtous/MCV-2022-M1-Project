@@ -57,9 +57,9 @@ def init(name_query):
 
     weights = {
         'color': 0.0,
-        'texture': 0.0,
+        'texture': 1.0,
         'text': 0.0,
-        'feature': 1.0
+        'feature': 0.0
     }
  
     # Constant arguments

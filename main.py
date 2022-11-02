@@ -14,6 +14,7 @@ import pickle
 import statistics
 from tqdm import tqdm
 from skimage import feature
+import re
 
 # Internal modules
 import global_variables
@@ -125,8 +126,8 @@ def main():
                     image = image_denoised
 
 
-            paintings = [image]
-            f_names = [f_name]
+            # paintings = [image]
+            # f_names = [f_name]
       
             # BG removal and croping images in paintings
             if(has_backgrounds):
@@ -135,26 +136,55 @@ def main():
                 
                 # print(f'num painting image {f_name}: {num_paintings[f_name]}')
                 # print(f'top left x ={mask_coords[f_name][0][0]}, top left y ={mask_coords[f_name][0][1]},bottom right x ={mask_coords[f_name][0][2]},bottom right y ={mask_coords[f_name][0][3]}')
-              
-                if(num_paintings[f_names[0]] == 1):
-                    mask_coords[f_names[0]] = painting_box[0]
-                    paintings = [image[mask_coords[f_names[0]][1]:mask_coords[f_names[0]][3],mask_coords[f_names[0]][0]:mask_coords[f_names[0]][2]]]
-                    cv2.imwrite(f'{global_variables.dir_query_aux}{f_names[0]}.png', paintings[0])   
+                
+                f_names = []
+                paintings = []
+                for paint in range(num_paintings[f_name]):
+                    f_names.append(f'{f_name}_part{paint + 1}')
+                    mask_coords[f_names[paint]] = painting_box[paint]
+                    painting = image[painting_box[paint][1]:painting_box[paint][3], painting_box[paint][0]:painting_box[paint][2]]
+                    paintings.append(painting)
+                    cv2.imwrite(f'{global_variables.dir_query_aux}{f_names[count]}.png', painting)
+
+                # if(num_paintings[f_names[0]] == 1):
+                #     mask_coords[f_names[0]] = painting_box[0]
+                #     paintings = [image[mask_coords[f_names[0]][1]:mask_coords[f_names[0]][3],mask_coords[f_names[0]][0]:mask_coords[f_names[0]][2]]]
+                #     cv2.imwrite(f'{global_variables.dir_query_aux}{f_names[0]}.png', paintings[0])   
                    
-                elif(num_paintings[f_names[0]] == 2):
-                    f_names = [f'{f_names[0]}_part1', f'{f_names[0]}_part2']
-                    mask_coords[f_names[0]] = painting_box[0]
-                    mask_coords[f_names[1]] = painting_box[1]
-                    paintings = [   
-                                    image[  mask_coords[f_names[0]][1]:mask_coords[f_names[0]][3],
-                                            mask_coords[f_names[0]][0]:mask_coords[f_names[0]][2]
-                                        ],
-                                    image[  mask_coords[f_names[1]][1]:mask_coords[f_names[1]][3],
-                                            mask_coords[f_names[1]][0]:mask_coords[f_names[1]][2]
-                                        ]
-                                ] 
-                    for count, painting in enumerate(paintings):
-                        cv2.imwrite(f'{global_variables.dir_query_aux}{f_names[count]}.png', painting)
+                # elif(num_paintings[f_names[0]] == 2):
+                #     f_names = [f'{f_names[0]}_part1', f'{f_names[0]}_part2']
+                #     mask_coords[f_names[0]] = painting_box[0]
+                #     mask_coords[f_names[1]] = painting_box[1]
+                #     paintings = [   
+                #                     image[  mask_coords[f_names[0]][1]:mask_coords[f_names[0]][3],
+                #                             mask_coords[f_names[0]][0]:mask_coords[f_names[0]][2]
+                #                         ],
+                #                     image[  mask_coords[f_names[1]][1]:mask_coords[f_names[1]][3],
+                #                             mask_coords[f_names[1]][0]:mask_coords[f_names[1]][2]
+                #                         ]
+                #                 ] 
+                #     for count, painting in enumerate(paintings):
+                #         cv2.imwrite(f'{global_variables.dir_query_aux}{f_names[count]}.png', painting)
+                
+                # elif num_paintings[f_names[0]] == 3:
+                #     f_names = [f'{f_names[0]}_part1', f'{f_names[0]}_part2',f'{f_names[0]}_part3']
+                #     mask_coords[f_names[0]] = painting_box[0]
+                #     mask_coords[f_names[1]] = painting_box[1]
+                #     mask_coords[f_names[2]] = painting_box[2]
+                #     paintings = [   
+                #                     image[  mask_coords[f_names[0]][1]:mask_coords[f_names[0]][3],
+                #                             mask_coords[f_names[0]][0]:mask_coords[f_names[0]][2]
+                #                         ],
+                #                     image[  mask_coords[f_names[1]][1]:mask_coords[f_names[1]][3],
+                #                             mask_coords[f_names[1]][0]:mask_coords[f_names[1]][2]
+                #                         ],
+                #                     image[  mask_coords[f_names[2]][1]:mask_coords[f_names[2]][3],
+                #                             mask_coords[f_names[2]][0]:mask_coords[f_names[2]][2]
+                #                         ]
+                #                 ] 
+                #     for count, painting in enumerate(paintings):
+                #         cv2.imwrite(f'{global_variables.dir_query_aux}{f_names[count]}.png', painting)
+                
                                      
             for count, painting in enumerate(paintings):
                 print('\nSearching boxes at:', f_names[count])   
@@ -183,12 +213,14 @@ def main():
 
                     if(count == 0):
                         with open(f'{global_variables.dir_results}{f_name}.txt', 'w') as f:
-                            text = text.replace("\n","")
-                            f.write(f"('{text}',)")
+                            text = re.sub(r'[^\w\s\n]','',text)
+                            f.write(f"{text}")
                     else:
                         with open(f'{global_variables.dir_results}{f_name}.txt', 'a') as f:
-                            text = text.replace("\n","")
-                            f.write(f"\n('{text}',)")
+                            # text = text.replace("\n","")
+                            # f.write(f"\n('{text}',)")
+                            text = re.sub(r'[^\w\s\n]','',text)
+                            f.write(f"{text}")
 
                     hist_image = histograms.get_block_histograms(painting, has_boundingbox, is_query = True, text_mask = text_mask)
                 else:
@@ -197,7 +229,7 @@ def main():
                     
 
                 dists[f_names[count]] = distances.query_measures(hist_image, db_descriptors, distance_type, text)
-                print(f'distances of image query {f_name} = {dists[f_names[count]]}')
+                #print(f'distances of image query {f_name} = {dists[f_names[count]]}')
 
 
             # ! Change this in case of neccessity (inestability of expected text box output)
@@ -221,7 +253,7 @@ def main():
         print(f'\tSearch result: {l}')
         if(has_boundingbox): print(f'\tBoxes: {boxes_predictions[idx]}')
         if(solutions):
-            if(name_query=="qsd2_w2" or name_query=="qsd2_w3"):
+            if name_query[-1]!="1":
                 apk5 = scores.apk2(query_solutions[idx], results_sorted[idx], k = 5)
             else:
                 apk5 = scores.apk(query_solutions[idx], results_sorted[idx], k = 5)
@@ -241,7 +273,7 @@ def main():
     print(f'\n-----EVALUATION of {name_query} using COLOR={global_variables.weights["color"]} / TEXTURE={global_variables.weights["texture"]} / TEXT={global_variables.weights["text"]}-----')
     # Results evaluation
     if(solutions):
-        if(name_query=="qsd2_w2" or name_query=="qsd2_w3"):
+        if name_query[-1]!='1':
             # Algorithm evaluation
             mapk1 = scores.mapk2(query_solutions, results_sorted, k = 1)
             mapk5 = scores.mapk2(query_solutions, results_sorted, k = 5)
