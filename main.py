@@ -132,7 +132,7 @@ def main():
             # BG removal and croping images in paintings
             if(has_backgrounds):
                 # Idea Guillem: query_descriptors[f_name].num_paint, query_descriptors[f_name].mask_coords = mask_v1.generate_masks_otsu(image, f_name, dir_results, may_have_split)
-                num_paintings[f_name], painting_box = masks.generate_masks(image, f_names[0], may_have_split)
+                num_paintings[f_name], painting_box = masks.generate_masks(image, f_name, may_have_split)
                 
                 # print(f'num painting image {f_name}: {num_paintings[f_name]}')
                 # print(f'top left x ={mask_coords[f_name][0][0]}, top left y ={mask_coords[f_name][0][1]},bottom right x ={mask_coords[f_name][0][2]},bottom right y ={mask_coords[f_name][0][3]}')
@@ -144,7 +144,7 @@ def main():
                     mask_coords[f_names[paint]] = painting_box[paint]
                     painting = image[painting_box[paint][1]:painting_box[paint][3], painting_box[paint][0]:painting_box[paint][2]]
                     paintings.append(painting)
-                    cv2.imwrite(f'{global_variables.dir_query_aux}{f_names[count]}.png', painting)
+                    cv2.imwrite(f'{global_variables.dir_query_aux}{f_names[paint]}.png', painting)
 
                 # if(num_paintings[f_names[0]] == 1):
                 #     mask_coords[f_names[0]] = painting_box[0]
