@@ -62,7 +62,9 @@ def generate_masks(image, f_name, mayhave_split): #NOVA FUNCIO PER DETECTAR ELS 
     th, laplacian = cv2.threshold(lap, 10,255,cv2.THRESH_BINARY)
     #a,laplacian = cv2.threshold(lap, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
         
-    '''cv2.imshow("Laplacian", lap)
+
+    '''cv2.namedWindow("lapl", cv2.WINDOW_NORMAL)
+    cv2.imshow("lapl", laplacian)
     cv2.waitKey(0)
     cv2.destroyAllWindows()'''
     # Apply close morphology operator

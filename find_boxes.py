@@ -49,6 +49,8 @@ def find_boxes(image, f_name, printbox=False):
                 bin_image[i][j] = 0
             else:
                 bin_image[i][j] = 255
+
+    
     
  
     element = cv2.getStructuringElement(cv2.MORPH_RECT, (int(width*0.05), 2))
@@ -192,11 +194,13 @@ def find_boxes_lapl(image, f_name, printbox=False):
     th, laplacian_inv = cv2.threshold(lap_inv, size_thresh_lapl,255,cv2.THRESH_BINARY)
     
 
-    # cv2.imshow("Laplacian",laplacian)
-    # cv2.waitKey(0)
+    cv2.imshow("Laplacian",laplacian)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows
 
-    # cv2.imshow("Laplacian_inv",laplacian_inv)
-    # cv2.waitKey(0)
+    cv2.imshow("Laplacian_inv",laplacian_inv)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows
 
 
     # element = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
@@ -312,6 +316,261 @@ def find_boxes_lapl(image, f_name, printbox=False):
     x, y, w, h = cv2.boundingRect(firstgestcontour)
     mark_red_rectangle = cv2.rectangle(image_cpy, (x, y), (x + w, y + h), (0, 0, 255), 3)
     text_box = [x, y, x+w, y+h]"""
+
+    image_cpy = image.copy()
+    mindiff = 1000000000
+    x_min1 = y_min1 = w_min1 = h_min1 = 0
+    x_min2 = y_min2 = w_min2 = h_min2 = 0
+
+    for idx, cnt in enumerate(contours):
+        x, y, w, h = cv2.boundingRect(cnt)
+        if w < int(width * 0.05) or h < int(height * 0.01) or h > int(height*0.5):
+            continue
+        if h*w < (height*width)*0.005:
+            continue
+        if h > w*0.75:
+            continue
+        if h < w*0.05:
+            continue
+        if (x + (w / 2.0) < (width /2.0) - width * 0.03) or (x + (w / 2.0) > (width / 2.0) + width * 0.03):
+            continue
+        # if (y > height * 0.2):
+        #     if (y + h > height*0.85):
+        #         continue
+        # else:
+        #     continue
+
+        mark_white_rectangle = cv2.rectangle(image_cpy, (x, y), (x + w, y + h), (255, 255, 255), 3)
+
+        diff = color_factor(rgb_image[y:y + h, x:x + w]) # [y:y + h, x:x + w]
+        if diff < mindiff:
+            mindiff=diff
+            x_min1 = x
+            y_min1 = y
+            w_min1 = w
+            h_min1 = h
+
+    mindiff = 1000000000
+    for idx, cnt in enumerate(contours):
+        x, y, w, h = cv2.boundingRect(cnt)
+        if (x==x_min1 and y==y_min1) and (w==w_min1 and h==h_min1):
+            continue
+        if w < int(width * 0.05) or h < int(height * 0.01) or h > int(height*0.5):
+            continue
+        if h*w < (height*width)*0.005:
+            continue
+        if h > w*0.75:
+            continue
+        if h < w*0.05:
+            continue
+        if (x + (w / 2.0) < (width /2.0) - width * 0.03) or (x + (w / 2.0) > (width / 2.0) + width * 0.03):
+            continue
+        # if (y > height * 0.2):
+        #     if (y + h > height*0.85):
+        #         continue
+        # else:
+        #     continue
+
+        diff = color_factor(rgb_image[y:y + h, x:x + w]) # [y:y + h, x:x + w]
+        if diff < mindiff:
+            mindiff=diff
+            x_min2 = x
+            y_min2 = y
+            w_min2 = w
+            h_min2 = h
+
+    x_min = x_min1
+    y_min = y_min1
+    w_min = w_min1
+    h_min = h_min1
+    area1 = w_min1 * h_min1
+    area2 = w_min2 * h_min2
+    if area2 > area1 and abs(y_min1 - y_min2) < 20 and abs(x_min1 - x_min2) < 20:
+        x_min = x_min2
+        y_min = y_min2
+        w_min = w_min2
+        h_min = h_min2
+
+
+
+    # Extension & reduction of the rectangle
+    # tol = 2
+    # try:
+    #     while abs(gray_image[y_min + h_min, x_min + int(w_min/2)] - gray_image[y_min + h_min +1, x_min + int(w_min/2)]) < tol :
+    #         h_min = h_min + 1
+    #         print('Extension down')
+    # except:
+    #     pass
+    # tol = 2
+    # try:
+    #     while abs(gray_image[y_min + h_min, x_min + int(w_min/2)] - gray_image[y_min - 1, x_min + int(w_min/2)]) < tol :
+    #         y_min = y_min -1
+    #         print('Extension up')
+    # except:
+    #     pass
+    # tol = 2
+    # try:
+    #     while abs(gray_image[y_min+ int(h_min/2), x_min] - gray_image[y_min+ int(h_min/2), x_min -1 ]) < tol :
+    #         x_min = x_min - 1
+    #         print('Extension left')
+    # except:
+    #     pass
+    # tol = 2
+    # try:
+    #     while abs(gray_image[y_min+ int(h_min/2), x_min+w_min] - gray_image[y_min+ int(h_min/2), x_min+w_min+1 ]) < tol :
+    #         w_min = w_min +1
+    #         print('Extension right')
+    # except:
+    #     pass
+
+    mark_red_rectangle = cv2.rectangle(image_cpy, (x_min1, y_min1), (x_min1 + w_min1, y_min1 + h_min1), (0, 0, 255), 3)
+    mark_blue_rectangle = cv2.rectangle(image_cpy, (x_min2, y_min2), (x_min2 + w_min2, y_min2 + h_min2), (255, 0, 0), 3)
+    mark_green_rectangle = cv2.rectangle(image_cpy, (x_min, y_min), (x_min + w_min, y_min + h_min), (0, 255, 0), 3)
+    # cv2.imshow("Final", image_cpy)
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
+
+    text_box = [x_min, y_min, x_min+w_min, y_min+h_min]
+    #print (text_box)
+
+    """
+    cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_find_box_blur1.png', image_blur)
+    cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_find_box_laplace_bin_open2.png', laplacian)
+    cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_find_box_laplace_inv_bin_open2.png', laplacian_inv)
+    cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_find_box_laplace_wtht_saturated3.png', laplacian_wtht_sat)
+    cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_find_box_laplace_inv_wtht_saturated3.png', laplacian_inv_wtht_sat)
+    cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_find_box_laplace_close-open4.png', laplacian_open)
+    cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_find_box_laplace_inv_close-open4.png', laplacian_open_inv)"""
+    cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_find_box_final.png', image_cpy)
+
+    text_mask = np.zeros((height, width), dtype=np.uint8)
+    for i in range(height - 1):
+        for j in range(width - 1):
+            if j > x_min and i > y_min and j < (x_min + w_min) and i < (y_min + h_min):
+                text_mask[i][j] = 0
+            else:
+                text_mask[i][j] = 255
+    
+    # Write the text mask
+    cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_text_mask.png', text_mask)
+
+    bbox_output = [np.array([x_min, y_min]),np.array([x_min, y_min + h_min]),np.array([x_min + w_min, y_min + h_min]),np.array([x_min + w_min, y_min])]
+
+    return text_box, text_mask, bbox_output
+
+
+def find_boxes_canny(image, f_name, printbox=False):
+
+    image_cpy = image.copy()
+    width, height, _ = image.shape
+
+    rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
+
+    # remove noise
+    image_blur = cv2.GaussianBlur(image,(11,11),0)
+
+    cv2.namedWindow("blur", cv2.WINDOW_NORMAL) 
+    cv2.imshow("blur",image_blur)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows
+
+    
+    gray_image = cv2.cvtColor(image_blur, cv2.COLOR_BGR2GRAY)
+    gray_image_inv = 255 - gray_image
+
+    cv2.namedWindow("inv", cv2.WINDOW_NORMAL) 
+    cv2.imshow("inv",gray_image_inv)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows
+
+    # convolute with proper kernels
+    canny = cv2.Canny(gray_image_inv,100,200)
+    size_thresh_lapl = 20
+    th, canny = cv2.threshold(canny, size_thresh_lapl,255,cv2.THRESH_BINARY)
+
+    cv2.namedWindow("Canny", cv2.WINDOW_NORMAL) 
+    cv2.imshow("Canny",canny)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows
+
+
+    
+    size_thresh_lapl = 10
+    th, canny = cv2.threshold(canny, size_thresh_lapl,255,cv2.THRESH_BINARY)
+
+    '''cv2.namedWindow("Canny", cv2.WINDOW_NORMAL) 
+    cv2.imshow("Canny",canny)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows'''
+
+
+
+    element = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
+    canny = cv2.morphologyEx(canny, cv2.MORPH_CLOSE, element)
+    #element = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
+    #laplacian = cv2.morphologyEx(laplacian, cv2.MORPH_OPEN, element)
+
+    '''cv2.namedWindow("Canny", cv2.WINDOW_NORMAL) 
+    cv2.imshow("Canny",canny)
+    cv2.waitKey(0)'''
+
+    hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    height, width, channels = image.shape
+    pixels_saturated = np.zeros((height, width), dtype=np.uint8)
+    
+    '''size_thresh_s = 30
+    # for i in range(height - 1):
+    #     for j in range(width - 1):
+    #         if hsv_image[i][j][1] > size_thresh_s: # ! Provar sense or
+    #             pixels_saturated[i][j] = 0
+    #         else:
+    #             pixels_saturated[i][j] = 255
+
+    # cv2.imshow("saturated5",pixels_saturated)
+    # cv2.waitKey(0) 
+    
+    
+    pixels_saturated=abs((hsv_image[:,:,1]>size_thresh_s)-1)
+    
+    canny_wtht_sat = (canny * pixels_saturated).astype(np.uint8)
+    
+ 
+    cv2.imshow("Canny", canny_wtht_sat)
+
+    cv2.waitKey(0)'''
+
+
+    # Apply close morphology operator
+
+
+    #element = cv2.getStructuringElement(cv2.MORPH_RECT, (11, 11))
+
+
+    element = cv2.getStructuringElement(cv2.MORPH_RECT, (int(height*0.05),3))
+    canny_close = cv2.morphologyEx(canny, cv2.MORPH_CLOSE, element)
+
+    element = cv2.getStructuringElement(cv2.MORPH_RECT, (3, int(height*0.05)))
+    canny_close = cv2.morphologyEx(canny_close, cv2.MORPH_CLOSE, element)
+
+    element = cv2.getStructuringElement(cv2.MORPH_RECT, (int(width*0.20), 5))
+    canny_open = cv2.morphologyEx(canny_close, cv2.MORPH_OPEN, element)
+
+
+
+    '''cv2.imshow("Canny", canny_close)
+    cv2.waitKey(0)
+    # cv2.destroyAllWindows()
+
+    cv2.imshow("Canny", canny_open)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()'''
+
+
+    contours, hierarchy = cv2.findContours(canny, cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+
+    #print(len(contours))
+
 
     image_cpy = image.copy()
     mindiff = 1000000000
