@@ -460,7 +460,7 @@ def find_boxes_lapl(image, f_name, printbox=False):
 def find_boxes_canny(image, f_name, printbox=False):
 
     image_cpy = image.copy()
-    width, height, _ = image.shape
+    height, width, _ = image.shape
 
     rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
@@ -719,7 +719,7 @@ def find_boxes_canny(image, f_name, printbox=False):
 def find_boxes_canny2(image, f_name, printbox=False):
 
     image_cpy = image.copy()
-    width, height, _ = image.shape
+    height, width, _ = image.shape
 
     rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
@@ -756,6 +756,11 @@ def find_boxes_canny2(image, f_name, printbox=False):
 
     size_thresh_lapl = 10
     th, canny_i = cv2.threshold(canny_i, size_thresh_lapl,255,cv2.THRESH_BINARY)
+
+    '''cv2.namedWindow("Canny", cv2.WINDOW_NORMAL) 
+    cv2.imshow("Canny",canny)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows'''
 
 
 
@@ -804,10 +809,10 @@ def find_boxes_canny2(image, f_name, printbox=False):
     cv2.waitKey(0)
     cv2.destroyAllWindows"""
 
-    cv2.namedWindow("Canny", cv2.WINDOW_NORMAL) 
+    '''cv2.namedWindow("Canny", cv2.WINDOW_NORMAL) 
     cv2.imshow("Canny",cannyOpen2)
     cv2.waitKey(0)
-    cv2.destroyAllWindows
+    cv2.destroyAllWindows'''
 
     """cv2.namedWindow("Canny", cv2.WINDOW_NORMAL) 
     cv2.imshow("Canny",canny_i)
@@ -829,14 +834,17 @@ def find_boxes_canny2(image, f_name, printbox=False):
     cv2.waitKey(0)
     cv2.destroyAllWindows"""
 
-    cv2.namedWindow("Canny", cv2.WINDOW_NORMAL) 
+    '''cv2.namedWindow("Canny", cv2.WINDOW_NORMAL) 
     cv2.imshow("Canny",cannyOpen2_i)
     cv2.waitKey(0)
-    cv2.destroyAllWindows
+    cv2.destroyAllWindows'''
 
     contours_n, hierarchy = cv2.findContours(cannyOpen2, cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
     contours_i, hierarchy = cv2.findContours(cannyOpen2_i, cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
     contours = contours_n + contours_i
+
+    cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_canny_final.png', cannyOpen2)
+    cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_canny_i_final.png', cannyOpen2_i)
 
     #print(len(contours))
 
@@ -845,6 +853,8 @@ def find_boxes_canny2(image, f_name, printbox=False):
 
     x_min1 = y_min1 = w_min1 = h_min1 = 0
     x_min2 = y_min2 = w_min2 = h_min2 = 0
+
+    x_min = y_min = w_min = h_min = 0
 
     for idx, cnt in enumerate(contours):
         x, y, w, h = cv2.boundingRect(cnt)
@@ -856,11 +866,20 @@ def find_boxes_canny2(image, f_name, printbox=False):
             continue
         if h < w*0.05:
             continue
-        """if (x + (w / 2.0) < (width /2.0) - width * 0.03) or (x + (w / 2.0) > (width / 2.0) + width * 0.03):
-            continue"""
-       
-        mark_white_rectangle = cv2.rectangle(image_cpy, (x, y), (x + w, y + h), (255, 255, 255), 3)
+        if (x + (w / 2.0) < (width /2.0) - width * 0.03) or (x + (w / 2.0) > (width / 2.0) + width * 0.03):
+            continue
 
+        if y > height*0.35 and y+h < (height*0.65):
+            continue
+
+        if h*w > h_min*w_min:
+            x_min = x
+            y_min = y
+            w_min = w
+            h_min = h
+       
+        #mark_white_rectangle = cv2.rectangle(image_cpy, (x, y), (x + w, y + h), (255, 255, 255), 3)
+        
 
 
     # Extension & reduction of the rectangle
@@ -893,13 +912,26 @@ def find_boxes_canny2(image, f_name, printbox=False):
     # except:
     #     pass
 
-    x_min = y_min = w_min = h_min = 0
+    #x_min = y_min = w_min = h_min = 0
     #mark_green_rectangle = cv2.rectangle(image_cpy, (x_min, y_min), (x_min + w_min, y_min + h_min), (0, 255, 0), 3)
 
-    cv2.namedWindow("Canny", cv2.WINDOW_NORMAL) 
+    '''cv2.namedWindow("Canny", cv2.WINDOW_NORMAL) 
     cv2.imshow("Canny",image_cpy)
     cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    cv2.destroyAllWindows()'''
+
+    if x_min != 0 and y_min != 0 and w_min != 0 and h_min != 0:
+        print('a')
+        x_min = int(x_min - width*0.01)
+        y_min = int(y_min - height*0.01)
+        w_min = int(w_min + width*0.01)
+        h_min = int(h_min + height*0.01)
+
+    mark_white_rectangle = cv2.rectangle(image_cpy, (x_min, y_min), (x_min + w_min, y_min + h_min), (255, 255, 255), 3)
+
+
+    
+
 
     text_box = [x_min, y_min, x_min+w_min, y_min+h_min]
     #print (text_box)

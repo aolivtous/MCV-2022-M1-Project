@@ -142,7 +142,7 @@ def main():
             for count, painting in enumerate(paintings):
                 print('\nSearching boxes at:', f_names[count])   
                 if has_boundingbox:
-                    coord_results, text_mask, bbox_output = find_boxes.find_boxes_lapl(painting, f_names[count], printbox = True)
+                    coord_results, text_mask, bbox_output = find_boxes.find_boxes_canny2(painting, f_names[count], printbox = True)
 
                     if(has_backgrounds):
                         coords.append([ 
