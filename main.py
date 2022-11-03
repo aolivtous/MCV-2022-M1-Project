@@ -211,7 +211,7 @@ def main():
     print(f'\n-----EVALUATION of {name_query} using COLOR={global_variables.weights["color"]} / TEXTURE={global_variables.weights["texture"]} / TEXT={global_variables.weights["text"]}-----')
     # Results evaluation
     if(solutions):
-        if name_query[-1]!='1':
+        if name_query[-1]!='1': # ? for qsdx_w1 ?
             # Algorithm evaluation
             mapk1 = scores.mapk2(query_solutions, results_sorted, k = 1)
             mapk5 = scores.mapk2(query_solutions, results_sorted, k = 5)
