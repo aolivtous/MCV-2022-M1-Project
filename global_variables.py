@@ -56,10 +56,10 @@ def init(name_query):
     n_bins = 40
 
     weights = {
-        'color': 0.3,
-        'texture': 0.2,
-        'text': 0.5,
-        'feature': 0.0
+        'color': 0.0,
+        'texture': 0.0,
+        'text': 0.0,
+        'feature': 1.0
     }
  
     # Constant arguments
