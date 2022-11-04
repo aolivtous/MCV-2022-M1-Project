@@ -104,7 +104,6 @@ def main():
     dists = {}
     textbox_coords = {}
     texts = {}
-    to_be_denoised = {}
     coords = []
 
     print(f'Start of processing fo the query: {global_variables.dir_query}')
@@ -116,9 +115,8 @@ def main():
             image = cv2.imread(f)
 
             if(may_have_noise):
-                to_be_denoised[f_name], image_denoised = noise.noise_ckeck_removal(image,f_name)
-                if(to_be_denoised[f_name]):
-                    image = image_denoised
+                # Image will be a denoised image if needed
+                image = noise.noise_ckeck_removal(image,f_name)
 
             # In case of no backgrounds (no multiple paintings)
             paintings = [image] 
@@ -142,7 +140,7 @@ def main():
             for count, painting in enumerate(paintings):
                 print('\nSearching boxes at:', f_names[count])   
                 if has_boundingbox:
-                    coord_results, text_mask, bbox_output = find_boxes.find_boxes_canny2(painting, f_names[count], printbox = True)
+                    coord_results, text_mask, bbox_output = find_boxes.find_boxes_canny(painting, f_names[count])
 
                     if(has_backgrounds):
                         coords.append([ 
@@ -221,6 +219,7 @@ def main():
             mapk5 = scores.mapk(query_solutions, results_sorted, k = 5)
         print(f'The map-1 score is: {round(mapk1, 3)}')
         print(f'The map-5 score is: {round(mapk5, 3)}')
+        # ! Currently not implemented for split paintings
         # if(has_backgrounds):
         #     mask_evaluation.mask_eval_avg(directory_output, dir_query, print_each = False, print_avg = True)
         if(has_boundingbox):
