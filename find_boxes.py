@@ -716,7 +716,7 @@ def find_boxes_canny(image, f_name, printbox=False):
 
 
 
-def find_boxes_canny2(image, f_name, printbox=False):
+def find_boxes_canny_MAL(image, f_name, printbox=False):
 
     image_cpy = image.copy()
     height, width, _ = image.shape
@@ -735,7 +735,7 @@ def find_boxes_canny2(image, f_name, printbox=False):
 
     #---- apply optimal Canny edge detection using the computed median----
     v = np.median(gray_image)
-    sigma = 0.33
+    sigma = 0.8
 
     lower_thresh = int(max(0, (1.0 - sigma) * v))
     upper_thresh = int(min(255, (1.0 + sigma) * v))
@@ -748,22 +748,61 @@ def find_boxes_canny2(image, f_name, printbox=False):
 
 
     # convolute with proper kernels
-    canny = cv2.Canny(gray_image,lower_thresh,upper_thresh,apertureSize=3)
-    size_thresh_lapl = 10
-    th, canny = cv2.threshold(canny, size_thresh_lapl,255,cv2.THRESH_BINARY)
+    from skimage import feature
+    canny = np.ones((height, width), dtype=np.uint8)*255
+    canny_bool = feature.canny(gray_image, sigma=7,low_threshold=0.05, high_threshold=0.06)
+    canny = canny * canny_bool
+
+    size_thresh_lapl = 50
+    th, canny_th = cv2.threshold(canny, size_thresh_lapl,255,cv2.THRESH_BINARY)
 
     canny_i = cv2.Canny(gray_image_inv,lower_thresh_i,upper_thresh_i,apertureSize=3)
 
     size_thresh_lapl = 10
     th, canny_i = cv2.threshold(canny_i, size_thresh_lapl,255,cv2.THRESH_BINARY)
 
-    '''cv2.namedWindow("Canny", cv2.WINDOW_NORMAL) 
+    cv2.namedWindow("Canny", cv2.WINDOW_NORMAL) 
     cv2.imshow("Canny",canny)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows
+
+    minLineLength=80
+    lines = cv2.HoughLinesP(image=canny,rho=1,theta=np.pi/180, threshold=100,lines=np.array([]), minLineLength=minLineLength,maxLineGap=30)
+    #lines = cv2.HoughLines(canny, 1, np.pi / 180, 150, None, 0, 0)
+
+    text_mask = np.zeros((height, width), dtype=np.uint8)
+    a,b,c = lines.shape
+    for i in range(a):
+        if lines[i][0][1] != lines[i][0][3] and lines[i][0][0] != lines[i][0][2]:
+            continue
+        if lines[i][0][1] < height*0.05 or lines[i][0][1] >  height - height*0.05:
+            continue 
+        if lines[i][0][0] < width*0.05 or lines[i][0][2] >  width - width*0.05:
+            continue 
+        cv2.line(text_mask, (lines[i][0][0], lines[i][0][1]), (lines[i][0][2], lines[i][0][3]), (255, 255, 255), 3, cv2.LINE_AA)
+    
+    cv2.namedWindow("Canny", cv2.WINDOW_NORMAL) 
+    cv2.imshow('Canny',text_mask)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows
+
+    size_thresh_lapl = 10
+    th, text_mask = cv2.threshold(text_mask, size_thresh_lapl,255,cv2.THRESH_BINARY)
+
+    cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_canny_horizontals.png', text_mask)
+
+    element = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 100))
+    text_maskClose = cv2.morphologyEx(text_mask, cv2.MORPH_CLOSE, element)
+
+    '''cv2.namedWindow("Canny", cv2.WINDOW_NORMAL) 
+    cv2.imshow('Canny',text_maskClose)
     cv2.waitKey(0)
     cv2.destroyAllWindows'''
 
+    cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_canny_final.png', text_maskClose)
 
 
+    '''
     #Put the letters together
 
     element = cv2.getStructuringElement(cv2.MORPH_RECT, (7, 3))
@@ -809,10 +848,10 @@ def find_boxes_canny2(image, f_name, printbox=False):
     cv2.waitKey(0)
     cv2.destroyAllWindows"""
 
-    '''cv2.namedWindow("Canny", cv2.WINDOW_NORMAL) 
+    cv2.namedWindow("Canny", cv2.WINDOW_NORMAL) 
     cv2.imshow("Canny",cannyOpen2)
     cv2.waitKey(0)
-    cv2.destroyAllWindows'''
+    cv2.destroyAllWindows
 
     """cv2.namedWindow("Canny", cv2.WINDOW_NORMAL) 
     cv2.imshow("Canny",canny_i)
@@ -832,22 +871,22 @@ def find_boxes_canny2(image, f_name, printbox=False):
     cv2.namedWindow("Canny", cv2.WINDOW_NORMAL) 
     cv2.imshow("Canny",cannyClose2_i)
     cv2.waitKey(0)
-    cv2.destroyAllWindows"""
+    cv2.destroyAllWindows
 
-    '''cv2.namedWindow("Canny", cv2.WINDOW_NORMAL) 
+    cv2.namedWindow("Canny", cv2.WINDOW_NORMAL) 
     cv2.imshow("Canny",cannyOpen2_i)
     cv2.waitKey(0)
-    cv2.destroyAllWindows'''
+    cv2.destroyAllWindows
 
     contours_n, hierarchy = cv2.findContours(cannyOpen2, cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
     contours_i, hierarchy = cv2.findContours(cannyOpen2_i, cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
     contours = contours_n + contours_i
 
     cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_canny_final.png', cannyOpen2)
-    cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_canny_i_final.png', cannyOpen2_i)
+    cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_canny_i_final.png', cannyOpen2_i)'''
 
     #print(len(contours))
-
+    contours, hierarchy = cv2.findContours(text_maskClose, cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
 
     image_cpy = image.copy()
 
@@ -920,12 +959,13 @@ def find_boxes_canny2(image, f_name, printbox=False):
     cv2.waitKey(0)
     cv2.destroyAllWindows()'''
 
-    if x_min != 0 and y_min != 0 and w_min != 0 and h_min != 0:
+    #Artificial expansion
+    '''if x_min != 0 and y_min != 0 and w_min != 0 and h_min != 0:
         print('a')
         x_min = int(x_min - width*0.01)
         y_min = int(y_min - height*0.01)
         w_min = int(w_min + width*0.01)
-        h_min = int(h_min + height*0.01)
+        h_min = int(h_min + height*0.01)'''
 
     mark_white_rectangle = cv2.rectangle(image_cpy, (x_min, y_min), (x_min + w_min, y_min + h_min), (255, 255, 255), 3)
 

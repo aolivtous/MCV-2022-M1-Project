@@ -121,7 +121,7 @@ def main():
                     image = image_denoised
 
             # In case of no backgrounds (no multiple paintings)
-            paintings = [image]
+            paintings = [image] 
             f_names = [f_name]
       
             # BG removal and croping images in paintings
