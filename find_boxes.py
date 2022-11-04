@@ -716,7 +716,7 @@ def find_boxes_canny(image, f_name, printbox=False):
 
 
 
-def find_boxes_canny_MAL(image, f_name, printbox=False):
+def find_boxes_canny2(image, f_name, printbox=False):
 
     image_cpy = image.copy()
     height, width, _ = image.shape
@@ -755,10 +755,10 @@ def find_boxes_canny_MAL(image, f_name, printbox=False):
     size_thresh_lapl = 50
     th, canny_i = cv2.threshold(canny_i, size_thresh_lapl,255,cv2.THRESH_BINARY)
 
-    cv2.namedWindow("Canny", cv2.WINDOW_NORMAL) 
+    '''cv2.namedWindow("Canny", cv2.WINDOW_NORMAL) 
     cv2.imshow("Canny",canny)
     cv2.waitKey(0)
-    cv2.destroyAllWindows
+    cv2.destroyAllWindows'''
 
     #PRUEBA MARCOS MIRAR LINEAS HORIZONTALES Y VERTICALES
     ''' minLineLength=80
@@ -808,14 +808,14 @@ def find_boxes_canny_MAL(image, f_name, printbox=False):
     # Discard the largest connected object, if it is too big (due to the painting drawing lines)
     nb_components, output, stats, centroids = cv2.connectedComponentsWithStats(cannyClose, connectivity=4)
     
-    max_label, max_size = max([(i, stats[i, cv2.CC_STAT_AREA]) for i in range(1, nb_components)], key=lambda x: x[1])
+    max_label, max_size = max([(i, stats[i, cv2.CC_STAT_AREA]) for i in range(nb_components)], key=lambda x: x[1])
 
     if(max_size > height*width*0.35):
         cannyClose[output == max_label] = 0    
 
     nb_components, output, stats, centroids = cv2.connectedComponentsWithStats(cannyClose_i, connectivity=4)
     
-    max_label, max_size = max([(i, stats[i, cv2.CC_STAT_AREA]) for i in range(1, nb_components)], key=lambda x: x[1])
+    max_label, max_size = max([(i, stats[i, cv2.CC_STAT_AREA]) for i in range(nb_components)], key=lambda x: x[1])
 
     if(max_size > height*width*0.35):
         cannyClose_i[output == max_label] = 0    
@@ -900,8 +900,7 @@ def find_boxes_canny_MAL(image, f_name, printbox=False):
     cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_canny_i_final.png', cannyOpen2_i)
 
     #print(len(contours))
-    contours, hierarchy = cv2.findContours(contours, cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
-
+    
     image_cpy = image.copy()
 
     x_min1 = y_min1 = w_min1 = h_min1 = 0
@@ -952,14 +951,14 @@ def find_boxes_canny_MAL(image, f_name, printbox=False):
         dist_centre_x =  abs((x + (w / 2.0)) -  (width /2.0))
         dist_centre_y =  abs((y + (h / 2.0)) -  (height /2.0))
         diag = np.sqrt(w**2+h**2)
-        print(dist_centre_x)
-        print(dist_centre_y)
-        print(diag)
+        #print(dist_centre_x)
+        #print(dist_centre_y)
+        #print(diag)
 
         #lower score the better --> less distance to the centre x , biggest diag and biggest dist from the center y
         #score = dist_centre_x/(diag + dist_centre_y)
         score = dist_centre_x/(diag + dist_centre_y)
-        print(score)
+        #print(score)
 
         if score < maxScore:
             maxScore = score
