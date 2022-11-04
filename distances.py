@@ -1,9 +1,7 @@
-from pydoc import describe
 import global_variables
 import cv2
 import numpy as np
 import textdistance
-import re
 
 class distances: 
     instances = {}
@@ -34,7 +32,7 @@ def query_measures(hist_image, db_descriptors, distance_type,  text):
     """
     weights = global_variables.weights
 
-    dists_color, dists_texture, dists_text, match_feature= {}, {}, {}, {}
+    dists_color, dists_texture, dists_text, match_feature = {}, {}, {}, {}
     dists_db = {}
 
     idx_1 = idx_2 = idx_3 = idx_dct = []
@@ -115,8 +113,10 @@ def query_measures(hist_image, db_descriptors, distance_type,  text):
             
 
             # Clean db_text and text to remove special characters
-            db_text = re.sub(r'[^\w\s]','',db_text)
-            text = re.sub(r'[^\w\s]','',text)
+            # db_text = re.sub(r'[^\w\s]','',db_text) # Now this is done at main
+            # text = re.sub(r'[^\w\s]','',text)
+            text = text.lower()
+            db_text = db_text.lower()
 
             dists_text[key_db] = textdistance.levenshtein.normalized_distance(text, db_text)
         else:

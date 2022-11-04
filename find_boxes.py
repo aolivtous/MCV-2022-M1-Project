@@ -45,14 +45,14 @@ def find_boxes_canny(image, f_name):
     # Discard the largest connected object, if it is too big (due to the painting drawing lines)
     nb_components, output, stats, _ = cv2.connectedComponentsWithStats(cannyClose, connectivity=4)
     
-    max_label, max_size = max([(i, stats[i, cv2.CC_STAT_AREA]) for i in range(nb_components)], key=lambda x: x[1])
+    max_label, max_size = max([(i, stats[i, cv2.CC_STAT_AREA]) for i in range(1, nb_components)], key=lambda x: x[1])
 
     if(max_size > height*width*0.35):
         cannyClose[output == max_label] = 0    
 
     nb_components, output, stats, _ = cv2.connectedComponentsWithStats(cannyClose_i, connectivity=4)
     
-    max_label, max_size = max([(i, stats[i, cv2.CC_STAT_AREA]) for i in range(nb_components)], key=lambda x: x[1])
+    max_label, max_size = max([(i, stats[i, cv2.CC_STAT_AREA]) for i in range(1, nb_components)], key=lambda x: x[1])
 
     if(max_size > height*width*0.35):
         cannyClose_i[output == max_label] = 0    
