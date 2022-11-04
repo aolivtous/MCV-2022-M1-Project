@@ -733,7 +733,7 @@ def find_boxes_canny2(image, f_name, printbox=False):
 
     #---- apply optimal Canny edge detection using the computed median----
     v = np.median(gray_image)
-    sigma = 0.8
+    sigma = 0.33
 
     lower_thresh = int(max(0, (1.0 - sigma) * v))
     upper_thresh = int(min(255, (1.0 + sigma) * v))
