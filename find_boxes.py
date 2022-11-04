@@ -731,8 +731,6 @@ def find_boxes_canny_MAL(image, f_name, printbox=False):
     gray_image_inv = 255 - gray_image
 
 
-    
-
     #---- apply optimal Canny edge detection using the computed median----
     v = np.median(gray_image)
     sigma = 0.8
@@ -748,17 +746,13 @@ def find_boxes_canny_MAL(image, f_name, printbox=False):
 
 
     # convolute with proper kernels
-    from skimage import feature
-    canny = np.ones((height, width), dtype=np.uint8)*255
-    canny_bool = feature.canny(gray_image, sigma=7,low_threshold=0.05, high_threshold=0.06)
-    canny = canny * canny_bool
-
+    canny = cv2.Canny(gray_image,lower_thresh,upper_thresh,apertureSize=3)
     size_thresh_lapl = 50
-    th, canny_th = cv2.threshold(canny, size_thresh_lapl,255,cv2.THRESH_BINARY)
+    th, canny = cv2.threshold(canny, size_thresh_lapl,255,cv2.THRESH_BINARY)
 
     canny_i = cv2.Canny(gray_image_inv,lower_thresh_i,upper_thresh_i,apertureSize=3)
 
-    size_thresh_lapl = 10
+    size_thresh_lapl = 50
     th, canny_i = cv2.threshold(canny_i, size_thresh_lapl,255,cv2.THRESH_BINARY)
 
     cv2.namedWindow("Canny", cv2.WINDOW_NORMAL) 
@@ -766,7 +760,8 @@ def find_boxes_canny_MAL(image, f_name, printbox=False):
     cv2.waitKey(0)
     cv2.destroyAllWindows
 
-    minLineLength=80
+    #PRUEBA MARCOS MIRAR LINEAS HORIZONTALES Y VERTICALES
+    ''' minLineLength=80
     lines = cv2.HoughLinesP(image=canny,rho=1,theta=np.pi/180, threshold=100,lines=np.array([]), minLineLength=minLineLength,maxLineGap=30)
     #lines = cv2.HoughLines(canny, 1, np.pi / 180, 150, None, 0, 0)
 
@@ -794,26 +789,45 @@ def find_boxes_canny_MAL(image, f_name, printbox=False):
     element = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 100))
     text_maskClose = cv2.morphologyEx(text_mask, cv2.MORPH_CLOSE, element)
 
-    '''cv2.namedWindow("Canny", cv2.WINDOW_NORMAL) 
+    cv2.namedWindow("Canny", cv2.WINDOW_NORMAL) 
     cv2.imshow('Canny',text_maskClose)
     cv2.waitKey(0)
-    cv2.destroyAllWindows'''
+    cv2.destroyAllWindows
 
-    cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_canny_final.png', text_maskClose)
+    cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_canny_final.png', text_maskClose)'''
 
 
-    '''
+
     #Put the letters together
 
-    element = cv2.getStructuringElement(cv2.MORPH_RECT, (7, 3))
+    element = cv2.getStructuringElement(cv2.MORPH_RECT, (9, 3))
     cannyClose = cv2.morphologyEx(canny, cv2.MORPH_CLOSE, element)
     cannyClose_i = cv2.morphologyEx(canny_i, cv2.MORPH_CLOSE, element)
 
+
+    # Discard the largest connected object, if it is too big (due to the painting drawing lines)
+    nb_components, output, stats, centroids = cv2.connectedComponentsWithStats(cannyClose, connectivity=4)
+    
+    max_label, max_size = max([(i, stats[i, cv2.CC_STAT_AREA]) for i in range(1, nb_components)], key=lambda x: x[1])
+
+    if(max_size > height*width*0.35):
+        cannyClose[output == max_label] = 0    
+
+    nb_components, output, stats, centroids = cv2.connectedComponentsWithStats(cannyClose_i, connectivity=4)
+    
+    max_label, max_size = max([(i, stats[i, cv2.CC_STAT_AREA]) for i in range(1, nb_components)], key=lambda x: x[1])
+
+    if(max_size > height*width*0.35):
+        cannyClose_i[output == max_label] = 0    
+
+
     #remove noise
 
-    element = cv2.getStructuringElement(cv2.MORPH_RECT, (3,3))
+    element = cv2.getStructuringElement(cv2.MORPH_RECT, (3,11))
     cannyOpen = cv2.morphologyEx(cannyClose, cv2.MORPH_OPEN, element)
     cannyOpen_i = cv2.morphologyEx(cannyClose_i, cv2.MORPH_OPEN, element)
+
+
 
     #Put text together
 
@@ -823,12 +837,12 @@ def find_boxes_canny_MAL(image, f_name, printbox=False):
 
     #remove noise
 
-    element = cv2.getStructuringElement(cv2.MORPH_RECT, (5,5))
-    cannyOpen2 = cv2.morphologyEx(cannyClose, cv2.MORPH_OPEN, element)
+    element = cv2.getStructuringElement(cv2.MORPH_RECT, (3,3))
+    cannyOpen2 = cv2.morphologyEx(cannyClose2, cv2.MORPH_OPEN, element)
     cannyOpen2_i = cv2.morphologyEx(cannyClose2_i, cv2.MORPH_OPEN, element)
 
-
-    """cv2.namedWindow("Canny", cv2.WINDOW_NORMAL) 
+    """
+    cv2.namedWindow("Canny", cv2.WINDOW_NORMAL) 
     cv2.imshow("Canny",canny)
     cv2.waitKey(0)
     cv2.destroyAllWindows
@@ -846,14 +860,14 @@ def find_boxes_canny_MAL(image, f_name, printbox=False):
     cv2.namedWindow("Canny", cv2.WINDOW_NORMAL) 
     cv2.imshow("Canny",cannyClose2)
     cv2.waitKey(0)
-    cv2.destroyAllWindows"""
+    cv2.destroyAllWindows
 
     cv2.namedWindow("Canny", cv2.WINDOW_NORMAL) 
     cv2.imshow("Canny",cannyOpen2)
     cv2.waitKey(0)
     cv2.destroyAllWindows
 
-    """cv2.namedWindow("Canny", cv2.WINDOW_NORMAL) 
+    cv2.namedWindow("Canny", cv2.WINDOW_NORMAL) 
     cv2.imshow("Canny",canny_i)
     cv2.waitKey(0)
     cv2.destroyAllWindows
@@ -876,17 +890,17 @@ def find_boxes_canny_MAL(image, f_name, printbox=False):
     cv2.namedWindow("Canny", cv2.WINDOW_NORMAL) 
     cv2.imshow("Canny",cannyOpen2_i)
     cv2.waitKey(0)
-    cv2.destroyAllWindows
+    cv2.destroyAllWindows """
 
     contours_n, hierarchy = cv2.findContours(cannyOpen2, cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
     contours_i, hierarchy = cv2.findContours(cannyOpen2_i, cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
     contours = contours_n + contours_i
 
     cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_canny_final.png', cannyOpen2)
-    cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_canny_i_final.png', cannyOpen2_i)'''
+    cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_canny_i_final.png', cannyOpen2_i)
 
     #print(len(contours))
-    contours, hierarchy = cv2.findContours(text_maskClose, cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+    contours, hierarchy = cv2.findContours(contours, cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
 
     image_cpy = image.copy()
 
@@ -894,82 +908,79 @@ def find_boxes_canny_MAL(image, f_name, printbox=False):
     x_min2 = y_min2 = w_min2 = h_min2 = 0
 
     x_min = y_min = w_min = h_min = 0
+    best_rectangles = []
 
     for idx, cnt in enumerate(contours):
         x, y, w, h = cv2.boundingRect(cnt)
-        if w < int(width * 0.05) or h < int(height * 0.01) or h > int(height*0.5):
+        mark_brown_rectangle = cv2.rectangle(image_cpy, (x, y), (x + w, y + h), (0, 100, 100), 3)
+        if w < int(width * 0.05) or w > int(width * 0.75) or h < int(height * 0.01) or h > int(height*0.5):
             continue
-        """if h*w < (height*width)*0.003:
-            continue"""
-        if h > w*0.75:
+        if h > w*0.55:
             continue
         if h < w*0.05:
             continue
-        if (x + (w / 2.0) < (width /2.0) - width * 0.03) or (x + (w / 2.0) > (width / 2.0) + width * 0.03):
+
+        mark_purple_rectangle = cv2.rectangle(image_cpy, (x, y), (x + w, y + h), (100, 0, 100), 3)
+
+        if (x + (w / 2.0) < (width /2.0) - width * 0.08) or (x + (w / 2.0) > (width / 2.0) + width * 0.08):
             continue
 
-        if y > height*0.35 and y+h < (height*0.65):
+        mark_red_rectangle = cv2.rectangle(image_cpy, (x, y), (x + w, y + h), (0, 0, 255), 3)
+
+        if y + h/2 > height*0.40 and y + h/2 < (height*0.6):
+            continue
+        mark_blue_rectangle = cv2.rectangle(image_cpy, (x, y), (x + w, y + h), (255, 0, 0), 3)
+    
+        if h*w > width*height*0.15:
             continue
 
-        if h*w > h_min*w_min:
+        mark_white_rectangle = cv2.rectangle(image_cpy, (x, y), (x + w, y + h), (255, 255, 255), 3)
+
+        """if h*w > h_min*w_min:
+            x_min = x
+            y_min = y
+            w_min = w
+            h_min = h"""
+
+        best_rectangles.append(cnt)
+        
+    maxScore = 100000000
+
+
+    for idx, cnt in enumerate(best_rectangles):
+        x, y, w, h = cv2.boundingRect(cnt)
+        dist_centre_x =  abs((x + (w / 2.0)) -  (width /2.0))
+        dist_centre_y =  abs((y + (h / 2.0)) -  (height /2.0))
+        diag = np.sqrt(w**2+h**2)
+        print(dist_centre_x)
+        print(dist_centre_y)
+        print(diag)
+
+        #lower score the better --> less distance to the centre x , biggest diag and biggest dist from the center y
+        #score = dist_centre_x/(diag + dist_centre_y)
+        score = dist_centre_x/(diag + dist_centre_y)
+        print(score)
+
+        if score < maxScore:
+            maxScore = score
             x_min = x
             y_min = y
             w_min = w
             h_min = h
-       
-        #mark_white_rectangle = cv2.rectangle(image_cpy, (x, y), (x + w, y + h), (255, 255, 255), 3)
-        
 
 
-    # Extension & reduction of the rectangle
-    # tol = 2
-    # try:
-    #     while abs(gray_image[y_min + h_min, x_min + int(w_min/2)] - gray_image[y_min + h_min +1, x_min + int(w_min/2)]) < tol :
-    #         h_min = h_min + 1
-    #         print('Extension down')
-    # except:
-    #     pass
-    # tol = 2
-    # try:
-    #     while abs(gray_image[y_min + h_min, x_min + int(w_min/2)] - gray_image[y_min - 1, x_min + int(w_min/2)]) < tol :
-    #         y_min = y_min -1
-    #         print('Extension up')
-    # except:
-    #     pass
-    # tol = 2
-    # try:
-    #     while abs(gray_image[y_min+ int(h_min/2), x_min] - gray_image[y_min+ int(h_min/2), x_min -1 ]) < tol :
-    #         x_min = x_min - 1
-    #         print('Extension left')
-    # except:
-    #     pass
-    # tol = 2
-    # try:
-    #     while abs(gray_image[y_min+ int(h_min/2), x_min+w_min] - gray_image[y_min+ int(h_min/2), x_min+w_min+1 ]) < tol :
-    #         w_min = w_min +1
-    #         print('Extension right')
-    # except:
-    #     pass
+    if x_min != 0 and y_min != 0 and w_min != 0 and h_min != 0:
+        x_min = int(x_min - w_min*0.04)
+        y_min = int(y_min - h_min*0.15)
+        w_min = int(w_min + 2*w_min*0.04)
+        h_min = int(h_min + 2*h_min*0.15)
 
-    #x_min = y_min = w_min = h_min = 0
-    #mark_green_rectangle = cv2.rectangle(image_cpy, (x_min, y_min), (x_min + w_min, y_min + h_min), (0, 255, 0), 3)
+    mark_green_rectangle = cv2.rectangle(image_cpy, (x_min, y_min), (x_min + w_min, y_min + h_min), (0, 255, 0), 3)
 
-    '''cv2.namedWindow("Canny", cv2.WINDOW_NORMAL) 
+    """cv2.namedWindow("Canny", cv2.WINDOW_NORMAL) 
     cv2.imshow("Canny",image_cpy)
     cv2.waitKey(0)
-    cv2.destroyAllWindows()'''
-
-    #Artificial expansion
-    '''if x_min != 0 and y_min != 0 and w_min != 0 and h_min != 0:
-        print('a')
-        x_min = int(x_min - width*0.01)
-        y_min = int(y_min - height*0.01)
-        w_min = int(w_min + width*0.01)
-        h_min = int(h_min + height*0.01)'''
-
-    mark_white_rectangle = cv2.rectangle(image_cpy, (x_min, y_min), (x_min + w_min, y_min + h_min), (255, 255, 255), 3)
-
-
+    cv2.destroyAllWindows()"""
     
 
 
@@ -993,7 +1004,3 @@ def find_boxes_canny_MAL(image, f_name, printbox=False):
     bbox_output = [np.array([x_min, y_min]),np.array([x_min, y_min + h_min]),np.array([x_min + w_min, y_min + h_min]),np.array([x_min + w_min, y_min])]
 
     return text_box, text_mask, bbox_output
-
-
-
-
