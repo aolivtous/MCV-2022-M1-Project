@@ -47,7 +47,7 @@ def init(name_query):
         'default': {
             'color_code': 'LAB',
             'distance_type': 'hellin',
-            'feature_algorithm': 'SIFT',   # SIFT, SURF (faster)
+            'feature_algorithm': 'SURF',   # SIFT, SURF (faster)
             'match_algorithm': 'FLANN'        # BF (very slow), FLANN (faster)
         }
     }
