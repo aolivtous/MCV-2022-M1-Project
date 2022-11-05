@@ -1,6 +1,6 @@
-from numpy import hamming, int8
-from main import *
 import global_variables
+import cv2
+import numpy as np
 
 class histograms: 
     def __init__(self, feature, coeffs_dct, hist_ch1, hist_ch2, hist_ch3): 
@@ -96,7 +96,7 @@ def get_block_histograms(image, has_boundingbox, is_query, text_mask):
         
         elif global_variables.methods_search['default']['feature_algorithm'] == 'ORB':
             # Initiate ORB detector
-            orb = cv2.ORB_create(nFeatures=2000)
+            orb = cv2.ORB_create(nfeatures=2000)
             if (is_query and has_boundingbox): 
                 # Find keypoints with ORB
                 kp = orb.detect(image_feature, text_mask)

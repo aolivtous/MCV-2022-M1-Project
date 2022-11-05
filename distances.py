@@ -129,44 +129,56 @@ def query_measures(hist_image, db_descriptors, distance_type,  text):
             db_feature_des = img_db.feature
             # print(f'num_matches for {key_db} = {db_feature_des}')
 
-
+            INFINITY = 1e9
             if db_feature_des is None:
-                match_feature[key_db] = 0
+                dists_db[key_db] = distances(INFINITY)
             else:
-                match_feature[key_db] = match_features(query_feature_des, db_feature_des)
+                dists_db[key_db] = distances(match_features(query_feature_des, db_feature_des))
 
-            print(f'num_matches for {key_db} = {match_feature[key_db]}')
+            print(f'Distance based on matches for {key_db} = {round(dists_db[key_db].dist, 3)}')
 
 
-    
-    # Normalize values of dists_texture euclidean distances
-    if weights["texture"]:
-        dists_texture = { k: (v - np.mean(np.array(list(dists_texture.values())))) / np.std(np.array(list(dists_texture.values()))) for k, v in dists_texture.items() }
-
-    # Normalization of the euclidean distance
-    for key_db, img_db in db_descriptors.items():
-        dists_db[key_db] =  distances(weights["color"] * dists_color[key_db] + weights["texture"] * dists_texture[key_db] + weights["text"] * dists_text[key_db])
-
-    # Refining of the feature distance
     if weights["feature"]:
-        # Invert the matches using max-value (in order to have "distance" meaning)
-        match_feature = { k: distances(np.max(np.array(list(match_feature.values())))-v) for k, v in match_feature.items() }
+        return dists_db
+        # Refining of the feature distance
+        # if weights["feature"]:
+        #     # Invert the matches using max-value (in order to have "distance" meaning)
+        #     dists_db = { k: distances(np.max(np.array(list(match_feature.values())))-v) for k, v in match_feature.items() }
+    
+    else:
+        # Normalize values of dists_texture euclidean distances
+        if weights["texture"]:
+            dists_texture = { k: (v - np.mean(np.array(list(dists_texture.values())))) / np.std(np.array(list(dists_texture.values()))) for k, v in dists_texture.items() }
+
+        # Normalization of the euclidean distance
+        for key_db, img_db in db_descriptors.items():
+            dists_db[key_db] = distances(weights["color"] * dists_color[key_db] + weights["texture"] * dists_texture[key_db] + weights["text"] * dists_text[key_db])
         
-    return dists_db
-
-
+        return dists_db
 
 def match_features(des1, des2):#, kp1=None, kp2=None):
-    
-    num_matches = 0
 
-    if global_variables.methods_search['default']['feature_algorithm'] == 'ORB':
+    if global_variables.methods_search['default']['feature_algorithm'] == 'ORB' or global_variables.methods_search['default']['feature_algorithm'] == 'BRIEF':
         # create BFMatcher object
         bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
         # Match descriptors.
         matches = bf.match(des1,des2)
-
+        # Matches is a list of DMatch objects that contains information about the keypoints matches (distance, queryIdx, trainIdx, imgIdx)
+        # Sort them in the order of their distance.
+        matches = sorted(matches, key = lambda x:x.distance)
         num_matches = len(matches)
+        # ! Play with the distance threshold to get better results
+        # Get the first 10% of the matches
+        top_num_matches = int(len(matches)*0.1)
+        # Draw first 10 matches.
+        top_matches = matches[:top_num_matches]
+        # Get the distance attribute of the top_matches
+        top_matches_dist_mean = np.mean([m.distance for m in top_matches])
+        return top_matches_dist_mean
+        # Return percentage of matches in relation to the db descriptors
+        percentage_matches = num_matches / len(des2)
+        percentage_distance = 1 - percentage_matches
+        return percentage_distance
 
     elif global_variables.methods_search['default']['match_algorithm'] == 'BF':
         # BFMatcher with default params
@@ -180,6 +192,7 @@ def match_features(des1, des2):#, kp1=None, kp2=None):
                 good.append([m])
             
         num_matches = len(good)
+        return num_matches
 
     elif global_variables.methods_search['default']['match_algorithm'] == 'FLANN':
         FLANN_INDEX_KDTREE = 1
@@ -196,12 +209,10 @@ def match_features(des1, des2):#, kp1=None, kp2=None):
                 good.append([m])
             
         num_matches = len(good)
+        return num_matches
 
     else:
         print('Match algorithm not found')
-
-
-    return num_matches
 
     
         
