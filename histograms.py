@@ -69,14 +69,44 @@ def get_block_histograms(image, has_boundingbox, is_query, text_mask):
                 kp, descrip = sift.detectAndCompute(image_feature, text_mask)
             else:
                 kp, descrip = sift.detectAndCompute(image_feature, None)
+        
         elif global_variables.methods_search['default']['feature_algorithm'] == 'SURF':
             # Here we set the Hessian threshold to 400
             hess_thr=400
-            surf = cv2.SURF_create(hess_thr)
+            surf = cv2.xfeatures2d.SURF_create(hess_thr)
             if (is_query and has_boundingbox): 
                 kp, descrip = surf.detectAndCompute(image_feature, text_mask)
             else:
                 kp, descrip = surf.detectAndCompute(image_feature, None)
+        elif global_variables.methods_search['default']['feature_algorithm'] == 'BRIEF':
+            # Initiate FAST detector
+            star = cv2.xfeatures2d.StarDetector_create()
+            # Initiate BRIEF detector
+            brief = cv2.xfeatures2d.BriefDescriptorExtractor_create()
+            if (is_query and has_boundingbox): 
+                # Find keypoints with STAR
+                kp = star.detect(image_feature, text_mask)
+                # Find descriptors with BRIEF
+                kp, descrip = brief.compute(image_feature, kp)
+            else:
+                # Find keypoints with STAR
+                kp = star.detect(image_feature,None)
+                # Find descriptors with BRIEF
+                kp, descrip = brief.compute(image_feature, kp)
+        
+        elif global_variables.methods_search['default']['feature_algorithm'] == 'ORB':
+            # Initiate ORB detector
+            orb = cv2.ORB_create(nFeatures=2000)
+            if (is_query and has_boundingbox): 
+                # Find keypoints with ORB
+                kp = orb.detect(image_feature, text_mask)
+                # Find descriptors with ORB
+                kp, descrip = orb.compute(image_feature, kp)
+            else:
+                # Find keypoints with ORB
+                kp = orb.detect(image_feature,None)
+                # Find descriptors with ORB
+                kp, descrip = orb.compute(image_feature, kp)
         else:
             print('Feature method not found')
             exit(1)

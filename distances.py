@@ -154,11 +154,21 @@ def query_measures(hist_image, db_descriptors, distance_type,  text):
         
     return dists_db
 
+
+
 def match_features(des1, des2):#, kp1=None, kp2=None):
     
     num_matches = 0
 
-    if global_variables.methods_search['default']['match_algorithm'] == 'BF':
+    if global_variables.methods_search['default']['feature_algorithm'] == 'ORB':
+        # create BFMatcher object
+        bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
+        # Match descriptors.
+        matches = bf.match(des1,des2)
+
+        num_matches = len(matches)
+
+    elif global_variables.methods_search['default']['match_algorithm'] == 'BF':
         # BFMatcher with default params
         bf = cv2.BFMatcher()
         matches = bf.knnMatch(des1,des2,k=2)

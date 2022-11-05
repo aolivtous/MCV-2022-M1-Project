@@ -15,6 +15,7 @@ import statistics
 from tqdm import tqdm
 from skimage import feature
 import re
+import time
 
 # Internal modules
 import global_variables
@@ -76,6 +77,7 @@ def main():
     
     ### PIPELINE
 
+    start_time = time.time()
     # DB Descriptors and text extraction
     db_descriptors = {}
     if recompute_db:
@@ -97,7 +99,11 @@ def main():
         except:
             print('Exiting. No precomputed pickle found')
             exit(1)
+    
+    time_compute_db = time.time()-start_time
 
+
+    start_time = time.time()
     ## Query processing 
     num_paintings = {}
     mask_coords = {}
@@ -105,7 +111,6 @@ def main():
     textbox_coords = {}
     texts = {}
     coords = []
-
     print(f'Start of processing fo the query: {global_variables.dir_query}')
     for filename in tqdm(os.scandir(global_variables.dir_query)):
         f = os.path.join(global_variables.dir_query, filename)
@@ -185,7 +190,12 @@ def main():
     # Results sorting, if not two_level num_paintings is {}
     results_sorted = utils.get_sorted_list_of_lists_from_dict_of_dicts(dists, distance_type, num_paintings, two_level = may_have_split)
     boxes_predictions = utils.get_simple_list_from_dict(textbox_coords)
-    
+
+    time_compute_query = time.time()-start_time
+
+
+
+
     print('\n-----RESULTS-----')
     # Results printing
     for idx, l in enumerate(results_sorted):
@@ -206,7 +216,7 @@ def main():
                 color = global_variables.bcolors.FAIL
             print(f'\t{color}Apk5 score is: {round(apk5, 2)}{global_variables.bcolors.ENDC}')
 
-    print(f'\n-----EVALUATION of {name_query} using COLOR={global_variables.weights["color"]} / TEXTURE={global_variables.weights["texture"]} / TEXT={global_variables.weights["text"]}-----')
+    print(f'\n-----EVALUATION of {name_query} using COLOR={global_variables.weights["color"]} / TEXTURE={global_variables.weights["texture"]} / TEXT={global_variables.weights["text"]} / FEATURE={global_variables.weights["feature"]}-----')
     # Results evaluation
     if(solutions):
         if name_query[-1]!='1': # ? for qsdx_w1 ?
@@ -231,6 +241,8 @@ def main():
 
     else:
         print('No solutions given --> Evaluation not avaliable.')
+
+    print(f'-------EXECUTION TIME of DATABASE = {time_compute_db/60}mins ///  EXECUTION TIME of QUERY = {time_compute_query/60}mins---------------------')
     
     # Results writing to Pickle file
     with open(f'{global_variables.dir_results}result.pkl', 'wb') as handle:

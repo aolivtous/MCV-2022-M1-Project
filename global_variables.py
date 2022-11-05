@@ -47,8 +47,8 @@ def init(name_query):
         'default': {
             'color_code': 'LAB',
             'distance_type': 'hellin',
-            'feature_algorithm': 'SURF',   # SIFT, SURF (faster)
-            'match_algorithm': 'FLANN'        # BF (very slow), FLANN (faster)
+            'feature_algorithm': 'SIFT',   # SIFT, SURF, BRIEF, ORB
+            'match_algorithm': 'FLANN'        # BF (very slow), FLANN (faster), if feature_algorithm is ORB we use a specific mathc_algorithm
         }
     }
 
@@ -56,10 +56,10 @@ def init(name_query):
     n_bins = 40
 
     weights = {
-        'color': 0.2,
-        'texture': 0.3,
-        'text': 0.5,
-        'feature': 0.0
+        'color': 0.0,
+        'texture': 0.0,
+        'text': 0.0,
+        'feature': 1.0
     }
  
     # Constant arguments
