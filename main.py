@@ -29,6 +29,7 @@ import box_evaluation
 import noise
 import findText
 import distances_analysis
+import distances_postprocessing
 
 def main():
     """
@@ -46,9 +47,10 @@ def main():
         has_boundingbox = bool(utils.str_to_bool(sys.argv[3]))
         may_have_split = bool(utils.str_to_bool(sys.argv[4]))
         may_have_noise = bool(utils.str_to_bool(sys.argv[5]))
-        solutions = bool(utils.str_to_bool(sys.argv[6]))
-        recompute_db = bool(utils.str_to_bool(sys.argv[7]))
+        may_not_be_in_db = bool(utils.str_to_bool(sys.argv[6]))
+        solutions = bool(utils.str_to_bool(sys.argv[7]))
         recompute_query = bool(utils.str_to_bool(sys.argv[8]))
+        recompute_db = bool(utils.str_to_bool(sys.argv[9]))
     except:
         print(f'Exiting. Not enough arguments ({len(sys.argv) - 1} of 7)')
         exit(1)
@@ -218,13 +220,17 @@ def main():
         with open(f'{global_variables.dir_results}num_paintings.pkl', 'wb') as handle:
             pickle.dump(num_paintings, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
+    ## Distances postprocessing
+    dists = distances_postprocessing.distances_postprocessing(dists)
+
     ## Distance analysis
-    distances_analysis.distances_analysis(dists, query_solutions)
+    if may_not_be_in_db and solutions:
+        distances_analysis.distances_analysis(dists, query_solutions)
    
     ## Results processing
 
     # Results sorting, if not two_level num_paintings is {}
-    results_sorted = utils.get_sorted_list_of_lists_from_dict_of_dicts(dists, distance_type, num_paintings, two_level = may_have_split)
+    results_sorted = utils.get_sorted_list_of_lists_from_dict_of_dicts(dists, distance_type, num_paintings, two_level = may_have_split, may_not_be_in_db = may_not_be_in_db and solutions)
     boxes_predictions = utils.get_simple_list_from_dict(textbox_coords)
 
     time_compute_query = time.time() - start_time

@@ -1,5 +1,7 @@
 from matplotlib import pyplot as plt
 import matplotlib.patches as mpatches
+import numpy as np
+import global_variables
 
 def distances_analysis(dists, query_solutions):
     # dists is a dictionary with the distances of each painting in the query to each painting in the database
@@ -12,29 +14,39 @@ def distances_analysis(dists, query_solutions):
     for key_query, _ in dists.items():
         # ! Idea: Compute the variance of the top distances and use it as a threshold
         shorter_distance[key_query] = {}
-        shorter_distance[key_query]['shorter_mean_dist'] = [dist.dist for key, dist in sorted(dists[key_query].items(), key=lambda item: item[1].dist)][0]
+        sorted_dists = [dist.dist for key, dist in sorted(dists[key_query].items(), key=lambda item: item[1].dist)]
+        shorter_distance[key_query]['std_slope_top1_relation'] = (np.std(sorted_dists[:2])) / (np.std(sorted_dists) + 0.0001)
         query_image = int(key_query.split('_')[0])
         query_part_idx = int(key_query.split('_')[1][-1]) - 1
         shorter_distance[key_query]['in_db'] = False if query_solutions[query_image][query_part_idx] == -1 else True
+
+    # Sort the dictionary by the smaller first second slope
+    shorter_distance = dict(sorted(shorter_distance.items(), key=lambda item: item[1]['std_slope_top1_relation']))
+
     # Now we have the shorter distance for each query painting and if it is in the database or not
     # Plot a bar chart with the shorter_mean_dist of each query painting
     # If the painting is in the database, the bar is green, if not, the bar is red
     # The x axis is the query painting and the y axis is the shorter_mean_dist
     # Using matplotlib
     query_names = list(shorter_distance.keys())
-    query_distances = [shorter_distance[key]['shorter_mean_dist'] for key in query_names]
+    query_distances_slope = [shorter_distance[key]['std_slope_top1_relation'] for key in query_names]
     query_in_db = [shorter_distance[key]['in_db'] for key in query_names]
 
     # Plot the bar chart
     fig, ax = plt.subplots()
-    ax.bar(query_names, query_distances, color = ['green' if in_db else 'red' for in_db in query_in_db])
-    ax.set_title('Shorter distance for each query painting')
+    ax.axhline(y = global_variables.in_db_threshold, color = 'blue', linestyle = '-')
+    ax.bar(query_names, query_distances_slope, color = ['green' if in_db else 'red' for in_db in query_in_db])
+    ax.set_title('Std difference between top 2 distances and the rest for each query painting')
     ax.set_xlabel('Query painting')
-    ax.set_ylabel('Shorter distance')
+    ax.set_ylabel('Std difference between top 2 and the rest')
     # Rotate the x axis labels
-    plt.xticks(rotation=90)
+    plt.xticks(rotation = 90)
+    # Add horizontal line to define treshold
     # Add a legend to explain the colors
-    green_patch = mpatches.Patch(color='green', label='In database')
-    red_patch = mpatches.Patch(color='red', label='Not in database')
-    plt.legend(handles=[green_patch, red_patch])
+    green_patch = mpatches.Patch(color = 'green', label = 'In database')
+    red_patch = mpatches.Patch(color = 'red', label = 'Not in database')
+    blue_patch = mpatches.Patch(color = 'blue', linewidth = 0.5, label = f'Threshold at {global_variables.in_db_threshold:e} to decide if in database')
+    plt.legend(handles=[green_patch, red_patch, blue_patch])
     plt.show()
+    # Save the plot
+    fig.savefig(global_variables.dir_query + global_variables.dir_query_aux + 'distances_analysis.png', bbox_inches='tight')

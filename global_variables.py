@@ -17,6 +17,7 @@ def init(name_query):
     global weights
     global n_patches
     global n_bins
+    global in_db_threshold
 
     global name_db
     global dir_base
@@ -61,6 +62,8 @@ def init(name_query):
         'text': 0.0,
         'feature': 1.0
     }
+    in_db_threshold = 0.6
+    # in_db_threshold = 0.3 * 1e-7 # When unnormalized with db
  
     # Constant arguments
     name_db = 'BBDD'
