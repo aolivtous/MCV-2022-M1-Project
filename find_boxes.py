@@ -127,14 +127,14 @@ def find_boxes_canny(image, f_name):
         dist_centre_x =  abs((x + (w / 2.0)) -  (width /2.0))
         dist_centre_y =  abs((y + (h / 2.0)) -  (height /2.0))
         diag = np.sqrt(w**2+h**2)
-        print(dist_centre_x)
-        print(dist_centre_y)
-        print(diag)
+        # print(dist_centre_x)
+        # print(dist_centre_y)
+        # print(diag)
 
         #lower score the better --> less distance to the centre x , biggest diag and biggest dist from the center y
         #score = dist_centre_x/(diag + dist_centre_y)
         score = dist_centre_x/(diag + dist_centre_y)
-        print(score)
+        # print(score)
 
         if score < maxScore:
             maxScore = score
