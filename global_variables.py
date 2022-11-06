@@ -62,7 +62,7 @@ def init(name_query):
         'text': 0.0,
         'feature': 1.0
     }
-    in_db_threshold = 0.6
+    in_db_threshold = 1
     # in_db_threshold = 0.3 * 1e-7 # When unnormalized with db
  
     # Constant arguments
@@ -80,4 +80,4 @@ def init(name_query):
     new_dirs = [dir_results, dir_db_aux, dir_query_aux]
 
     # ONLY TESTING VARIABLES
-    test_image = '' # ! Set to '' to iterate all the query
+    test_image = '21' # ! Set to '' to iterate all the query
