@@ -80,6 +80,8 @@ def find_boxes_canny(image, f_name):
     contours_i, _ = cv2.findContours(cannyOpen2_i, cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
     contours = contours_n + contours_i
 
+    cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_canny_inicial.png', canny)
+    cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_canny_i_inicial.png', canny_i)
     cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_canny_final.png', cannyOpen2)
     cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_canny_i_final.png', cannyOpen2_i)
 

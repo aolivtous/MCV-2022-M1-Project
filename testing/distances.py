@@ -189,7 +189,7 @@ def match_features(des1, des2):#, kp1=None, kp2=None):
         good = []
         for m,n in matches:
             if m.distance < 0.75*n.distance:
-                good.append(m)
+                good.append([m])
         matches = good
 
     elif global_variables.methods_search['default']['match_algorithm'] == 'FLANN':
@@ -203,7 +203,7 @@ def match_features(des1, des2):#, kp1=None, kp2=None):
         good = []
         for m,n in matches:
             if m.distance < 0.75*n.distance:
-                good.append(m)
+                good.append([m])
         matches = good
     else:
         print('Match algorithm not found')

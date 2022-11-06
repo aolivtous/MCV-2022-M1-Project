@@ -54,7 +54,7 @@ def generate_masks(image, f_name, mayhave_split): #NOVA FUNCIO PER DETECTAR ELS 
     # remove noise
     image_blur = cv2.GaussianBlur(image,(7,7),0)
 
-    gray_image = cv2.cvtColor(image_blur, cv2.COLOR_BGR2GRAY)
+    gray_image = cv2.cvtColor(image_blur, cv2.COLOR_BGR2GRAY) 
 
     # convolute with proper kernels
     lap = cv2.Laplacian(gray_image,cv2.CV_32F, ksize = 3)
@@ -94,12 +94,17 @@ def generate_masks(image, f_name, mayhave_split): #NOVA FUNCIO PER DETECTAR ELS 
     cv2.waitKey(0)
     cv2.destroyAllWindows()'''
 
-    contours, hierarchy = cv2.findContours(np.uint8(mask_open2), cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+    contours, hierarchy = cv2.findContours(np.uint8(mask_open2), cv2.RETR_CCOMP,cv2.CHAIN_APPROX_SIMPLE)
 
     areaArray = []
     for i, c in enumerate(contours):
-        area = cv2.contourArea(c)
-        areaArray.append(area)
+        # If a countour is internal, continue
+        if hierarchy[0][i][3] != -1:
+            continue
+
+        x_c,y_c,w_c,h_c = cv2.boundingRect(c)
+        #area = cv2.contourArea(c)
+        areaArray.append(w_c*h_c)
 
     #first sort the array by area
     sorteddata = sorted(zip(areaArray, contours), key=lambda x: x[0], reverse=True)
@@ -119,7 +124,7 @@ def generate_masks(image, f_name, mayhave_split): #NOVA FUNCIO PER DETECTAR ELS 
         secondlargestcontour = sorteddata[1][1]
         x2, y2, w2, h2 = cv2.boundingRect(secondlargestcontour)
 
-        if(w2*h2 > 0.06*width*height and w2 < 0.95*width):
+        if(w2*h2 > 0.06*width*height and w2 < 0.95*width) and h2/w2 < 7 and w2/h2 < 7:
             mark_red_rectangle = cv2.rectangle(image_cpy, (x2, y2), (x2 + w2, y2 + h2), (0, 0, 255), 3)
             num_paintings = 2
             if(y+h < y2):
@@ -136,7 +141,7 @@ def generate_masks(image, f_name, mayhave_split): #NOVA FUNCIO PER DETECTAR ELS 
             thirdlargestcontour = sorteddata[2][1]
             x3, y3, w3, h3 = cv2.boundingRect(thirdlargestcontour)
 
-            if(w3*h3 > 0.06*width*height and w3 < 0.95*width):
+        if(w3*h3 > 0.06*width*height and w3 < 0.95*width) and h3/w3 < 7 and w3/h3 < 7:
                 mark_red_rectangle = cv2.rectangle(image_cpy, (x3, y3), (x3 + w3, y3 + h3), (0, 0, 255), 3)
                 num_paintings = 3
                 
@@ -166,10 +171,10 @@ def generate_masks(image, f_name, mayhave_split): #NOVA FUNCIO PER DETECTAR ELS 
     cv2.waitKey(0)
     cv2.destroyAllWindows()"""
 
-    """cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_laplacian.png', laplacian)
-    cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_laplacian_open.png', np.uint8(mask_open))
-    cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_laplaian_open_dilate.png', np.uint8(dilation))
-    cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_laplaian_open_dilate_open.png', np.uint8(mask_open2))"""
+    cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_laplacian.png', laplacian)
+    #cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_laplacian_open.png', np.uint8(mask_open))
+    #cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_laplaian_open_dilate.png', np.uint8(dilation))
+    cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_laplaian_open_dilate_open.png', np.uint8(mask_open2))
     cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_split_laplacian_boxes.png', image_cpy)
 
 
