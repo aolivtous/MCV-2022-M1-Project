@@ -155,7 +155,7 @@ def query_measures(hist_image, db_descriptors, distance_type,  text):
             dists_db[key_db] = distances(weights["color"] * dists_color[key_db] + weights["texture"] * dists_texture[key_db] + weights["text"] * dists_text[key_db])
         
         return dists_db
-
+ 
 def match_features(des1, des2):#, kp1=None, kp2=None):
 
     if global_variables.methods_search['default']['feature_algorithm'] == 'ORB' or global_variables.methods_search['default']['feature_algorithm'] == 'BRIEF':
@@ -170,7 +170,7 @@ def match_features(des1, des2):#, kp1=None, kp2=None):
         # ! Play with the distance threshold to get better results
         # Get the first 10% of the matches
         top_num_matches = int(len(matches)*0.1)
-        # Draw first 10 matches.
+        # Draw first 10% matches.
         top_matches = matches[:top_num_matches]
         # Get the distance attribute of the top_matches
         top_matches_dist_mean = np.mean([m.distance for m in top_matches])
