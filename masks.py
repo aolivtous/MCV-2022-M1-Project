@@ -140,32 +140,29 @@ def generate_masks(image, f_name, mayhave_split): #NOVA FUNCIO PER DETECTAR ELS 
             thirdlargestcontour = sorteddata[2][1]
             x3, y3, w3, h3 = cv2.boundingRect(thirdlargestcontour)
 
-        if(w3*h3 > 0.06*width*height and w3 < 0.95*width) and h3/w3 < 7 and w3/h3 < 7:
-                if x3>x and x3+w3<w+w and x3>x2 and x3+w3<x2+w2:
-                    pass
-                else: 
-                    mark_red_rectangle = cv2.rectangle(image_cpy, (x3, y3), (x3 + w3, y3 + h3), (0, 0, 255), 3)
-                    num_paintings = 3
-                    
-                    if (x+w < x2 and x+w < x3):
-                        if x2+w2 < x3:
-                            painting_box = [[x, y, x+w, y+h],[x2, y2, x2+w2, y2+h2],[x3, y3, x3+w3, y3+h3]]
-                        else:
-                            painting_box = [[x, y, x+w, y+h],[x3, y3, x3+w3, y3+h3],[x2, y2, x2+w2, y2+h2]]
+            if(w3*h3 > 0.06*width*height and w3 < 0.95*width) and h3/w3 < 7 and w3/h3 < 7:
+                    if x3>x and x3+w3<w+w and x3>x2 and x3+w3<x2+w2:
+                        pass
+                    else: 
+                        mark_red_rectangle = cv2.rectangle(image_cpy, (x3, y3), (x3 + w3, y3 + h3), (0, 0, 255), 3)
+                        num_paintings = 3
+                        
+                        if (x+w < x2 and x+w < x3):
+                            if x2+w2 < x3:
+                                painting_box = [[x, y, x+w, y+h],[x2, y2, x2+w2, y2+h2],[x3, y3, x3+w3, y3+h3]]
+                            else:
+                                painting_box = [[x, y, x+w, y+h],[x3, y3, x3+w3, y3+h3],[x2, y2, x2+w2, y2+h2]]
 
-                    elif (x2+w2 < x and x2+w2 < x3):
-                        if x+w < x3:
-                            painting_box = [[x2, y2, x2+w2, y2+h2],[x, y, x+w, y+h],[x3, y3, x3+w3, y3+h3]]
-                        else:
-                            painting_box = [[x2, y2, x2+w2, y2+h2],[x3, y3, x3+w3, y3+h3],[x, y, x+w, y+h]]
-                    elif (x3+w3 < x and x3+w3 < x2):
-                        if x+w < x2:
-                            painting_box = [[x3, y3, x3+w3, y3+h3],[x, y, x+w, y+h],[x2, y2, x2+w2, y2+h2]]
-                        else:
-                            painting_box = [[x3, y3, x3+w3, y3+h3],[x2, y2, x2+w2, y2+h2],[x, y, x+w, y+h]]
-                
-
-            
+                        elif (x2+w2 < x and x2+w2 < x3):
+                            if x+w < x3:
+                                painting_box = [[x2, y2, x2+w2, y2+h2],[x, y, x+w, y+h],[x3, y3, x3+w3, y3+h3]]
+                            else:
+                                painting_box = [[x2, y2, x2+w2, y2+h2],[x3, y3, x3+w3, y3+h3],[x, y, x+w, y+h]]
+                        elif (x3+w3 < x and x3+w3 < x2):
+                            if x+w < x2:
+                                painting_box = [[x3, y3, x3+w3, y3+h3],[x, y, x+w, y+h],[x2, y2, x2+w2, y2+h2]]
+                            else:
+                                painting_box = [[x3, y3, x3+w3, y3+h3],[x2, y2, x2+w2, y2+h2],[x, y, x+w, y+h]]
 
             #part2 = im.crop(x2, y2, x2+w2, y2+h2)
 
