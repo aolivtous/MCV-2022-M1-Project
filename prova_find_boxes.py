@@ -1,5 +1,8 @@
 from turtle import window_height
 from main import *
+import matplotlib.pyplot as plt
+import numpy as np
+import cv2 as cv2
 
 base_dir = '../'
 name_query='qsd1_w2/'
@@ -512,4 +515,58 @@ def prova4(base_dir,dir_query,name_query,directory_output):
 # prova2(base_dir,dir_query,name_query,directory_output)
 # prova3(base_dir,dir_query,name_query,directory_output)
 # prova1(base_dir,dir_query,name_query,directory_output)
-prova4(base_dir,dir_query,name_query,directory_output)
+# prova4(base_dir,dir_query,name_query,directory_output)
+
+
+
+def output_matches():
+    # image_query = cv2.imread('/Users/guillemcapellerafont/Documents/Master/M1/Projecte/Setmana4/qsd1_w4/aux/00007_part1.png')
+    # image_db = cv2.imread('/Users/guillemcapellerafont/Documents/Master/M1/Projecte/Setmana4/BBDD/bbdd_00042.jpg')
+    # mask_box = cv2.imread('/Users/guillemcapellerafont/Documents/Master/M1/Projecte/Setmana4/qsd1_w4/aux/00007_part1_text_mask.png',0)
+    
+
+    # image_query = cv2.imread('/Users/guillemcapellerafont/Documents/Master/M1/Projecte/Setmana4/qsd1_w4/aux/00011_part1.png')
+    # image_db = cv2.imread('/Users/guillemcapellerafont/Documents/Master/M1/Projecte/Setmana4/BBDD/bbdd_00286.jpg')
+    # mask_box = cv2.imread('/Users/guillemcapellerafont/Documents/Master/M1/Projecte/Setmana4/qsd1_w4/aux/00011_part1_text_mask.png',0)
+
+
+    image_query = cv2.imread('/Users/guillemcapellerafont/Documents/Master/M1/Projecte/Setmana4/qsd1_w4/aux/00015_part1.png')
+    image_db = cv2.imread('/Users/guillemcapellerafont/Documents/Master/M1/Projecte/Setmana4/BBDD/bbdd_00185.jpg')
+    mask_box = cv2.imread('/Users/guillemcapellerafont/Documents/Master/M1/Projecte/Setmana4/qsd1_w4/aux/00015_part1_text_mask.png',0)
+
+
+    image_query = cv2.bitwise_and(image_query,image_query,mask = mask_box)
+
+    orb = cv2.ORB_create(nfeatures=2000)
+    # Find keypoints with ORB
+    kp = orb.detect(image_query, None)
+    # Find descriptors with ORB
+    kp1, des1 = orb.compute(image_query, kp)
+
+    orb = cv2.ORB_create(nfeatures=2000)
+    # Find keypoints with ORB
+    kp = orb.detect(image_db, None)
+    # Find descriptors with ORB
+    kp2, des2 = orb.compute(image_db, kp)
+
+    # create BFMatcher object
+    bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
+    # Match descriptors.
+    matches = bf.match(des1,des2)
+    # Sort them in the order of their distance.
+    matches = sorted(matches, key = lambda x:x.distance)
+    # Draw first 10 matches.
+
+    
+    image_query_kp = cv2.drawKeypoints(image_query, kp1, None, color=(0,255,0), flags=0)
+    image_db_kp = cv2.drawKeypoints(image_db, kp2, None, color=(0,255,0), flags=0)
+
+    img3 = cv2.drawMatches(image_query_kp,kp1,image_db_kp,kp2,matches[:10],None,flags=cv2.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
+    plt.imshow(img3),plt.show()
+
+
+    return
+
+
+output_matches()
+
