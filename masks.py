@@ -94,10 +94,14 @@ def generate_masks(image, f_name, mayhave_split): #NOVA FUNCIO PER DETECTAR ELS 
     cv2.waitKey(0)
     cv2.destroyAllWindows()'''
 
-    contours, hierarchy = cv2.findContours(np.uint8(mask_open2), cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+    contours, hierarchy = cv2.findContours(np.uint8(mask_open2), cv2.RETR_CCOMP,cv2.CHAIN_APPROX_SIMPLE)
 
     areaArray = []
     for i, c in enumerate(contours):
+        # If a countour is internal, continue
+        if hierarchy[0][i][3] != -1:
+            continue
+
         x_c,y_c,w_c,h_c = cv2.boundingRect(c)
         #area = cv2.contourArea(c)
         areaArray.append(w_c*h_c)
@@ -120,7 +124,7 @@ def generate_masks(image, f_name, mayhave_split): #NOVA FUNCIO PER DETECTAR ELS 
         secondlargestcontour = sorteddata[1][1]
         x2, y2, w2, h2 = cv2.boundingRect(secondlargestcontour)
 
-        if(w2*h2 > 0.06*width*height and w2 < 0.95*width) and h2/w2 < 10 and w2/h2 < 10:
+        if(w2*h2 > 0.06*width*height and w2 < 0.95*width) and h2/w2 < 7 and w2/h2 < 7:
             mark_red_rectangle = cv2.rectangle(image_cpy, (x2, y2), (x2 + w2, y2 + h2), (0, 0, 255), 3)
             num_paintings = 2
             if(y+h < y2):
@@ -137,7 +141,7 @@ def generate_masks(image, f_name, mayhave_split): #NOVA FUNCIO PER DETECTAR ELS 
             thirdlargestcontour = sorteddata[2][1]
             x3, y3, w3, h3 = cv2.boundingRect(thirdlargestcontour)
 
-        if(w3*h3 > 0.06*width*height and w3 < 0.95*width) and h3/w3 < 10 and w3/h3 < 10:
+        if(w3*h3 > 0.06*width*height and w3 < 0.95*width) and h3/w3 < 7 and w3/h3 < 7:
                 mark_red_rectangle = cv2.rectangle(image_cpy, (x3, y3), (x3 + w3, y3 + h3), (0, 0, 255), 3)
                 num_paintings = 3
                 
