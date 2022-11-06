@@ -141,7 +141,7 @@ def generate_masks(image, f_name, mayhave_split): #NOVA FUNCIO PER DETECTAR ELS 
             x3, y3, w3, h3 = cv2.boundingRect(thirdlargestcontour)
 
             if(w3*h3 > 0.06*width*height and w3 < 0.95*width) and h3/w3 < 7 and w3/h3 < 7:
-                    if x3>x and x3+w3<w+w and x3>x2 and x3+w3<x2+w2:
+                    if x3>x and x3+w3<x+w and x3>x2 and x3+w3<x2+w2:
                         pass
                     else: 
                         mark_red_rectangle = cv2.rectangle(image_cpy, (x3, y3), (x3 + w3, y3 + h3), (0, 0, 255), 3)
