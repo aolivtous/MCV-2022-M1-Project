@@ -140,7 +140,7 @@ def query_measures(hist_image, db_descriptors, distance_type,  text):
                 else:
                     dists_db[key_db] = distances(match_dist)
 
-            print(f'Distance based on matches for {key_db} = {round(dists_db[key_db].dist, 3)}')
+            # print(f'Distance based on matches for {key_db} = {round(dists_db[key_db].dist, 3)}')
 
 
     if weights["feature"]:
@@ -180,10 +180,6 @@ def match_features(des1, des2):#, kp1=None, kp2=None):
         # Get the distance attribute of the top_matches
         top_matches_dist_mean = np.mean([m.distance for m in top_matches])
         return top_matches_dist_mean
-        # Return percentage of matches in relation to the db descriptors
-        percentage_matches = num_matches / len(des2)
-        percentage_distance = 1 - percentage_matches
-        return percentage_distance
 
     elif global_variables.methods_search['default']['match_algorithm'] == 'BF':
         # BFMatcher with default params

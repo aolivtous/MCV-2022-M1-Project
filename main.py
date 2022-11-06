@@ -224,13 +224,13 @@ def main():
     dists = distances_postprocessing.distances_postprocessing(dists)
 
     ## Distance analysis
-    if may_not_be_in_db and solutions:
+    if may_not_be_in_db:
         distances_analysis.distances_analysis(dists, query_solutions)
 
     ## Results processing
 
     # Results sorting, if not two_level num_paintings is {}
-    results_sorted = utils.get_sorted_list_of_lists_from_dict_of_dicts(dists, distance_type, num_paintings, two_level = may_have_split, may_not_be_in_db = may_not_be_in_db and solutions )
+    results_sorted = utils.get_sorted_list_of_lists_from_dict_of_dicts(dists, distance_type, num_paintings, two_level = may_have_split, may_not_be_in_db = may_not_be_in_db )
     boxes_predictions = utils.get_simple_list_from_dict(textbox_coords)
 
     time_compute_query = time.time() - start_time
