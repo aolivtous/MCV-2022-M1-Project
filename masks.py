@@ -94,10 +94,14 @@ def generate_masks(image, f_name, mayhave_split): #NOVA FUNCIO PER DETECTAR ELS 
     cv2.waitKey(0)
     cv2.destroyAllWindows()'''
 
-    contours, hierarchy = cv2.findContours(np.uint8(mask_open2), cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+    contours, hierarchy = cv2.findContours(np.uint8(mask_open2), cv2.RETR_CCOMP,cv2.CHAIN_APPROX_SIMPLE)
 
     areaArray = []
     for i, c in enumerate(contours):
+        # If a countour is internal, continue
+        if hierarchy[0][i][3] != -1:
+            continue
+
         x_c,y_c,w_c,h_c = cv2.boundingRect(c)
         #area = cv2.contourArea(c)
         areaArray.append(w_c*h_c)

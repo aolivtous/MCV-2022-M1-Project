@@ -11,21 +11,18 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "justMyCode": true,
-            "args": "qst1_w4 1 1 1 1 1 0 1 0"
+            "args": "qst1_w4 1 1 1 1 1 0 0 0"
         }
     ]
 
- 
+
 
     //name_query = sys.argv[1]
-    //backgrounds = bool(utils.str_to_bool(sys.argv[2]))
-    //has_boundingbox = bool(utils.str_to_bool(sys.argv[3]))
-    //may_have_split = bool(utils.str_to_bool(sys.argv[4]))
-    //may_have_noise = bool(utils.str_to_bool(sys.argv[5]))
-    //may_not_be_in_db = bool(utils.str_to_bool(sys.argv[6]))
+    //backgrounds = bool(utils.str_to_bool(sys.argv[3]))
+    //has_boundingbox = bool(utils.str_to_bool(sys.argv[4]))
+    //may_have_split = bool(utils.str_to_bool(sys.argv[5]))
+    //may_have_noise = bool(utils.str_to_bool(sys.argv[6]))
     //solutions = bool(utils.str_to_bool(sys.argv[7]))
-    //recompute_query = bool(utils.str_to_bool(sys.argv[8]))
-    //recompute_db = bool(utils.str_to_bool(sys.argv[9]))
-    
+    //recompute_db = bool(utils.str_to_bool(sys.argv[8]))
 
 }
