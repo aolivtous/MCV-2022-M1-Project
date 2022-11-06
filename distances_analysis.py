@@ -45,7 +45,7 @@ def distances_analysis(dists, query_solutions):
     # Add a legend to explain the colors
     green_patch = mpatches.Patch(color = 'green', label = 'In database')
     red_patch = mpatches.Patch(color = 'red', label = 'Not in database')
-    blue_patch = mpatches.Patch(color = 'blue', linewidth = 0.5, label = f'Threshold at {global_variables.in_db_threshold:e} to decide if in database')
+    blue_patch = mpatches.Patch(color = 'blue', linewidth = 0.5, label = f'Threshold at {round(global_variables.in_db_threshold, 2)} to decide if in database')
     plt.legend(handles=[green_patch, red_patch, blue_patch])
     plt.show()
     # Save the plot
