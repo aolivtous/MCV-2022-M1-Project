@@ -80,6 +80,8 @@ def find_boxes_canny(image, f_name):
     contours_i, _ = cv2.findContours(cannyOpen2_i, cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
     contours = contours_n + contours_i
 
+    cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_canny_inicial.png', canny)
+    cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_canny_i_inicial.png', canny_i)
     cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_canny_final.png', cannyOpen2)
     cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_canny_i_final.png', cannyOpen2_i)
 
@@ -91,7 +93,7 @@ def find_boxes_canny(image, f_name):
     for _, cnt in enumerate(contours):
         x, y, w, h = cv2.boundingRect(cnt)
         mark_brown_rectangle = cv2.rectangle(image_cpy, (x, y), (x + w, y + h), (0, 100, 100), 3)
-        if w < int(width * 0.05) or w > int(width * 0.75) or h < int(height * 0.01) or h > int(height*0.5):
+        if w < int(width * 0.07) or w > int(width * 0.75) or h < int(height * 0.01) or h > int(height*0.5):
             continue
         if h > w*0.55:
             continue
@@ -100,7 +102,7 @@ def find_boxes_canny(image, f_name):
 
         mark_purple_rectangle = cv2.rectangle(image_cpy, (x, y), (x + w, y + h), (100, 0, 100), 3)
 
-        if (x + (w / 2.0) < (width /2.0) - width * 0.08) or (x + (w / 2.0) > (width / 2.0) + width * 0.08):
+        if (x + (w / 2.0) < (width /2.0) - width * 0.09) or (x + (w / 2.0) > (width / 2.0) + width * 0.09):
             continue
 
         mark_red_rectangle = cv2.rectangle(image_cpy, (x, y), (x + w, y + h), (0, 0, 255), 3)
@@ -123,14 +125,14 @@ def find_boxes_canny(image, f_name):
         dist_centre_x =  abs((x + (w / 2.0)) -  (width /2.0))
         dist_centre_y =  abs((y + (h / 2.0)) -  (height /2.0))
         diag = np.sqrt(w**2+h**2)
-        # print(dist_centre_x)
-        # print(dist_centre_y)
-        # print(diag)
+        print(dist_centre_x)
+        print(dist_centre_y)
+        print(diag)
 
         #lower score the better --> less distance to the centre x , biggest diag and biggest dist from the center y
         #score = dist_centre_x/(diag + dist_centre_y)
         score = dist_centre_x/(diag + dist_centre_y)
-        # print(score)
+        print(score)
 
         if score < maxScore:
             maxScore = score

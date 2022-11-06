@@ -80,4 +80,4 @@ def init(name_query):
     new_dirs = [dir_results, dir_db_aux, dir_query_aux]
 
     # ONLY TESTING VARIABLES
-    test_image = '' # ! Set to '' to iterate all the query
+    test_image = '01' # ! Set to '' to iterate all the query

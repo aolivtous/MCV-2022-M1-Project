@@ -160,7 +160,7 @@ def query_measures(hist_image, db_descriptors, distance_type,  text):
             dists_db[key_db] = distances(weights["color"] * dists_color[key_db] + weights["texture"] * dists_texture[key_db] + weights["text"] * dists_text[key_db])
         
         return dists_db
- 
+
 def match_features(des1, des2):#, kp1=None, kp2=None):
     matches = []
     if global_variables.methods_search['default']['feature_algorithm'] == 'ORB' or global_variables.methods_search['default']['feature_algorithm'] == 'BRIEF':
@@ -170,20 +170,16 @@ def match_features(des1, des2):#, kp1=None, kp2=None):
         matches = bf.match(des1,des2)
         # Matches is a list of DMatch objects that contains information about the keypoints matches (distance, queryIdx, trainIdx, imgIdx)
         # Sort them in the order of their distance.
-        matches = sorted(matches, key = lambda x:x.distance)
-        num_matches = len(matches)
-        # ! Play with the distance threshold to get better results
-        # Get the first 10% of the matches
-        top_num_matches = int(len(matches)*0.1)
-        # Draw first 10% matches.
-        top_matches = matches[:top_num_matches]
-        # Get the distance attribute of the top_matches
-        top_matches_dist_mean = np.mean([m.distance for m in top_matches])
-        return top_matches_dist_mean
-        # Return percentage of matches in relation to the db descriptors
-        percentage_matches = num_matches / len(des2)
-        percentage_distance = 1 - percentage_matches
-        return percentage_distance
+        # matches = sorted(matches, key = lambda x:x.distance)
+        # num_matches = len(matches)
+        # # ! Play with the distance threshold to get better results
+        # # Get the first 10% of the matches
+        # top_num_matches = int(len(matches)*0.1)
+        # # Draw first 10 matches.
+        # top_matches = matches[:top_num_matches]
+        # # Get the distance attribute of the top_matches
+        # top_matches_dist_mean = np.mean([m.distance for m in top_matches])
+        # return top_matches_dist_mean
 
     elif global_variables.methods_search['default']['match_algorithm'] == 'BF':
         # BFMatcher with default params
@@ -193,7 +189,7 @@ def match_features(des1, des2):#, kp1=None, kp2=None):
         good = []
         for m,n in matches:
             if m.distance < 0.75*n.distance:
-                good.append(m)
+                good.append([m])
         matches = good
 
     elif global_variables.methods_search['default']['match_algorithm'] == 'FLANN':
@@ -207,7 +203,7 @@ def match_features(des1, des2):#, kp1=None, kp2=None):
         good = []
         for m,n in matches:
             if m.distance < 0.75*n.distance:
-                good.append(m)
+                good.append([m])
         matches = good
     else:
         print('Match algorithm not found')
