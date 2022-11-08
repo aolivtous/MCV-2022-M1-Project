@@ -59,7 +59,7 @@ def main():
     # Arguments bound checking
     distance_type = global_variables.methods_search['default']['distance_type']
 
-    """query_solutions = boxes_solutions = []
+    query_solutions = boxes_solutions = []
     if(solutions):
         try:
             with open(f'{global_variables.dir_query}gt_corresps.pkl', "rb" ) as f:
@@ -103,7 +103,7 @@ def main():
             print('Exiting. No precomputed pickle found')
             exit(1)
     
-    time_compute_db = time.time()-start_time"""
+    time_compute_db = time.time()-start_time
 
 
     start_time = time.time()
@@ -117,7 +117,7 @@ def main():
     coords = []
     loaded_query_dists = False
 
-    """if not recompute_query:
+    if not recompute_query:
         # Try to load dists pickle
         try:
             with open(f'{global_variables.dir_results}dists.pkl', "rb" ) as f:
@@ -133,7 +133,7 @@ def main():
         except:
             dists = {}
             textbox_coords = {}
-            pass"""
+            pass
     
     if not loaded_query_dists:
         print(f'Start of processing fo the query: {global_variables.dir_query}')
@@ -160,14 +160,14 @@ def main():
                     # Idea Guillem: query_descriptors[f_name].num_paint, query_descriptors[f_name].mask_coords = mask_v1.generate_masks_otsu(image, f_name, dir_results, may_have_split)
                     num_paintings[f_name], painting_box = masks.generate_masks(image, f_name, may_have_split)
                     
-                    """for paint in range(num_paintings[f_name]):
+                    for paint in range(num_paintings[f_name]):
                         f_names.append(f'{f_name}_part{paint + 1}')
                         mask_coords[f_names[paint]] = painting_box[paint]
                         painting = image[painting_box[paint][1]:painting_box[paint][3], painting_box[paint][0]:painting_box[paint][2]]
                         paintings.append(painting)
-                        cv2.imwrite(f'{global_variables.dir_query_aux}{f_names[paint]}.png', painting)"""
+                        cv2.imwrite(f'{global_variables.dir_query_aux}{f_names[paint]}.png', painting)
                                             
-                """for count, painting in enumerate(paintings):
+                for count, painting in enumerate(paintings):
                     print('\nSearching boxes at:', f_names[count])   
                     if has_boundingbox:
                         coord_results, text_mask, bbox_output = find_boxes.find_boxes_canny(painting, f_names[count])
@@ -205,12 +205,12 @@ def main():
                         text = ""
                         hist_image = histograms.get_block_histograms(painting, has_boundingbox, is_query = True, text_mask = None)
 
-                    dists[f_names[count]] = distances.query_measures(hist_image, db_descriptors, distance_type, text)"""
+                    dists[f_names[count]] = distances.query_measures(hist_image, db_descriptors, distance_type, text)
 
                 if has_boundingbox:
                     textbox_coords[f_name] = coords
                     coords = []
-        """# Save dists in a pickle
+        # Save dists in a pickle
         with open(f'{global_variables.dir_results}dists.pkl', 'wb') as handle:
             pickle.dump(dists, handle, protocol=pickle.HIGHEST_PROTOCOL)
         # Save textbox_coords in a pickle
@@ -299,7 +299,7 @@ def main():
         pickle.dump(results_sorted, handle, protocol=pickle.HIGHEST_PROTOCOL)
     if(has_boundingbox):
         with open(f'{global_variables.dir_results}text_boxes.pkl', 'wb') as handle:
-            pickle.dump(boxes_predictions, handle, protocol=pickle.HIGHEST_PROTOCOL)"""
+            pickle.dump(boxes_predictions, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 if __name__ == "__main__":
     main()
