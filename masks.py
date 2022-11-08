@@ -205,7 +205,7 @@ def generate_masks_ROT(image, f_name, mayhave_split): #NOVA FUNCIO PER DETECTAR 
   
 
     # remove noise
-    image_blur = cv2.GaussianBlur(image,(7,7),0)
+    image_blur = cv2.GaussianBlur(image,(9,9),0) # ! 9x9 to deal with the background filling at rotation
 
     gray_image = cv2.cvtColor(image_blur, cv2.COLOR_BGR2GRAY) 
 

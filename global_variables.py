@@ -57,10 +57,10 @@ def init(name_query):
     n_bins = 40
 
     weights = {
-        'color': 0.0,
+        'color': 1.0,
         'texture': 0.0,
         'text': 0.0,
-        'feature': 1.0
+        'feature': 0.0
     }
     in_db_threshold = 1.035
     # in_db_threshold = 0.3 * 1e-7 # When unnormalized with db
@@ -80,4 +80,4 @@ def init(name_query):
     new_dirs = [dir_results, dir_db_aux, dir_query_aux]
 
     # ONLY TESTING VARIABLES
-    test_image = '' # ! Set to '' to iterate all the query
+    test_image = '19' # ! Set to '' to iterate all the query

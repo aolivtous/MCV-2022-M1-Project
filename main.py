@@ -30,6 +30,7 @@ import noise
 import findText
 import distances_analysis
 import distances_postprocessing
+import rotation
 
 def main():
     """
@@ -48,9 +49,10 @@ def main():
         may_have_split = bool(utils.str_to_bool(sys.argv[4]))
         may_have_noise = bool(utils.str_to_bool(sys.argv[5]))
         may_not_be_in_db = bool(utils.str_to_bool(sys.argv[6]))
-        solutions = bool(utils.str_to_bool(sys.argv[7]))
-        recompute_query = bool(utils.str_to_bool(sys.argv[8]))
-        recompute_db = bool(utils.str_to_bool(sys.argv[9]))
+        may_have_rotation = bool(utils.str_to_bool(sys.argv[7]))
+        solutions = bool(utils.str_to_bool(sys.argv[8]))
+        recompute_query = bool(utils.str_to_bool(sys.argv[9]))
+        recompute_db = bool(utils.str_to_bool(sys.argv[10]))
     except:
         print(f'Exiting. Not enough arguments ({len(sys.argv) - 1} of 7)')
         exit(1)
@@ -116,6 +118,7 @@ def main():
     texts = {}
     coords = []
     loaded_query_dists = False
+    rotation_matrix = None
 
     if not recompute_query:
         # Try to load dists pickle
@@ -148,10 +151,14 @@ def main():
                     # Image will be a denoised image if needed
                     image = noise.noise_ckeck_removal(image,f_name)
 
+                if(may_have_rotation):
+                    # Image will be a rotated image if needed
+                    image, rotation_matrix = rotation.rotation_check(image, f_name)
+
                 # In case of no backgrounds (no multiple paintings)
                 paintings = [image] 
                 f_names = [f_name]
-        
+
                 # BG removal and croping images in paintings
                 if(has_backgrounds):
                     f_names = []
