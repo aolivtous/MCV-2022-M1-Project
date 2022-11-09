@@ -3,6 +3,8 @@ import cv2
 import numpy as np
 from PIL import Image as im
 import imutils
+import rotation
+import tqdm
 
 
 def generate_masks_otsu(image, f_name, splitimage):
@@ -51,12 +53,11 @@ def generate_masks(image, f_name, mayhave_split): #NOVA FUNCIO PER DETECTAR ELS 
 
     image_cpy = image.copy()
     height,width,channels = image.shape
-   
 
     # remove noise
     image_blur = cv2.GaussianBlur(image,(7,7),0)
 
-    gray_image = cv2.cvtColor(image_blur, cv2.COLOR_BGR2GRAY) 
+    gray_image = cv2.cvtColor(image_blur, cv2.COLOR_BGR2GRAY)
 
     # convolute with proper kernels
     lap = cv2.Laplacian(gray_image,cv2.CV_32F, ksize = 3)
@@ -212,12 +213,12 @@ def generate_masks_ROT(image, f_name, mayhave_split): #NOVA FUNCIO PER DETECTAR 
     # convolute with proper kernels
     lap = cv2.Laplacian(gray_image,cv2.CV_32F, ksize = 3)
 
-    th, laplacian = cv2.threshold(lap, 10,255,cv2.THRESH_BINARY)
+    th, laplacian = cv2.threshold(lap, 9,255,cv2.THRESH_BINARY)
 
-    """cv2.namedWindow("lap", cv2.WINDOW_NORMAL)
+    '''cv2.namedWindow("lap", cv2.WINDOW_NORMAL)
     cv2.imshow("lap", laplacian)
     cv2.waitKey(0)
-    cv2.destroyAllWindows()"""
+    cv2.destroyAllWindows()'''
 
     # Apply morphology 
   
@@ -227,7 +228,7 @@ def generate_masks_ROT(image, f_name, mayhave_split): #NOVA FUNCIO PER DETECTAR 
     element_dil = cv2.getStructuringElement(cv2.MORPH_RECT, (5,5))
     dilation = cv2.dilate(mask_close,element_dil)
 
-    """cv2.namedWindow("lap", cv2.WINDOW_NORMAL)
+    '''cv2.namedWindow("lap", cv2.WINDOW_NORMAL)
     cv2.imshow("lap", mask_close)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
@@ -235,24 +236,23 @@ def generate_masks_ROT(image, f_name, mayhave_split): #NOVA FUNCIO PER DETECTAR 
     cv2.namedWindow("lap", cv2.WINDOW_NORMAL)
     cv2.imshow("lap", dilation)
     cv2.waitKey(0)
-    cv2.destroyAllWindows()"""
+    cv2.destroyAllWindows()'''
 
       
     element = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
     mask_close_dil = cv2.morphologyEx(dilation, cv2.MORPH_OPEN, element)
 
-    """cv2.namedWindow("lap", cv2.WINDOW_NORMAL)
+    '''cv2.namedWindow("lap", cv2.WINDOW_NORMAL)
     cv2.imshow("lap", mask_close_dil)
     cv2.waitKey(0)
-    cv2.destroyAllWindows()"""
+    cv2.destroyAllWindows()'''
 
     element2 = cv2.getStructuringElement(cv2.MORPH_RECT, (25, 25))
     mask_open2 = cv2.morphologyEx(mask_close_dil, cv2.MORPH_CLOSE, element2)
-    """cv2.namedWindow("lap", cv2.WINDOW_NORMAL)
+    '''cv2.namedWindow("lap", cv2.WINDOW_NORMAL)
     cv2.imshow("lap", mask_open2)
     cv2.waitKey(0)
-    cv2.destroyAllWindows()"""
-
+    cv2.destroyAllWindows()'''
 
     contours, hierarchy = cv2.findContours(np.uint8(mask_open2), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
@@ -280,17 +280,39 @@ def generate_masks_ROT(image, f_name, mayhave_split): #NOVA FUNCIO PER DETECTAR 
     #first sort the array by area
     sorteddata = sorted(zip(areaArray, contours), key=lambda x: x[0], reverse=True)
 
-    #find the nth largest contours
-  
-    firstgestcontour = sorteddata[0][1]
-    rect = cv2.minAreaRect(firstgestcontour) # this is a 2D box that has (center(x, y), (width, height), angle of rotation) 
-    box1 = cv2.boxPoints(rect) #obtain the 4 corners to draw the rectangle
-    box1 = np.int0(box1)
-    cv2.drawContours(image_cpy,[box1],0,(0,0,255),2)
+    coordinates = []
+    dist_to_image = []
+    num_paintings = 0
+    for i in range(len(sorteddata)):
+
+        contour = sorteddata[i][1]
+        rect = cv2.minAreaRect(contour) # this is a 2D box that has (center(x, y), (width, height), angle of rotation) 
+        box = cv2.boxPoints(rect) #obtain the 4 corners to draw the rectangle
+        box = np.int0(box)
+        x = rect[0][0]
+        y = rect[0][1]
+        h = rect[1][1]
+        w = rect[1][0]
+        center = rect[0]
+        if( h+w > 0.06*(width+height) and h+w < 0.95*(width+height) ) and h*w > 0.05*(width*height) and (h/w < 7 and w/h < 7):
+            cv2.drawContours(image_cpy,[box],0,(0,0,255),2)
+            coordinates.append([x, y, x+w, y+h])
+            print([x, y, x+w, y+h])
+            dist_to_image.append(np.linalg.norm(np.asarray([0,0])-np.asarray(center)))
+            num_paintings+=1
+
+    sorted_coords = [x for _,x in sorted(zip(dist_to_image,coordinates))]
+    print(sorted_coords)
+
+    '''cv2.namedWindow("lap", cv2.WINDOW_NORMAL)
+    cv2.imshow("lap", image_cpy)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()'''
+    
+    
+    '''#filling external parts with black
     center1 = rect[0]
     angle1 = rect[2]
-    
-    #filling external parts with black
     (x, y, w, h) = cv2.boundingRect(firstgestcontour)
     painting1 = image_cpy[y:y + h, x:x + w]
 
@@ -339,14 +361,11 @@ def generate_masks_ROT(image, f_name, mayhave_split): #NOVA FUNCIO PER DETECTAR 
  
             if( h3+w3 > 0.06*(width+height) and h3+w3 < 0.95*(width+height) ) and (h3/w3 < 7 and w3/h3 < 7) :
                 cv2.drawContours(image_cpy,[box3],0,(255,0,0),2)
-                num_paintings = 3
+                num_paintings = 3'''
 
 
 
-    cv2.namedWindow("lap", cv2.WINDOW_NORMAL)
-    cv2.imshow("lap", image_cpy)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    
 
     cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_laplacian.png', laplacian)
     #cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_laplacian_open.png', np.uint8(mask_open))
@@ -356,8 +375,8 @@ def generate_masks_ROT(image, f_name, mayhave_split): #NOVA FUNCIO PER DETECTAR 
 
 
     #FALTA FILTRAR QUE NO ESTIGUIN UNS A DINS DELS ALTRES I ORDENAR ELS QUADRES --> ho faria amb el centre que tenim de cada un
-    painting_box = []
-    return num_paintings, painting_box
+    #painting_box = []
+    return num_paintings, sorted_coords
 
 
 

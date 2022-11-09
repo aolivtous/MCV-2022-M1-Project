@@ -165,7 +165,7 @@ def main():
                     paintings = []
 
                     # Idea Guillem: query_descriptors[f_name].num_paint, query_descriptors[f_name].mask_coords = mask_v1.generate_masks_otsu(image, f_name, dir_results, may_have_split)
-                    num_paintings[f_name], painting_box = masks.generate_masks(image, f_name, may_have_split)
+                    num_paintings[f_name], painting_box = masks.generate_masks_ROT(image, f_name, may_have_split)
                     
                     for paint in range(num_paintings[f_name]):
                         f_names.append(f'{f_name}_part{paint + 1}')
