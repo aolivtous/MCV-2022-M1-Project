@@ -26,6 +26,7 @@ def init(name_query):
 
     global dir_db
     global dir_query
+    global dir_museum
     global dir_results
     global dir_db_aux
     global dir_query_aux
@@ -74,10 +75,11 @@ def init(name_query):
     # Directories assignment (always end with /)
     dir_db = f'{dir_base}{name_db}/' 
     dir_query = f'{dir_base}{name_query}/'
+    dir_museum = f'{dir_base}museum/'
     dir_results = f'{dir_query}{results_name}/'
     dir_db_aux = f'{dir_db}{aux_name}/'
     dir_query_aux = f'{dir_query}{aux_name}/'
     new_dirs = [dir_results, dir_db_aux, dir_query_aux]
 
     # ONLY TESTING VARIABLES
-    test_image = '19' # ! Set to '' to iterate all the query
+    test_image = '15' # ! Set to '' to iterate all the query

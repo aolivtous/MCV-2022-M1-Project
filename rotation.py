@@ -4,16 +4,54 @@ import numpy as np
 
 def rotation_check(image, f_name):
     # Applying hough to detect lines
+    image_cpy = image.copy()
     edges = cv2.Canny(image, 50, 150, apertureSize = 3)
     lines = cv2.HoughLines(edges, 1, np.pi / 180, 200)
+    # Represent the lines over the image
+    for line in lines:
+        rho, theta = line[0]
+        a = np.cos(theta)
+        b = np.sin(theta)
+        x0 = a * rho
+        y0 = b * rho
+        x1 = int(x0 + 1000 * (-b))
+        y1 = int(y0 + 1000 * (a))
+        x2 = int(x0 - 1000 * (-b))
+        y2 = int(y0 - 1000 * (a))
+        cv2.line(image_cpy, (x1, y1), (x2, y2), (0, 0, 255), 2)
+        
+    # Plot image copy
+    cv2.imshow('image_cpy', image_cpy)
+    cv2.waitKey(0)
+
     # Get the angle of the lines
     angles = []
     for line in lines:
         rho, theta = line[0]
         # Get the number of times the angle is repeated only if its lower than 45 degrees
-        if theta < np.pi / 4 or theta > 3 * np.pi / 4:
+        if theta < np.pi / 4 or (theta > 3 * np.pi / 4 and theta < 5 * np.pi / 4) or theta > 7 * np.pi / 4:
             angles.append(theta)
     
+    # Get length of the lines
+    lengths = []
+    angles = []
+    for line in lines:
+        rho, theta = line[0]
+        if theta < np.pi / 4 or (theta > 3 * np.pi / 4 and theta < 5 * np.pi / 4) or theta > 7 * np.pi / 4:
+            a = np.cos(theta)
+            b = np.sin(theta)
+            x0 = a * rho
+            y0 = b * rho
+            pt1 = (int(x0 + 1000 * (-b)), int(y0 + 1000 * (a)))
+            pt2 = (int(x0 - 1000 * (-b)), int(y0 - 1000 * (a)))
+            lengths.append(np.sqrt((pt1[0] - pt2[0]) ** 2 + (pt1[1] - pt2[1]) ** 2))
+            angles.append(theta)
+
+
+    # Get the longest line and its angle
+
+    print(lengths)
+    print(angles)
     # Check if angles is empty
     if not angles:
         return image
