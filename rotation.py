@@ -2,77 +2,72 @@ import global_variables
 import cv2
 import numpy as np
 
-def rotation_check(image, f_name):
+def rotation_check_prob(image, f_name):
     # Applying hough to detect lines
     image_cpy = image.copy()
-    edges = cv2.Canny(image, 50, 150, apertureSize = 3)
-    lines = cv2.HoughLines(edges, 1, np.pi / 180, 200)
-    # Represent the lines over the image
-    for line in lines:
-        rho, theta = line[0]
-        a = np.cos(theta)
-        b = np.sin(theta)
-        x0 = a * rho
-        y0 = b * rho
-        x1 = int(x0 + 1000 * (-b))
-        y1 = int(y0 + 1000 * (a))
-        x2 = int(x0 - 1000 * (-b))
-        y2 = int(y0 - 1000 * (a))
-        cv2.line(image_cpy, (x1, y1), (x2, y2), (0, 0, 255), 2)
-        
-    # Plot image copy
-    cv2.imshow('image_cpy', image_cpy)
-    cv2.waitKey(0)
+    height, width = image.shape[:2]
 
-    # Get the angle of the lines
-    angles = []
-    for line in lines:
-        rho, theta = line[0]
-        # Get the number of times the angle is repeated only if its lower than 45 degrees
-        if theta < np.pi / 4 or (theta > 3 * np.pi / 4 and theta < 5 * np.pi / 4) or theta > 7 * np.pi / 4:
-            angles.append(theta)
+    edges = auto_canny(image)
+    lines = cv2.HoughLinesP(edges, rho = 1, theta = 1*np.pi/180, threshold = 200, minLineLength = 100, maxLineGap = 25)
+
+    # Save result of canny
+    cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_canny.png', edges)
+
+    # If there are no lines detected, return the original image
+    if lines is None:
+        return image, False, 0
     
     # Get length of the lines
-    lengths = []
-    angles = []
+    final_length, final_angle, final_line = None, None, None
     for line in lines:
-        rho, theta = line[0]
-        if theta < np.pi / 4 or (theta > 3 * np.pi / 4 and theta < 5 * np.pi / 4) or theta > 7 * np.pi / 4:
-            a = np.cos(theta)
-            b = np.sin(theta)
-            x0 = a * rho
-            y0 = b * rho
-            pt1 = (int(x0 + 1000 * (-b)), int(y0 + 1000 * (a)))
-            pt2 = (int(x0 - 1000 * (-b)), int(y0 - 1000 * (a)))
-            lengths.append(np.sqrt((pt1[0] - pt2[0]) ** 2 + (pt1[1] - pt2[1]) ** 2))
-            angles.append(theta)
+        x1, y1, x2, y2 = line[0]
+        # Check for lines that do not cross the image vertically
+        if  (y1 < height / 3 and y2 < height / 3) or (y1 > 2 * height / 3 and y2 > 2 * height / 3):
+            # Get angle on radians
+            angle = np.arctan2(y2 - y1, x2 - x1)
+            length = np.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
+            
+            # Plot lines in different colors for each part (range from -pi to pi)
+            if (angle <= np.pi / 4 and angle >= - np.pi / 4) or (angle >= 3 * np.pi / 4 or angle <= - 3 * np.pi / 4):
+                color = (0, 255, 0)
+                if final_angle == None or length > final_length:
+                    final_angle = angle
+                    final_length = length
+                    final_line = [(x1, y1), (x2, y2)]
+            else:
+                color = (0, 0, 255)
+            cv2.line(image_cpy, (x1, y1), (x2, y2), color, 2)
 
+    if final_line:
+        cv2.line(image_cpy, final_line[0], final_line[1], (255, 0, 0), 5)
 
-    # Get the longest line and its angle
+    cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_lines.png', image_cpy)
 
-    print(lengths)
-    print(angles)
     # Check if angles is empty
-    if not angles:
-        return image
+    if not final_angle:
+        return image, False, 0
     
-    # Get the most repeated angle
-    angle = max(set(angles), key = angles.count)
-    # Get the angle in degrees
-    if angle < np.pi / 4:
-        angle_deg = angle * 180 / np.pi
-    else:
-        angle_deg = (angle - np.pi) * 180 / np.pi
+    # Get the angle in degrees considering range pi to -pi
+    angle_deg = final_angle * 180 / np.pi
+
+    print(angle_deg)
     # Get the rotation matrix
     M = cv2.getRotationMatrix2D((image.shape[1] / 2, image.shape[0] / 2), angle_deg, 1)
     # Rotate the image
     rotated_image = cv2.warpAffine(image, M, (image.shape[1], image.shape[0]), borderValue=get_avg_corners_color(image))
     # Save the rotated image
     cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_rotated.png', rotated_image)
-    # Print the angle in degrees in a file
-    with open(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_angle.txt', 'w') as f:
-        f.write(str(angle_deg))
-    return rotated_image, M
+    return rotated_image, M, final_angle
+
+def auto_canny(image, sigma=0.33):
+	# compute the median of the single channel pixel intensities
+	v = np.median(image)
+	# apply automatic Canny edge detection using the computed median
+	lower = int(max(0, (1.0 - sigma) * v))
+	upper = int(min(255, (1.0 + sigma) * v))
+	edged = cv2.Canny(image, lower, upper)
+	# return the edged image
+	return edged
         
 def get_avg_corners_color(image):
     # Get average color of the image corners

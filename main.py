@@ -153,7 +153,7 @@ def main():
 
                 if(may_have_rotation):
                     # Image will be a rotated image if needed
-                    image, rotation_matrix = rotation.rotation_check(image, f_name)
+                    image, rotation_matrix, angle = rotation.rotation_check(image, f_name)
 
                 # In case of no backgrounds (no multiple paintings)
                 paintings = [image] 
