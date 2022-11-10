@@ -175,28 +175,31 @@ def main():
                         painting = image[painting_box[paint][1]:painting_box[paint][3], painting_box[paint][0]:painting_box[paint][2]]
                         paintings.append(painting)
                         cv2.imwrite(f'{global_variables.dir_query_aux}{f_names[paint]}.png', painting)
-                        c1 = [painting_box[paint][0],painting_box[paint][1]]
-                        c2 = [painting_box[paint][2],painting_box[paint][1]]
-                        c3 = [painting_box[paint][2],painting_box[paint][3]]
-                        c4 = [painting_box[paint][0],painting_box[paint][3]]
+                        c1 = np.transpose([painting_box[paint][0],painting_box[paint][1],1])
+                        c2 = np.transpose([painting_box[paint][2],painting_box[paint][1],1])
+                        c3 = np.transpose([painting_box[paint][2],painting_box[paint][3],1])
+                        c4 = np.transpose([painting_box[paint][0],painting_box[paint][3],1])
+
+                        inv_rotation_matrix =cv2.getRotationMatrix2D((image.shape[1] / 2, image.shape[0] / 2), -(angle * 180 / np.pi), 1)
 
                         if(angle != 0):
                             print("rotating coords")
-                            c1 = c1 @ rotation_matrix
-                            c2 = c2 @ rotation_matrix
-                            c3 = c3 @ rotation_matrix
-                            c4 = c4 @ rotation_matrix
+                            c1 = np.dot(inv_rotation_matrix, c1)  
+                            c2 = np.dot(inv_rotation_matrix, c2)  
+                            c3 = np.dot(inv_rotation_matrix, c3)   
+                            c4 = np.dot(inv_rotation_matrix, c4)  
 
-                        print(c1)
-                        print(c2)
-                        print(c3)
-                        print(c4)
+                            print(c1)
+                            print(c2)
+                            print(c3)
+                            print(c4)
 
-                        mark_red_rectangle = cv2.rectangle(im_copy, (c1[0], c1[1]), (c3[0], c3[1]), (200, 0, 100), 3)
-        
-                        cv2.namedWindow("lap", cv2.WINDOW_NORMAL)
-                        cv2.imshow("lap", im_copy)
-                        cv2.waitKey(0)
+                            #mark_red_rectangle = cv2.rectangle(im_copy, (int(c1[0]), int(c1[1])), (int(c3[0]), int(c3[1])), (200, 0, 100), 3)
+                            cv2.drawContours(im_copy, [np.asarray([(c1).astype(int),(c2).astype(int),(c3).astype(int),(c4).astype(int)])], -1, (0, 255, 0), 3)
+
+                            '''cv2.namedWindow("lap", cv2.WINDOW_NORMAL)
+                            cv2.imshow("lap", im_copy)
+                            cv2.waitKey(0)'''
 
                                             
                 for count, painting in enumerate(paintings):
