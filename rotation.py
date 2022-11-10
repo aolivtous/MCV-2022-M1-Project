@@ -2,7 +2,7 @@ import global_variables
 import cv2
 import numpy as np
 
-def rotation_check_prob(image, f_name):
+def rotation_check(image, f_name):
     # Applying hough to detect lines
     image_cpy = image.copy()
     height, width = image.shape[:2]
@@ -54,7 +54,8 @@ def rotation_check_prob(image, f_name):
     # Get the rotation matrix
     M = cv2.getRotationMatrix2D((image.shape[1] / 2, image.shape[0] / 2), angle_deg, 1)
     # Rotate the image
-    rotated_image = cv2.warpAffine(image, M, (image.shape[1], image.shape[0]), borderValue=get_avg_corners_color(image))
+    #rotated_image = cv2.warpAffine(image, M, (image.shape[1], image.shape[0]), borderValue=get_avg_corners_color(image))
+    rotated_image = cv2.warpAffine(image, M, (image.shape[1], image.shape[0]), borderValue=(0,255,0))
     # Save the rotated image
     cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_rotated.png', rotated_image)
     return rotated_image, M, final_angle
