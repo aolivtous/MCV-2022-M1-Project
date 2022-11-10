@@ -6,6 +6,7 @@ from sklearn.cluster import KMeans
 
 # Internal modules
 import global_variables
+global_variables.init('name_query')
 
 def main_museum():
     for filename in tqdm(os.scandir(global_variables.dir_db)):
