@@ -8,6 +8,12 @@ from sklearn.cluster import KMeans
 import global_variables
 global_variables.init('name_query')
 
+try:
+    os.makedirs(global_variables.dir_museum)
+except FileExistsError:
+    # Directory already exists
+    pass
+
 def main_museum():
     for filename in tqdm(os.scandir(global_variables.dir_db)):
         f = os.path.join(global_variables.dir_db, filename)
@@ -19,7 +25,7 @@ def main_museum():
             cv2.imwrite(global_variables.dir_museum + f_name + '_dominant_color.jpg', chart)
 
 # Function: Get dominant color of the image using k-means clustering
-def get_dominant_color(image, k=4, image_processing_size = None):
+def get_dominant_color(image, k=1, image_processing_size = None):
     # resize image if new dims provided
     if image_processing_size is not None:
         image = cv2.resize(image, image_processing_size, interpolation = cv2.INTER_AREA)

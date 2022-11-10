@@ -75,11 +75,12 @@ def init(name_query):
     # Directories assignment (always end with /)
     dir_db = f'{dir_base}{name_db}/' 
     dir_query = f'{dir_base}{name_query}/'
-    dir_museum = f'{dir_base}museum/'
     dir_results = f'{dir_query}{results_name}/'
     dir_db_aux = f'{dir_db}{aux_name}/'
     dir_query_aux = f'{dir_query}{aux_name}/'
     new_dirs = [dir_results, dir_db_aux, dir_query_aux]
 
+    dir_museum = f'{dir_base}museum/'
+    
     # ONLY TESTING VARIABLES
     test_image = '' # ! Set to '' to iterate all the query
