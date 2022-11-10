@@ -175,17 +175,17 @@ def main():
                         painting = image[painting_box[paint][1]:painting_box[paint][3], painting_box[paint][0]:painting_box[paint][2]]
                         paintings.append(painting)
                         cv2.imwrite(f'{global_variables.dir_query_aux}{f_names[paint]}.png', painting)
-                        c1 = [painting_box[paint][0],painting_box[paint][1]]
-                        c2 = [painting_box[paint][2],painting_box[paint][1]]
-                        c3 = [painting_box[paint][2],painting_box[paint][3]]
-                        c4 = [painting_box[paint][0],painting_box[paint][3]]
+                        c1 = np.array([painting_box[paint][0],painting_box[paint][1]])
+                        c2 = np.array([painting_box[paint][2],painting_box[paint][1]])
+                        c3 = np.array([painting_box[paint][2],painting_box[paint][3]])
+                        c4 = np.array([painting_box[paint][0],painting_box[paint][3]])
 
                         if(angle != 0):
                             print("rotating coords")
-                            c1 = c1 @ rotation_matrix
-                            c2 = c2 @ rotation_matrix
-                            c3 = c3 @ rotation_matrix
-                            c4 = c4 @ rotation_matrix
+                            c1 = c1.T @ rotation_matrix
+                            c2 = c2.T @ rotation_matrix
+                            c3 = c3.T @ rotation_matrix
+                            c4 = c4.T @ rotation_matrix
 
                         print(c1)
                         print(c2)
