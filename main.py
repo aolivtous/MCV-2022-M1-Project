@@ -146,6 +146,7 @@ def main():
             if f.endswith(f'{global_variables.test_image}.jpg'): 
                 f_name = filename.name.split('.')[0]
                 image = cv2.imread(f)
+                im_copy =  image.copy()
 
                 if(may_have_noise):
                     # Image will be a denoised image if needed
@@ -167,12 +168,36 @@ def main():
                     # Idea Guillem: query_descriptors[f_name].num_paint, query_descriptors[f_name].mask_coords = mask_v1.generate_masks_otsu(image, f_name, dir_results, may_have_split)
                     num_paintings[f_name], painting_box = masks.generate_masks_ROT(image, f_name, may_have_split)
                     
+                    
                     for paint in range(num_paintings[f_name]):
                         f_names.append(f'{f_name}_part{paint + 1}')
                         mask_coords[f_names[paint]] = painting_box[paint]
                         painting = image[painting_box[paint][1]:painting_box[paint][3], painting_box[paint][0]:painting_box[paint][2]]
                         paintings.append(painting)
                         cv2.imwrite(f'{global_variables.dir_query_aux}{f_names[paint]}.png', painting)
+                        c1 = [painting_box[paint][0],painting_box[paint][1]]
+                        c2 = [painting_box[paint][2],painting_box[paint][1]]
+                        c3 = [painting_box[paint][2],painting_box[paint][3]]
+                        c4 = [painting_box[paint][0],painting_box[paint][3]]
+
+                        if(angle != 0):
+                            print("rotating coords")
+                            c1 = c1 @ rotation_matrix
+                            c2 = c2 @ rotation_matrix
+                            c3 = c3 @ rotation_matrix
+                            c4 = c4 @ rotation_matrix
+
+                        print(c1)
+                        print(c2)
+                        print(c3)
+                        print(c4)
+
+                        mark_red_rectangle = cv2.rectangle(im_copy, (c1[0], c1[1]), (c3[0], c3[1]), (200, 0, 100), 3)
+        
+                        cv2.namedWindow("lap", cv2.WINDOW_NORMAL)
+                        cv2.imshow("lap", im_copy)
+                        cv2.waitKey(0)
+
                                             
                 for count, painting in enumerate(paintings):
                     print('\nSearching boxes at:', f_names[count])   
