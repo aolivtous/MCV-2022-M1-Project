@@ -131,9 +131,9 @@ def generate_masks_ROT(image, f_name, mayhave_split):
     sorted_coords = [x for _,x in sorted(zip(dist_to_image,coordinates))]
     # print(sorted_coords)
 
-    cv2.namedWindow("lap", cv2.WINDOW_NORMAL)
-    cv2.imshow("lap", image_cpy)
-    cv2.waitKey(0)
+    # cv2.namedWindow("lap", cv2.WINDOW_NORMAL)
+    # cv2.imshow("lap", image_cpy)
+    # cv2.waitKey(0)
 
     cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_laplacian.png', laplacian)
     #cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_laplacian_open.png', np.uint8(mask_open))
@@ -182,12 +182,10 @@ def generate_masks_ROT2(image, f_name, mayhave_split):
     element_dil = cv2.getStructuringElement(cv2.MORPH_RECT, (15,15))
     fadedilated = cv2.dilate(fade,element_dil)
     
-
     # remove noise
     image_blur = cv2.GaussianBlur(image,(9,9),0) # ! 9x9 to deal with the background filling at rotation
 
     gray_image = cv2.cvtColor(image_blur, cv2.COLOR_BGR2GRAY) 
-
 
     # Convolute with proper kernels
     canny = cv2.Canny(gray_image,10,70,apertureSize=3)
@@ -205,17 +203,15 @@ def generate_masks_ROT2(image, f_name, mayhave_split):
     element = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2))
     mask_open = cv2.morphologyEx(dilation, cv2.MORPH_OPEN, element)
 
+    # cv2.namedWindow("lap", cv2.WINDOW_NORMAL)
+    # cv2.imshow("lap", dilation)
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
 
-  
-    cv2.namedWindow("lap", cv2.WINDOW_NORMAL)
-    cv2.imshow("lap", dilation)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
-
-    cv2.namedWindow("lap", cv2.WINDOW_NORMAL)
-    cv2.imshow("lap", mask_open)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    # cv2.namedWindow("lap", cv2.WINDOW_NORMAL)
+    # cv2.imshow("lap", mask_open)
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
 
     element2 = cv2.getStructuringElement(cv2.MORPH_RECT, (int(width*0.5),(int(width*0.5))))
     mask_close2 = cv2.morphologyEx(mask_open, cv2.MORPH_CLOSE, element)

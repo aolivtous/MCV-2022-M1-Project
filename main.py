@@ -134,20 +134,25 @@ def main():
         try:
             with open(f'{global_variables.dir_results}dists.pkl', "rb" ) as f:
                 dists = pickle.load(f)
+            if may_have_rotation:
             # Load also textbox_coords
-            with open(f'{global_variables.dir_results}frames_coords.pkl', "rb" ) as f:
-                frames_coords = pickle.load(f)
-            # Load also textbox_coords
-            with open(f'{global_variables.dir_results}textbox_coords.pkl', "rb" ) as f:
-                textbox_coords = pickle.load(f)
-            # Load also num_paintings
-            with open(f'{global_variables.dir_results}num_paintings.pkl', "rb" ) as f:
-                num_paintings = pickle.load(f)
+                with open(f'{global_variables.dir_results}frames_coords.pkl', "rb" ) as f:
+                    frames_coords = pickle.load(f)
+            if has_boundingbox:
+                # Load also textbox_coords
+                with open(f'{global_variables.dir_results}textbox_coords.pkl', "rb" ) as f:
+                    textbox_coords = pickle.load(f)
+            if may_have_split:
+                # Load also num_paintings
+                with open(f'{global_variables.dir_results}num_paintings.pkl', "rb" ) as f:
+                    num_paintings = pickle.load(f)
             loaded_query_dists = True
             print('Using precomputed query results')
         except:
             dists = {}
             textbox_coords = {}
+            num_paintings = {}
+            frames_coords = {}
             pass
     
     if not loaded_query_dists:
@@ -182,63 +187,69 @@ def main():
 
                     # Idea Guillem: query_descriptors[f_name].num_paint, query_descriptors[f_name].mask_coords = mask_v1.generate_masks_otsu(image, f_name, dir_results, may_have_split)
                     num_paintings[f_name], painting_box = masks.generate_masks_ROT(image, f_name, may_have_split)
-                    
-                    print('Searching frames at:', f_name)
-                    print(f'Angle={angle * 180 / np.pi}')
-                    frames = []
-                    for paint in range(num_paintings[f_name]):
-                        f_names.append(f'{f_name}_part{paint + 1}')
-                        mask_coords[f_names[paint]] = painting_box[paint]
-                        painting = image[painting_box[paint][1]:painting_box[paint][3], painting_box[paint][0]:painting_box[paint][2]]
-                        paintings.append(painting)
-                        cv2.imwrite(f'{global_variables.dir_query_aux}{f_names[paint]}.png', painting)
-      
+                    if(may_have_rotation):
+                        print('Searching frames at:', f_name)
+                        print(f'Angle={angle * 180 / np.pi}')
+                        frames = []
+                        for paint in range(num_paintings[f_name]):
+                            f_names.append(f'{f_name}_part{paint + 1}')
+                            mask_coords[f_names[paint]] = painting_box[paint]
+                            painting = image[painting_box[paint][1]:painting_box[paint][3], painting_box[paint][0]:painting_box[paint][2]]
+                            paintings.append(painting)
+                            cv2.imwrite(f'{global_variables.dir_query_aux}{f_names[paint]}.png', painting)
+        
 
-                        c1 = np.transpose([painting_box[paint][0],painting_box[paint][1],1])
-                        c2 = np.transpose([painting_box[paint][2],painting_box[paint][1],1])
-                        c3 = np.transpose([painting_box[paint][2],painting_box[paint][3],1])
-                        c4 = np.transpose([painting_box[paint][0],painting_box[paint][3],1])
+                            c1 = np.transpose([painting_box[paint][0],painting_box[paint][1],1])
+                            c2 = np.transpose([painting_box[paint][2],painting_box[paint][1],1])
+                            c3 = np.transpose([painting_box[paint][2],painting_box[paint][3],1])
+                            c4 = np.transpose([painting_box[paint][0],painting_box[paint][3],1])
 
-                        inv_rotation_matrix =cv2.getRotationMatrix2D((image.shape[1] / 2, image.shape[0] / 2), -(angle * 180 / np.pi), 1)
+                            inv_rotation_matrix =cv2.getRotationMatrix2D((image.shape[1] / 2, image.shape[0] / 2), -(angle * 180 / np.pi), 1)
 
-                        if(angle != 0):
-                            # print("rotating coords")
-                            c1 = np.dot(inv_rotation_matrix, c1)  
-                            c2 = np.dot(inv_rotation_matrix, c2)  
-                            c3 = np.dot(inv_rotation_matrix, c3)  
-                            c4 = np.dot(inv_rotation_matrix, c4)   
- 
-
-
-                            # print(c1)
-                            # print(c2)
-                            # print(c3)
-                            # print(c4)
-
-                            #mark_red_rectangle = cv2.rectangle(im_copy, (int(c1[0]), int(c1[1])), (int(c3[0]), int(c3[1])), (200, 0, 100), 3)
-                            cv2.drawContours(im_copy, [np.asarray([(c1).astype(int),(c2).astype(int),(c3).astype(int),(c4).astype(int)])], -1, (0, 255, 0), 3)
-
-                            '''cv2.namedWindow("lap", cv2.WINDOW_NORMAL)
-                            cv2.imshow("lap", im_copy)
-                            cv2.waitKey(0)'''
-                        else:
-                            c1 = [painting_box[paint][0],painting_box[paint][1]]
-                            c2 = [painting_box[paint][2],painting_box[paint][1]]
-                            c3 = [painting_box[paint][2],painting_box[paint][3]]
-                            c4 = [painting_box[paint][0],painting_box[paint][3]]
+                            if(angle != 0):
+                                # print("rotating coords")
+                                c1 = np.dot(inv_rotation_matrix, c1)  
+                                c2 = np.dot(inv_rotation_matrix, c2)  
+                                c3 = np.dot(inv_rotation_matrix, c3)  
+                                c4 = np.dot(inv_rotation_matrix, c4)   
+    
 
 
-                        frames.append([ 
-                                            angle * 180 / np.pi,
-                                            [[int(c1[0]),int(c1[1])],
-                                            [int(c2[0]),int(c2[1])],
-                                            [int(c3[0]),int(c3[1])],
-                                            [int(c4[0]),int(c4[1])]]
-                                        ])
+                                # print(c1)
+                                # print(c2)
+                                # print(c3)
+                                # print(c4)
+
+                                #mark_red_rectangle = cv2.rectangle(im_copy, (int(c1[0]), int(c1[1])), (int(c3[0]), int(c3[1])), (200, 0, 100), 3)
+                                cv2.drawContours(im_copy, [np.asarray([(c1).astype(int),(c2).astype(int),(c3).astype(int),(c4).astype(int)])], -1, (0, 255, 0), 3)
+
+                                '''cv2.namedWindow("lap", cv2.WINDOW_NORMAL)
+                                cv2.imshow("lap", im_copy)
+                                cv2.waitKey(0)'''
+                            else:
+                                c1 = [painting_box[paint][0],painting_box[paint][1]]
+                                c2 = [painting_box[paint][2],painting_box[paint][1]]
+                                c3 = [painting_box[paint][2],painting_box[paint][3]]
+                                c4 = [painting_box[paint][0],painting_box[paint][3]]
+
+                            # Formatting the angle to be in the same format as the solutions pickle
+                            return_angle = angle * 180 / np.pi
+                            if return_angle < 0:
+                                return_angle = -return_angle
+                            else:
+                                return_angle = 180 - return_angle
+                            
+                            frames.append([ 
+                                                float(return_angle),
+                                                [[int(c1[0]),int(c1[1])],
+                                                [int(c2[0]),int(c2[1])],
+                                                [int(c3[0]),int(c3[1])],
+                                                [int(c4[0]),int(c4[1])]]
+                                            ])
 
 
-                    frames_coords[f_name] = frames
-                    print(f'Frames coords {frames}\n')
+                        frames_coords[f_name] = frames
+                        print(f'Frames coords {frames}\n')
                     
 
                                             
@@ -288,15 +299,18 @@ def main():
         # Save dists in a pickle
         with open(f'{global_variables.dir_results}dists.pkl', 'wb') as handle:
             pickle.dump(dists, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        if may_have_rotation:
         # Save frames coords in a pickle
-        with open(f'{global_variables.dir_results}frames_coords.pkl', 'wb') as handle:
-            pickle.dump(frames_coords, handle, protocol=pickle.HIGHEST_PROTOCOL)
-        # Save textbox_coords in a pickle
-        with open(f'{global_variables.dir_results}textbox_coords.pkl', 'wb') as handle:
-            pickle.dump(textbox_coords, handle, protocol=pickle.HIGHEST_PROTOCOL)
-        # Save num_paintings in a pickle
-        with open(f'{global_variables.dir_results}num_paintings.pkl', 'wb') as handle:
-            pickle.dump(num_paintings, handle, protocol=pickle.HIGHEST_PROTOCOL)
+            with open(f'{global_variables.dir_results}frames_coords.pkl', 'wb') as handle:
+                pickle.dump(frames_coords, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        if has_boundingbox:
+            # Save textbox_coords in a pickle
+            with open(f'{global_variables.dir_results}textbox_coords.pkl', 'wb') as handle:
+                pickle.dump(textbox_coords, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        if may_have_split:
+            # Save num_paintings in a pickle
+            with open(f'{global_variables.dir_results}num_paintings.pkl', 'wb') as handle:
+                pickle.dump(num_paintings, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
     ## Distances postprocessing
     dists = distances_postprocessing.distances_postprocessing(dists)
@@ -309,8 +323,10 @@ def main():
 
     # Results sorting, if not two_level num_paintings is {}
     results_sorted = utils.get_sorted_list_of_lists_from_dict_of_dicts(dists, distance_type, num_paintings, two_level = may_have_split, may_not_be_in_db = may_not_be_in_db )
-    frames_predictions = utils.get_simple_list_from_dict(frames_coords)
-    boxes_predictions = utils.get_simple_list_from_dict(textbox_coords)
+    if may_have_rotation:
+        frames_predictions = utils.get_simple_list_from_dict(frames_coords)
+    if has_boundingbox:
+        boxes_predictions = utils.get_simple_list_from_dict(textbox_coords)
     
     time_compute_query = time.time() - start_time
 
