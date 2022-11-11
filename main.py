@@ -314,7 +314,7 @@ def main():
     # Results printing
     for idx, l in enumerate(results_sorted):
         print(f'For image {idx}:')
-        if (may_have_noise): print(f'\Frames: {frames_predictions[idx]}')
+        if (may_have_noise): print(f'\tFrames: {frames_predictions[idx]}')
         if(has_boundingbox): print(f'\tBoxes: {boxes_predictions[idx]}')
         print(f'\tSearch result: {l}')
         if(solutions):
@@ -355,10 +355,10 @@ def main():
             else:
                 iou = box_evaluation.find_boxes_eval2(boxes_predictions, boxes_solutions)
             print(f'Mean TextBox IoU: {round(sum(iou)/len(iou), 2)}')
-        """
+        
         if(may_have_rotation):
-            iou = box_evaluation.frames_eval(frames_predictions, frames_solutions)
-            print(f'Mean Frames IoU: {round(sum(iou)/len(iou), 2)}')"""
+            iou,count = box_evaluation.frames_eval(frames_predictions, frames_solutions)
+            print(f'Mean Frames IoU: {round(sum(iou)/count, 2)}')
 
 
     else:

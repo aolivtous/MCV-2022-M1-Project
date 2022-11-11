@@ -1,3 +1,6 @@
+import cv2 
+import numpy as np
+from shapely.geometry import Polygon
 
 
 #  ? For format of qsd1_w2 text box solutions
@@ -82,4 +85,27 @@ def find_boxes_eval2(list_bbox_prediction, list_bbox_solution):
             except:
                 continue 
     return iou_list
+
+
+def frames_eval(list_frames_prediction, list_frames_solution):
+    iou_list=[]
+    count = 0
+    # for i in range(len(list_bbox_prediction)):
+    #     print('image', i, 'pred', list_bbox_prediction[i])
+    for i in range(len(list_frames_solution)): #loop through images
+        for j in range(len(list_frames_solution[i])): #loop through paintings frames
+            count +=1
+            try:
+                # print(f'\n-----------------------Image {i+1} part {j+1} ----------------------------')
+                # print(f'Solution={list_frames_solution[i][j][1]}')
+                # print(f'Predicti={list_frames_prediction[i][j][1]}')
+                rectangle_sol  = Polygon(list_frames_solution[i][j][1])
+                rectangle_pred = Polygon(list_frames_prediction[i][j][1])                    
+
+                iou = rectangle_sol.intersection(rectangle_pred).area / rectangle_sol.union(rectangle_pred).area
+                iou_list.append(iou)
+                # print(f'iou of image {i+1} part {j+1}: {iou}')
+            except:
+                continue 
+    return iou_list,count
 
