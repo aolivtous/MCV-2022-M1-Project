@@ -205,7 +205,9 @@ def main():
                             # print("rotating coords")
                             c1 = np.dot(inv_rotation_matrix, c1)  
                             c2 = np.dot(inv_rotation_matrix, c2)  
-                            c3 = np.dot(inv_rotation_matrix, c3)   
+                            c3 = np.dot(inv_rotation_matrix, c3)  
+                            c4 = np.dot(inv_rotation_matrix, c4)   
+ 
 
 
                             # print(c1)

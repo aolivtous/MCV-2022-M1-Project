@@ -27,13 +27,13 @@ def find_boxes_canny(image, f_name):
 
     # Convolute with proper kernels
     canny = cv2.Canny(gray_image,lower_thresh,upper_thresh,apertureSize=3)
-    size_thresh_lapl = 50
-    _, canny = cv2.threshold(canny, size_thresh_lapl,255,cv2.THRESH_BINARY)
+    size_thresh = 50
+    _, canny = cv2.threshold(canny, size_thresh,255,cv2.THRESH_BINARY)
 
     canny_i = cv2.Canny(gray_image_inv,lower_thresh_i,upper_thresh_i,apertureSize=3)
 
-    size_thresh_lapl = 50
-    _, canny_i = cv2.threshold(canny_i, size_thresh_lapl,255,cv2.THRESH_BINARY)
+    size_thresh= 50
+    _, canny_i = cv2.threshold(canny_i, size_thresh,255,cv2.THRESH_BINARY)
 
     # Put the letters together
 
