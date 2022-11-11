@@ -149,7 +149,7 @@ def generate_masks_ROT(image, f_name, mayhave_split):
             break
 
     sorted_coords = [x for _,x in sorted(zip(dist_to_image,coordinates))]
-    print(sorted_coords)
+    # print(sorted_coords)
 
     '''cv2.namedWindow("lap", cv2.WINDOW_NORMAL)
     cv2.imshow("lap", image_cpy)

@@ -50,7 +50,7 @@ def rotation_check(image, f_name):
     # Get the angle in degrees considering range pi to -pi
     angle_deg = final_angle * 180 / np.pi
 
-    print(angle_deg)
+    # print(angle_deg)
     # Get the rotation matrix
     M = cv2.getRotationMatrix2D((image.shape[1] / 2, image.shape[0] / 2), angle_deg, 1)
     # Rotate the image
