@@ -83,10 +83,11 @@ def generate_masks_ROT(image, f_name, mayhave_split):
 
     element2 = cv2.getStructuringElement(cv2.MORPH_RECT, (25, 25))
     mask_open2 = cv2.morphologyEx(mask_close_dil, cv2.MORPH_CLOSE, element2)
-    """cv2.namedWindow("lap", cv2.WINDOW_NORMAL)
+
+    '''cv2.namedWindow("lap", cv2.WINDOW_NORMAL)
     cv2.imshow("lap", mask_open2)
     cv2.waitKey(0)
-    cv2.destroyAllWindows()"""
+    cv2.destroyAllWindows()'''
 
     contours, hierarchy = cv2.findContours(np.uint8(mask_open2), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
@@ -128,25 +129,31 @@ def generate_masks_ROT(image, f_name, mayhave_split):
     coordinates = []
     dist_to_image = []
     num_paintings = 0
+    intersection_matrix = np.zeros((height,width))
     for i in range(len(sorteddata)):
+        contour_matrix = np.zeros((height,width))
 
         contour = sorteddata[i][1]
         x, y, w, h = cv2.boundingRect(contour)
-        if( h+w > 0.06*(width+height) and h+w < 0.95*(width+height) ) and h*w > 0.05*(width*height) and (h/w < 7 and w/h < 7):
+        if( h+w > 0.06*(width+height) and h+w < 0.96*(width+height) ) and h*w > 0.05*(width*height) and (h/w < 7 and w/h < 7):
+            cv2.fillPoly(contour_matrix,pts=[np.array( [ [x,y], [x,y+h], [x+w, y+h], [x+w,y] ] )],color=255)
+            logical_matrix = np.logical_and(contour_matrix,intersection_matrix)
             
-            coordinates.append([x, y, x+w, y+h])
-            dist_to_image.append(np.linalg.norm(np.asarray([0,0])-np.asarray([x+w/2,y+h/2])))
-            num_paintings+=1
-            mark_red_rectangle = cv2.rectangle(image_cpy, (x, y), (x + w, y + h), (0, 0, 255), 3)
+            if np.all(logical_matrix == False):
+                coordinates.append([x, y, x+w, y+h])
+                dist_to_image.append(np.linalg.norm(np.asarray([0,0])-np.asarray([x+w/2,y+h/2])))
+                num_paintings+=1
+                mark_red_rectangle = cv2.rectangle(image_cpy, (x, y), (x + w, y + h), (0, 0, 255), 3)
+                cv2.fillPoly(intersection_matrix,pts=[np.array( [ [x,y], [x,y+h], [x+w, y+h], [x+w,y] ] )],color=255)
         if(num_paintings == 3):
             break
 
     sorted_coords = [x for _,x in sorted(zip(dist_to_image,coordinates))]
-    print(sorted_coords)
+    # print(sorted_coords)
 
-    cv2.namedWindow("lap", cv2.WINDOW_NORMAL)
+    '''cv2.namedWindow("lap", cv2.WINDOW_NORMAL)
     cv2.imshow("lap", image_cpy)
-    cv2.waitKey(0)
+    cv2.waitKey(0)'''
 
     cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_laplacian.png', laplacian)
     #cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_laplacian_open.png', np.uint8(mask_open))
