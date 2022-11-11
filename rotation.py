@@ -11,17 +11,16 @@ def rotation_check(image, f_name):
     lines = cv2.HoughLinesP(edges, rho = 1, theta = 1*np.pi/180, threshold = 200, minLineLength = 100, maxLineGap = 25)
 
     # Save result of canny
-    cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_canny.png', edges)
+    # cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_canny.png', edges)
 
     # If there are no lines detected, return the original image
     if lines is None:
-        return image, False, 0
+        return image, False, 0, None
     
     # Get length of the lines
     final_length, final_angle, final_line = None, None, None
     for line in lines:
         x1, y1, x2, y2 = line[0]
-        # Check for lines that do not cross the image vertically
         if  (y1 < height / 3 and y2 < height / 3) or (y1 > 2 * height / 3 and y2 > 2 * height / 3):
             # Get angle on radians
             angle = np.arctan2(y2 - y1, x2 - x1)
@@ -45,20 +44,32 @@ def rotation_check(image, f_name):
 
     # Check if angles is empty
     if not final_angle:
-        return image, False, 0
+        return image, False, 0, None
     
     # Get the angle in degrees considering range pi to -pi
     angle_deg = final_angle * 180 / np.pi
 
-    # print(angle_deg)
+    print(angle_deg)
     # Get the rotation matrix
     M = cv2.getRotationMatrix2D((image.shape[1] / 2, image.shape[0] / 2), angle_deg, 1)
     # Rotate the image
-    #rotated_image = cv2.warpAffine(image, M, (image.shape[1], image.shape[0]), borderValue=get_avg_corners_color(image))
-    rotated_image = cv2.warpAffine(image, M, (image.shape[1], image.shape[0]), borderValue=(0,255,0))
+
+    # Transform the image to BGRA to avoid black borders
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2BGRA)
+    # rotated_image = cv2.warpAffine(image, M, (image.shape[1], image.shape[0]), borderValue=get_avg_corners_color(image))
+    rotated_image = cv2.warpAffine(image, M, (image.shape[1], image.shape[0]), borderValue=cv2.BORDER_TRANSPARENT)
     # Save the rotated image
     cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_rotated.png', rotated_image)
-    return rotated_image, M, final_angle
+    # Create a mask for the transparent pixels
+    rotatation_mask = rotated_image[:,:,3] == 0
+    # Format the mask to be binary
+    rotatation_mask = rotatation_mask.astype(np.uint8) * 255
+    cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_rotated_mask.png', rotatation_mask)
+    
+    # Transform the image back to BGR
+    rotated_image = cv2.cvtColor(rotated_image, cv2.COLOR_BGRA2BGR)
+
+    return rotated_image, M, final_angle, rotatation_mask
 
 def auto_canny(image, sigma=0.33):
 	# compute the median of the single channel pixel intensities
