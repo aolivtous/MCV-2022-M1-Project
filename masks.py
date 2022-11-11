@@ -18,80 +18,41 @@ def generate_masks_ROT(image, f_name, mayhave_split, rotation_mask):
     :return: the mask of the image.
     """
 
-
     #Parametres provats en el seguent ordre: thr per la binaritzacio del laplacia, size opening 1, size dilation, size opening 2
     # Funcionen bastant semblant 7,3,5,20  / 10,2,5,20 / 10,2,3,20 (igual millor la tercera opcio)
     # No van be: 10,2,7,20 / 10,2,7,25 / 10,3,5,20 /  10,2,5,25
 
     image_cpy = image.copy()
     height,width,channels = image.shape
-    # green_channel = image[:,:,1]
-    # blue_channel = image[:,:,0]
-    # red_channel = image[:,:,2]
-    # not_fade_g = np.zeros([height,width])
-    # not_fade_r = np.zeros([height,width])
-    # not_fade_b = np.zeros([height,width])
 
-    # not_fade_r[red_channel == 0] = 1
-    # not_fade_b[blue_channel == 0] = 1
-    # not_fade_g[green_channel == 255] = 1
-    # fade = np.multiply(not_fade_g,not_fade_b, not_fade_r)
-
-    element_dil = cv2.getStructuringElement(cv2.MORPH_RECT, (15,15))
-    rotation_mask_dil = cv2.dilate(rotation_mask, element_dil)
-    
-    # remove noise
+    # Remove noise
     image_blur = cv2.GaussianBlur(image,(9,9),0) # ! 9x9 to deal with the background filling at rotation
-
     gray_image = cv2.cvtColor(image_blur, cv2.COLOR_BGR2GRAY) 
-
-    # convolute with proper kernels
+    # Convolute with proper kernels
     lap = cv2.Laplacian(gray_image,cv2.CV_32F, ksize = 3)
-
     th, laplacian = cv2.threshold(lap, 9,255,cv2.THRESH_BINARY)
 
-
-    #remove filled green pixels (added for the rotation)
-    laplacian[rotation_mask_dil == 255] = 0   
-
+    # Check if rotation_mask is an array (if it is, it means that the image has been rotated and we need to apply the mask (an image/array))
+    if isinstance(rotation_mask, np.ndarray):
+        element_dil = cv2.getStructuringElement(cv2.MORPH_RECT, (15,15))
+        rotation_mask_dil = cv2.dilate(rotation_mask, element_dil)
+        # Remove the former transparent pixels (added at rotation)
+        laplacian[rotation_mask_dil == 255] = 0   
 
     # Apply morphology 
-  
     element = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
     mask_close = cv2.morphologyEx(laplacian, cv2.MORPH_OPEN, element)
 
     element_dil = cv2.getStructuringElement(cv2.MORPH_RECT, (5,5))
     dilation = cv2.dilate(mask_close,element_dil)
-
-    """cv2.namedWindow("lap", cv2.WINDOW_NORMAL)
-    cv2.imshow("lap", mask_close)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
-
-    cv2.namedWindow("lap", cv2.WINDOW_NORMAL)
-    cv2.imshow("lap", dilation)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()"""
-
       
     element = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
     mask_close_dil = cv2.morphologyEx(dilation, cv2.MORPH_OPEN, element)
 
-    """cv2.namedWindow("lap", cv2.WINDOW_NORMAL)
-    cv2.imshow("lap", mask_close_dil)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()"""
-
     element2 = cv2.getStructuringElement(cv2.MORPH_RECT, (25, 25))
     mask_open2 = cv2.morphologyEx(mask_close_dil, cv2.MORPH_CLOSE, element2)
 
-    '''cv2.namedWindow("lap", cv2.WINDOW_NORMAL)
-    cv2.imshow("lap", mask_open2)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()'''
-
     contours, hierarchy = cv2.findContours(np.uint8(mask_open2), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
 
     areaArray = []
     for i, c in enumerate(contours):
@@ -99,10 +60,8 @@ def generate_masks_ROT(image, f_name, mayhave_split, rotation_mask):
         #area = cv2.contourArea(c)
         areaArray.append(w_c*h_c)
 
-
     #first sort the array by area
     sorteddata = sorted(zip(areaArray, contours), key=lambda x: x[0], reverse=True)
-
 
     coordinates = []
     dist_to_image = []
@@ -127,11 +86,6 @@ def generate_masks_ROT(image, f_name, mayhave_split, rotation_mask):
             break
 
     sorted_coords = [x for _,x in sorted(zip(dist_to_image,coordinates))]
-    # print(sorted_coords)
-
-    # cv2.namedWindow("lap", cv2.WINDOW_NORMAL)
-    # cv2.imshow("lap", image_cpy)
-    # cv2.waitKey(0)
 
     cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_laplacian.png', laplacian)
     #cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_laplacian_open.png', np.uint8(mask_open))
@@ -139,13 +93,7 @@ def generate_masks_ROT(image, f_name, mayhave_split, rotation_mask):
     cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_laplaian_open_dilate_open.png', np.uint8(mask_open2))
     cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_split_laplacian_boxes.png', image_cpy)
 
-
     return num_paintings, sorted_coords
-
-
-
- 
-
 
 def generate_masks_ROT2(image, f_name, mayhave_split): 
     """
