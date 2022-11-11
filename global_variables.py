@@ -58,12 +58,12 @@ def init(name_query):
     n_bins = 40
 
     weights = {
-        'color': 1.0,
+        'color': 0.0,
         'texture': 0.0,
         'text': 0.0,
-        'feature': 0.0
+        'feature': 1.0
     }
-    in_db_threshold = 1.035
+    in_db_threshold = 0.2*1e-14
     # in_db_threshold = 0.3 * 1e-7 # When unnormalized with db
  
     # Constant arguments

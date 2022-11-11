@@ -21,7 +21,7 @@ def distances_postprocessing(dists):
     # Now normalize the distances
     for key_query, _ in dists.items():
         for key_db, dist in dists[key_query].items():
-            dists[key_query][key_db] = distances.distances(dist.dist / db_dists_mean[key_db])
+            dists[key_query][key_db] = distances.distances(dist.dist*db_dists_mean[key_db])
     return dists
 
 
