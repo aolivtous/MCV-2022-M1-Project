@@ -371,17 +371,15 @@ def main():
         # ! Currently not implemented for split paintings
         # if(has_backgrounds):
         #     mask_evaluation.mask_eval_avg(directory_output, dir_query, print_each = False, print_avg = True)
-        if(has_boundingbox):
+        if(may_have_rotation):
+            iou,count = box_evaluation.frames_eval(frames_predictions, frames_solutions)
+            print(f'Mean Frames IoU: {round(sum(iou)/count, 2)}')
+        elif(has_boundingbox):
             if(name_query=="qsd1_w2"):
                 iou = box_evaluation.find_boxes_eval(boxes_predictions, boxes_solutions)
             else:
                 iou = box_evaluation.find_boxes_eval2(boxes_predictions, boxes_solutions)
             print(f'Mean TextBox IoU: {round(sum(iou)/len(iou), 2)}')
-        
-        if(may_have_rotation):
-            iou,count = box_evaluation.frames_eval(frames_predictions, frames_solutions)
-            print(f'Mean Frames IoU: {round(sum(iou)/count, 2)}')
-
 
     else:
         print('No solutions given --> Evaluation not avaliable.')
