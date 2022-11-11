@@ -7,7 +7,7 @@ from PIL import Image as im
 
 
 
-def generate_masks_ROT(image, f_name, mayhave_split): 
+def generate_masks_ROT(image, f_name, mayhave_split, rotation_mask): 
     """
     > The function takes as input the path of the image and the path of the output directory. It returns
     the mask of the image
@@ -25,23 +25,21 @@ def generate_masks_ROT(image, f_name, mayhave_split):
 
     image_cpy = image.copy()
     height,width,channels = image.shape
-    green_channel = image[:,:,1]
-    blue_channel = image[:,:,0]
-    red_channel = image[:,:,2]
-    not_fade_g = np.zeros([height,width])
-    not_fade_r = np.zeros([height,width])
-    not_fade_b = np.zeros([height,width])
+    # green_channel = image[:,:,1]
+    # blue_channel = image[:,:,0]
+    # red_channel = image[:,:,2]
+    # not_fade_g = np.zeros([height,width])
+    # not_fade_r = np.zeros([height,width])
+    # not_fade_b = np.zeros([height,width])
 
-    not_fade_r[red_channel == 0] = 1
-    not_fade_b[blue_channel == 0] = 1
-    not_fade_g[green_channel == 255] = 1
-    fade = np.multiply(not_fade_g,not_fade_b, not_fade_r)
+    # not_fade_r[red_channel == 0] = 1
+    # not_fade_b[blue_channel == 0] = 1
+    # not_fade_g[green_channel == 255] = 1
+    # fade = np.multiply(not_fade_g,not_fade_b, not_fade_r)
 
     element_dil = cv2.getStructuringElement(cv2.MORPH_RECT, (15,15))
-    fadedilated = cv2.dilate(fade,element_dil)
+    rotation_mask_dil = cv2.dilate(rotation_mask, element_dil)
     
-    
-
     # remove noise
     image_blur = cv2.GaussianBlur(image,(9,9),0) # ! 9x9 to deal with the background filling at rotation
 
@@ -54,7 +52,7 @@ def generate_masks_ROT(image, f_name, mayhave_split):
 
 
     #remove filled green pixels (added for the rotation)
-    laplacian[fadedilated == 1] = 0   
+    laplacian[rotation_mask_dil == 255] = 0   
 
 
     # Apply morphology 

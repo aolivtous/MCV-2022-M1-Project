@@ -125,9 +125,11 @@ def main():
     frames = []
     coords = []
 
+    angle = 0
+    rotation_matrix = None
+    rotation_mask = None
 
     loaded_query_dists = False
-    rotation_matrix = None
 
     if not recompute_query:
         # Try to load dists pickle
@@ -173,7 +175,7 @@ def main():
 
                 if(may_have_rotation):
                     # Image will be a rotated image if needed
-                    image, rotation_matrix, angle = rotation.rotation_check(image, f_name)
+                    image, rotation_matrix, angle, rotation_mask = rotation.rotation_check(image, f_name)
 
 
                 # In case of no backgrounds (no multiple paintings)
@@ -186,7 +188,7 @@ def main():
                     paintings = []
 
                     # Idea Guillem: query_descriptors[f_name].num_paint, query_descriptors[f_name].mask_coords = mask_v1.generate_masks_otsu(image, f_name, dir_results, may_have_split)
-                    num_paintings[f_name], painting_box = masks.generate_masks_ROT(image, f_name, may_have_split)
+                    num_paintings[f_name], painting_box = masks.generate_masks_ROT(image, f_name, may_have_split, rotation_mask)
                     if(may_have_rotation):
                         print('Searching frames at:', f_name)
                         print(f'Angle={angle * 180 / np.pi}')
