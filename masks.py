@@ -24,6 +24,7 @@ def generate_masks_ROT(image, f_name, mayhave_split, rotation_mask):
 
     image_cpy = image.copy()
     height,width,channels = image.shape
+    mask = np.zeros((height,width,3), dtype=np.uint8)
 
     # Remove noise
     image_blur = cv2.GaussianBlur(image,(9,9),0) # ! 9x9 to deal with the background filling at rotation
@@ -72,6 +73,7 @@ def generate_masks_ROT(image, f_name, mayhave_split, rotation_mask):
 
         contour = sorteddata[i][1]
         x, y, w, h = cv2.boundingRect(contour)
+        
         if( h+w > 0.06*(width+height) and h+w < 0.96*(width+height) ) and h*w > 0.05*(width*height) and (h/w < 7 and w/h < 7):
             cv2.fillPoly(contour_matrix,pts=[np.array( [ [x,y], [x,y+h], [x+w, y+h], [x+w,y] ] )],color=255)
             logical_matrix = np.logical_and(contour_matrix,intersection_matrix)
@@ -80,14 +82,17 @@ def generate_masks_ROT(image, f_name, mayhave_split, rotation_mask):
                 coordinates.append([x, y, x+w, y+h])
                 dist_to_image.append(np.linalg.norm(np.asarray([0,0])-np.asarray([x+w/2,y+h/2])))
                 num_paintings+=1
-                mark_red_rectangle = cv2.rectangle(image_cpy, (x, y), (x + w, y + h), (0, 0, 255), 3)
+                mark_green_rectangle = cv2.rectangle(image_cpy, (x, y), (x + w, y + h), (0, 255,0 ), 3)
                 cv2.fillPoly(intersection_matrix,pts=[np.array( [ [x,y], [x,y+h], [x+w, y+h], [x+w,y] ] )],color=255)
-        if(num_paintings == 3):
-            break
+                cv2.fillPoly(mask,pts=[np.array( [ [x,y], [x,y+h], [x+w, y+h], [x+w,y] ] )],color=(255, 255,255 ))
+        #if(num_paintings == 3):
+            #break
 
     sorted_coords = [x for _,x in sorted(zip(dist_to_image,coordinates))]
-
+    cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_rot.png', image)
     cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_laplacian.png', laplacian)
+    cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_laplacianblur.png', gray_image)
+    cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_mask.png', np.uint8(mask))
     #cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_laplacian_open.png', np.uint8(mask_open))
     #cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_laplaian_open_dilate.png', np.uint8(dilation))
     cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_laplaian_open_dilate_open.png', np.uint8(mask_open2))
