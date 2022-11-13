@@ -11,7 +11,7 @@ def rotation_check(image, f_name):
     # Apply a tight cannny to detect edges
     edges = cv2.Canny(image, 200, 250)
 
-    lines = cv2.HoughLinesP(edges, rho = 1, theta = 1*np.pi/180, threshold = 150, minLineLength = 100, maxLineGap = width)
+    lines = cv2.HoughLinesP(edges, rho = 1, theta = 1*np.pi/180, threshold = 100, minLineLength = 100, maxLineGap = width)
 
     # Save result of canny
     cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_canny.png', edges)

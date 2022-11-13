@@ -318,8 +318,8 @@ def main():
     # dists = distances_postprocessing.distances_postprocessing(dists)
 
     ## Distance analysis
-    if may_not_be_in_db:
-        distances_analysis.distances_analysis(dists, query_solutions)
+    # if may_not_be_in_db:
+    #     distances_analysis.distances_analysis(dists, query_solutions)
 
     ## Results processing
 
