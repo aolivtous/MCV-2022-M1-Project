@@ -7,11 +7,14 @@ def rotation_check(image, f_name):
     image_cpy = image.copy()
     height, width = image.shape[:2]
 
-    edges = auto_canny(image)
-    lines = cv2.HoughLinesP(edges, rho = 1, theta = 1*np.pi/180, threshold = 200, minLineLength = 100, maxLineGap = 25)
+    # edges = auto_canny(image)
+    # Apply a tight cannny to detect edges
+    edges = cv2.Canny(image, 200, 250)
+
+    lines = cv2.HoughLinesP(edges, rho = 1, theta = 1*np.pi/180, threshold = 150, minLineLength = 100, maxLineGap = width)
 
     # Save result of canny
-    # cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_canny.png', edges)
+    cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_canny.png', edges)
 
     # If there are no lines detected, return the original image
     if lines is None:
@@ -19,19 +22,22 @@ def rotation_check(image, f_name):
     
     # Get length of the lines
     final_length, final_angle, final_line = None, None, None
+    min_height = height
     for line in lines:
         x1, y1, x2, y2 = line[0]
-        if  (y1 < height / 3 and y2 < height / 3) or (y1 > 2 * height / 3 and y2 > 2 * height / 3):
+        if  (y1 < height / 3 or y2 < height / 3) or (y1 > 2 * height / 3 or y2 > 2 * height / 3):
             # Get angle on radians
             angle = np.arctan2(y2 - y1, x2 - x1)
             length = np.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
+            mean_height = (y1 + y2) / 2
             
             # Plot lines in different colors for each part (range from -pi to pi)
             if (angle <= np.pi / 4 and angle >= - np.pi / 4) or (angle >= 3 * np.pi / 4 or angle <= - 3 * np.pi / 4):
                 color = (0, 255, 0)
-                if final_angle == None or length > final_length:
+                if final_angle == None or mean_height < min_height:# length > final_length:
                     final_angle = angle
                     final_length = length
+                    min_height = mean_height
                     final_line = [(x1, y1), (x2, y2)]
             else:
                 color = (0, 0, 255)

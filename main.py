@@ -314,8 +314,8 @@ def main():
             with open(f'{global_variables.dir_results}num_paintings.pkl', 'wb') as handle:
                 pickle.dump(num_paintings, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-    ## Distances postprocessing
-    dists = distances_postprocessing.distances_postprocessing(dists)
+    ## ? Distances postprocessing (Discarded feature - Didn't improve results)
+    # dists = distances_postprocessing.distances_postprocessing(dists)
 
     ## Distance analysis
     if may_not_be_in_db:
