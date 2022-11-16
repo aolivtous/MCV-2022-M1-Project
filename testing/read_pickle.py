@@ -1,7 +1,7 @@
 import pickle
 
 pickle_file = None
-with open( '../../qst1_w5/results/frames.pkl', "rb" ) as f:
+with open( '../../qst1_w5/results/result.pkl', "rb" ) as f:
     pickle_file = pickle.load(f)
 
 # To fix the problem with the pickle file (00000 is in DB)

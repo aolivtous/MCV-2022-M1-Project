@@ -87,6 +87,36 @@ def generate_masks_ROT(image, f_name, mayhave_split, rotation_mask):
                 cv2.fillPoly(mask,pts=[np.array( [ [x,y], [x,y+h], [x+w, y+h], [x+w,y] ] )],color=(255, 255,255 ))
         #if(num_paintings == 3):
             #break
+    
+    # Merge the masks of the paintings that are too close to each other
+    for i in range(len(coordinates)):
+        for j in range(len(coordinates)):
+            if i != j:
+                x1,y1,x2,y2 = coordinates[i]
+                x3,y3,x4,y4 = coordinates[j]
+                min_y_i = min(y1,y2)
+                max_y_i = max(y1,y2)
+                min_y_j = min(y3,y4)
+                max_y_j = max(y3,y4)
+                # If they have simillar widths and the distance between them is less than 0.5 of the width of the image
+                if (abs(x2-x1) - abs(x4-x3) < 0.1*(x2-x1) ) and (abs(min_y_i-max_y_j) < height * 0.05 or abs(max_y_i-min_y_j) < height * 0.05):
+                    # Merge the two paintings
+                    x1 = min(x1,x3)
+                    x2 = max(x2,x4)
+                    y1 = min(y1,y3)
+                    y2 = max(y2,y4)
+                    coordinates[i] = [x1,y1,x2,y2]
+                    coordinates[j] = [0,0,0,0]
+                    num_paintings-=1
+                    dist_to_image[i] = np.linalg.norm(np.asarray([0,0])-np.asarray([x2/2,y2/2]))
+                    dist_to_image[j] = 1000000
+                    cv2.fillPoly(mask,pts=[np.array( [ [x1,y1], [x1,y2], [x2, y2], [x2,y1] ] )],color=(255, 255,255 ))
+                    cv2.fillPoly(intersection_matrix,pts=[np.array( [ [x1,y1], [x1,y2], [x2, y2], [x2,y1] ] )],color=255)
+                    break
+    
+    # Remove the coordinates and distances of the paintings that were merged
+    coordinates = [x for x in coordinates if x != [0,0,0,0]]
+    dist_to_image = [x for x in dist_to_image if x != 1000000]
 
     sorted_coords = [x for _,x in sorted(zip(dist_to_image,coordinates))]
     cv2.imwrite(global_variables.dir_query + global_variables.dir_query_aux + f_name + '_rot.png', image)
