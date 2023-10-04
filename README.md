@@ -1,4 +1,7 @@
-# Team5
+# Museum Painting Retrieval
+The project's goal is to grasp fundamental concepts and methods in constructing a straightforward query-by-example retrieval system tailored for locating paintings within a museum image collection. Image retrieval will encompass the utilization of colour, texture, text details, key points, and local descriptors. Additionally, various techniques, including morphological filters to identify and eliminate superimposed text in images, as well as filtering to eradicate noise, will be implemented. The resultant system is versatile and applicable to any modest query-by-example scenario.
+
+## Team5
 - Anna Oliveras
 - Guillem Capellera
 - Marcos Frías
